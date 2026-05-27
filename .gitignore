@@ -1,0 +1,34 @@
+# Claude credentials — NEVER commit
+claude/.claude/.credentials.json
+
+# Claude runtime state
+claude/.claude/history.jsonl
+claude/.claude/sessions/
+claude/.claude/projects/
+claude/.claude/cache/
+claude/.claude/backups/
+claude/.claude/downloads/
+claude/.claude/paste-cache/
+claude/.claude/shell-snapshots/
+claude/.claude/session-env/
+claude/.claude/file-history/
+claude/.claude/mcp-needs-auth-cache.json
+claude/.claude/stats-cache.json
+claude/.claude/settings.json.bak
+claude/.claude/config/
+claude/.claude/plugins/cache/
+claude/.claude/plugins/marketplaces/
+claude/.claude/plugins/plugin-catalog-cache.json
+
+# Particle credentials — NEVER commit
+# ~/.particle/particle.config.json contains access_token — login creates it automatically
+
+# Claude session artifacts — generated, not config
+session-log.md
+RELEASE-NOTES.md
+
+# General
+.DS_Store
+*.swp
+*.swo
+*~
