@@ -1,0 +1,19 @@
+{
+  "_comment": "Add the contents of the 'hooks' key below into your existing ~/.claude/settings.json.",
+  "_comment2": "If you already have a 'hooks' array, merge these entries into it — do not overwrite.",
+
+  "hooks": {
+    "SessionStart": [
+      {
+        "type": "command",
+        "command": "python3 \"$HOME/.claude/hooks/session_timer.py\" session_start 2>/dev/null || true"
+      }
+    ],
+    "Stop": [
+      {
+        "type": "command",
+        "command": "python3 \"$HOME/.claude/hooks/session_timer.py\" stop 2>/dev/null || true"
+      }
+    ]
+  }
+}
