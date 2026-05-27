@@ -1,0 +1,95 @@
+{
+  "version": 2,
+  "plugins": {
+    "caveman@caveman": [
+      {
+        "scope": "user",
+        "installPath": "/home/k0d3x/.claude/plugins/cache/caveman/caveman/ef6050c5e184",
+        "version": "ef6050c5e184",
+        "installedAt": "2026-05-05T14:58:53.982Z",
+        "lastUpdated": "2026-05-05T14:58:53.982Z",
+        "gitCommitSha": "ef6050c5e1848b6880ff47c32ade1a608a64f85e"
+      }
+    ],
+    "andrej-karpathy-skills@karpathy-skills": [
+      {
+        "scope": "user",
+        "installPath": "/home/k0d3x/.claude/plugins/cache/karpathy-skills/andrej-karpathy-skills/1.0.0",
+        "version": "1.0.0",
+        "installedAt": "2026-05-23T02:45:19.482Z",
+        "lastUpdated": "2026-05-23T02:45:19.482Z",
+        "gitCommitSha": "2c606141936f1eeef17fa3043a72095b4765b9c2"
+      }
+    ],
+    "planning-with-files@planning-with-files": [
+      {
+        "scope": "user",
+        "installPath": "/home/k0d3x/.claude/plugins/cache/planning-with-files/planning-with-files/2.43.0",
+        "version": "2.43.0",
+        "installedAt": "2026-05-27T00:01:27.710Z",
+        "lastUpdated": "2026-05-27T00:01:27.710Z",
+        "gitCommitSha": "6f94643bd2b77dad9ac30b68ace14a536e2e5619"
+      }
+    ],
+    "compound-engineering@compound-engineering-plugin": [
+      {
+        "scope": "user",
+        "installPath": "/home/k0d3x/.claude/plugins/cache/compound-engineering-plugin/compound-engineering/3.9.0",
+        "version": "3.9.0",
+        "installedAt": "2026-05-27T00:03:48.009Z",
+        "lastUpdated": "2026-05-27T00:03:48.009Z",
+        "gitCommitSha": "e2c9cd23525eeb1ecddd637e027d53b02f892e7b"
+      }
+    ],
+    "pm-toolkit@pm-skills": [
+      {
+        "scope": "user",
+        "installPath": "/home/k0d3x/.claude/plugins/cache/pm-skills/pm-toolkit/1.0.1",
+        "version": "1.0.1",
+        "installedAt": "2026-05-27T00:05:14.542Z",
+        "lastUpdated": "2026-05-27T00:05:14.542Z",
+        "gitCommitSha": "f9eaa51000a65e04494aeaf90355d30f2080ebf2"
+      }
+    ],
+    "pm-product-strategy@pm-skills": [
+      {
+        "scope": "user",
+        "installPath": "/home/k0d3x/.claude/plugins/cache/pm-skills/pm-product-strategy/1.0.1",
+        "version": "1.0.1",
+        "installedAt": "2026-05-27T00:05:54.480Z",
+        "lastUpdated": "2026-05-27T00:05:54.480Z",
+        "gitCommitSha": "f9eaa51000a65e04494aeaf90355d30f2080ebf2"
+      }
+    ],
+    "pm-product-discovery@pm-skills": [
+      {
+        "scope": "user",
+        "installPath": "/home/k0d3x/.claude/plugins/cache/pm-skills/pm-product-discovery/1.0.1",
+        "version": "1.0.1",
+        "installedAt": "2026-05-27T00:06:26.628Z",
+        "lastUpdated": "2026-05-27T00:06:26.628Z",
+        "gitCommitSha": "f9eaa51000a65e04494aeaf90355d30f2080ebf2"
+      }
+    ],
+    "pm-go-to-market@pm-skills": [
+      {
+        "scope": "user",
+        "installPath": "/home/k0d3x/.claude/plugins/cache/pm-skills/pm-go-to-market/1.0.1",
+        "version": "1.0.1",
+        "installedAt": "2026-05-27T00:07:28.735Z",
+        "lastUpdated": "2026-05-27T00:07:28.735Z",
+        "gitCommitSha": "f9eaa51000a65e04494aeaf90355d30f2080ebf2"
+      }
+    ],
+    "pm-execution@pm-skills": [
+      {
+        "scope": "user",
+        "installPath": "/home/k0d3x/.claude/plugins/cache/pm-skills/pm-execution/1.0.1",
+        "version": "1.0.1",
+        "installedAt": "2026-05-27T00:07:43.182Z",
+        "lastUpdated": "2026-05-27T00:07:43.182Z",
+        "gitCommitSha": "f9eaa51000a65e04494aeaf90355d30f2080ebf2"
+      }
+    ]
+  }
+}
