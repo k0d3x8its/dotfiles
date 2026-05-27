@@ -1,0 +1,50 @@
+{
+  "claude-plugins-official": {
+    "source": {
+      "source": "github",
+      "repo": "anthropics/claude-plugins-official"
+    },
+    "installLocation": "/home/k0d3x/.claude/plugins/marketplaces/claude-plugins-official",
+    "lastUpdated": "2026-05-27T03:22:26.779Z"
+  },
+  "caveman": {
+    "source": {
+      "source": "github",
+      "repo": "JuliusBrussee/caveman"
+    },
+    "installLocation": "/home/k0d3x/.claude/plugins/marketplaces/caveman",
+    "lastUpdated": "2026-05-05T14:58:52.562Z"
+  },
+  "karpathy-skills": {
+    "source": {
+      "source": "github",
+      "repo": "forrestchang/andrej-karpathy-skills"
+    },
+    "installLocation": "/home/k0d3x/.claude/plugins/marketplaces/karpathy-skills",
+    "lastUpdated": "2026-05-23T02:42:20.828Z"
+  },
+  "planning-with-files": {
+    "source": {
+      "source": "github",
+      "repo": "OthmanAdi/planning-with-files"
+    },
+    "installLocation": "/home/k0d3x/.claude/plugins/marketplaces/planning-with-files",
+    "lastUpdated": "2026-05-27T00:00:58.315Z"
+  },
+  "compound-engineering-plugin": {
+    "source": {
+      "source": "github",
+      "repo": "EveryInc/compound-engineering-plugin"
+    },
+    "installLocation": "/home/k0d3x/.claude/plugins/marketplaces/compound-engineering-plugin",
+    "lastUpdated": "2026-05-27T00:03:25.718Z"
+  },
+  "pm-skills": {
+    "source": {
+      "source": "github",
+      "repo": "phuryn/pm-skills"
+    },
+    "installLocation": "/home/k0d3x/.claude/plugins/marketplaces/pm-skills",
+    "lastUpdated": "2026-05-27T00:05:05.503Z"
+  }
+}
