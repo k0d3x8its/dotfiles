@@ -25,13 +25,15 @@ SCREEN_H=$(xrandr --current 2>/dev/null | awk '/\*/{print $1}' | head -1 | cut -
 SCREEN_W=${SCREEN_W:-1920}
 SCREEN_H=${SCREEN_H:-1200}
 
-# Get actual rendered window width, position at right edge
+# Get actual rendered window dimensions, position at right edge above bottom panel
 WIN_W=$(xdotool getwindowgeometry "$WID" 2>/dev/null | awk '/Geometry/{split($2,a,"x"); print a[1]}')
+WIN_H=$(xdotool getwindowgeometry "$WID" 2>/dev/null | awk '/Geometry/{split($2,a,"x"); print a[2]}')
 WIN_W=${WIN_W:-380}
+WIN_H=${WIN_H:-960}
 WIN_X=$((SCREEN_W - WIN_W))
 
 xdotool windowmove "$WID" "$WIN_X" 0
-xdotool windowsize "$WID" "$WIN_W" "$SCREEN_H"
+xdotool windowsize "$WID" "$WIN_W" "$WIN_H"
 
 # Focus, type btop, run it
 xdotool windowfocus --sync "$WID"
