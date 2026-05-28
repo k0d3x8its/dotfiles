@@ -66,6 +66,18 @@ main() {
         ln -sf "$DOTFILES/claude/.claude/skills/$skill" "$HOME/.claude/skills/$skill"
     done
 
+    # ── ghostty sidebar ───────────────────────────────────────────────────────
+    # Requires: xdotool  (sudo nala install xdotool)
+    # Runs Ghostty under XWayland at boot — right-edge sidebar, btop top pane.
+
+    log "stowing ghostty sidebar"
+    mkdir -p "$HOME/.config/ghostty" "$HOME/.config/autostart" "$HOME/.local/bin"
+    safeguard "$HOME/.config/ghostty/sidebar.conf"
+    safeguard "$HOME/.config/autostart/ghostty-sidebar.desktop"
+    safeguard "$HOME/.local/bin/ghostty-sidebar"
+    stow --no-folding --dir="$DOTFILES" --target="$HOME" ghostty
+    chmod +x "$HOME/.local/bin/ghostty-sidebar"
+
     # ── trueline ──────────────────────────────────────────────────────────────
 
     log "installing trueline"
@@ -107,7 +119,8 @@ main() {
     echo "  • kos skills:  npx skills install kos"
     echo "  • Particle:    npm install -g particle-cli && particle login"
     echo "  • Antigravity: has its own CLI installer — see https://antigravity.dev"
-    echo "  • Packages:    run with --packages flag to install apt packages"
+    echo "  • Packages:    run with --packages flag to install apt packages
+  • Ghostty sidebar: sudo nala install xdotool  (required for window positioning)"
 }
 
 if [[ "${BASH_SOURCE[0]}" == "${0}" ]]; then

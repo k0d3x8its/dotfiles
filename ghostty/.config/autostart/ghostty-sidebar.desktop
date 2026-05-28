@@ -1,0 +1,7 @@
+[Desktop Entry]
+Name=Ghostty Sidebar
+Comment=Right-edge sidebar terminal: btop top pane, shell below
+Exec=/home/k0d3x/.local/bin/ghostty-sidebar
+Terminal=false
+Type=Application
+X-GNOME-Autostart-enabled=true
