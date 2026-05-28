@@ -1,4 +1,7 @@
 #!/bin/bash
+# Bail if sidebar already running
+pgrep -f "ghostty --config-file=$HOME/.config/ghostty/sidebar.conf" > /dev/null && exit 0
+
 # Wait for desktop session to be fully ready
 sleep 4
 
