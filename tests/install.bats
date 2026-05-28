@@ -27,6 +27,14 @@ make_fixture() {
         touch "$dir/claude/.claude/skills/$skill/SKILL.md"
     done
 
+    mkdir -p "$dir/ghostty/.config/ghostty"
+    mkdir -p "$dir/ghostty/.config/autostart"
+    mkdir -p "$dir/ghostty/.local/bin"
+    touch "$dir/ghostty/.config/ghostty/sidebar.conf"
+    touch "$dir/ghostty/.config/autostart/ghostty-sidebar.desktop"
+    printf '#!/bin/bash\n' > "$dir/ghostty/.local/bin/ghostty-sidebar"
+    chmod +x "$dir/ghostty/.local/bin/ghostty-sidebar"
+
     mkdir -p "$dir/scripts"
     touch "$dir/scripts/trueline.sh"
 
@@ -281,6 +289,27 @@ EOF
 
     # Target is now a symlink
     [[ -L "$FAKE_HOME/.bashrc" ]]
+}
+
+@test "ghostty: sidebar.conf is a symlink into dotfiles" {
+    run_install
+
+    [[ -L "$FAKE_HOME/.config/ghostty/sidebar.conf" ]]
+    [[ "$(readlink -f "$FAKE_HOME/.config/ghostty/sidebar.conf")" == "$FAKE_DOTFILES/ghostty/.config/ghostty/sidebar.conf" ]]
+}
+
+@test "ghostty: ghostty-sidebar script is a symlink and executable" {
+    run_install
+
+    [[ -L "$FAKE_HOME/.local/bin/ghostty-sidebar" ]]
+    [[ -x "$FAKE_HOME/.local/bin/ghostty-sidebar" ]]
+}
+
+@test "ghostty: ghostty-sidebar.desktop autostart is a symlink" {
+    run_install
+
+    [[ -L "$FAKE_HOME/.config/autostart/ghostty-sidebar.desktop" ]]
+    [[ "$(readlink -f "$FAKE_HOME/.config/autostart/ghostty-sidebar.desktop")" == "$FAKE_DOTFILES/ghostty/.config/autostart/ghostty-sidebar.desktop" ]]
 }
 
 @test "pre-existing symlink at ~/.gitconfig is replaced without backup" {
