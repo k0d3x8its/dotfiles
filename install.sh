@@ -61,7 +61,7 @@ main() {
     ln -sf "$DOTFILES/claude/.claude/hooks" "$HOME/.claude/hooks"
 
     # manual skills (plugin-installed skills like kos* are reinstalled separately)
-    for skill in dev-setup release-notes session-handoff sync-trello trello-agent; do
+    for skill in dev-brief dev-setup release-notes session-handoff sync-trello trello-agent; do
         safeguard "$HOME/.claude/skills/$skill"
         ln -sf "$DOTFILES/claude/.claude/skills/$skill" "$HOME/.claude/skills/$skill"
     done
