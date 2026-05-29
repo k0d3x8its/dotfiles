@@ -48,18 +48,7 @@ Always resolve board IDs first using `trello board:list` before acting.
 | 4 | TARS🔺DAO |
 
 ## Standard List Structure
-Every board uses the following lists (Kanban columns), in order left to right:
-
-| Position | List Name |
-|---|---|
-| 1 | Back Log |
-| 2 | To Do |
-| 3 | Doing |
-| 4 | Review |
-| 5 | Testing |
-| 6 | Done |
-
-When the user refers to a list by name (e.g. "move it to Done"), use that name directly with `--list "Done"`. No need to ask for clarification — these names are consistent across all boards.
+Every board uses the six-column Kanban defined in `~/.claude/CLAUDE.md` (Back Log → … → Done), in order left to right. When the user refers to a list by name (e.g. "move it to Done"), use that name directly with `--list "Done"` — names are consistent across all boards, no clarification needed.
 
 ---
 
@@ -509,7 +498,7 @@ trello search --query "card name" --type cards
 
 ## Notes
 - Always run `trello board:list` first to resolve the board — list names are known but board IDs still need lookup
-- List names are consistent across all boards: `Back Log`, `To Do`, `Doing`, `Review`, `Testing`, `Done`
+- List names are consistent across all boards — see `~/.claude/CLAUDE.md` for the canonical column set
 - Names can often be used in place of IDs but IDs are more reliable for boards
 - Use `--format json` when chaining commands that need output from a previous step
 - `--checklist` flag scopes item lookup to avoid ambiguity when multiple checklists on one card share an item name
