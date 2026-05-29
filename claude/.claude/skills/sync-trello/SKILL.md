@@ -30,11 +30,7 @@ This skill expects the following hierarchy in `task_plan.md`:
 - [ ] Task four
 ```
 
-**Mapping:**
-- `## Goal:` → Trello card (in "Back Log")
-- `### Micro-Goal:` → checklist on that card
-- `- [ ]` / `- [x]` lines → checklist items inside the parent Micro-Goal
-- Goals tagged `[trello:CARD_ID]` are skipped — card + checklists + items already exist
+**Mapping:** see **Trello Sync Rules** in `~/.claude/CLAUDE.md` (canonical) for the Goal→card / Micro-Goal→checklist / Task→item rule and the `[trello:ID]` skip rule. Skill-specific detail: both `- [ ]` and `- [x]` lines become checklist items (completed tasks still sync).
 
 ---
 
@@ -138,6 +134,6 @@ Tasks outside any Micro-Goal are ignored — they have no checklist to belong to
 ## Notes
 
 - Board name is resolved once per run
-- List names must exist on the target board — standard KOS boards use `Back Log`, `To Do`, `Doing`, `Review`, `Testing`, `Done`, but any board layout works as long as a `Back Log` list exists (or the user is asked which list to use)
+- List names must exist on the target board — standard KOS Kanban columns are defined in `~/.claude/CLAUDE.md`. Any board layout works as long as a `Back Log` list exists (or the user is asked which list to use)
 - If a Goal name contains special characters or quotes, prefer using the card ID (from `[trello:ID]` tag) as the `--card` value on retry
 - `.claude/trello-board` is project-local — different projects can point to different boards
