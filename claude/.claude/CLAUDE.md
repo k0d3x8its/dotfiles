@@ -58,7 +58,7 @@ No priority tag = Medium (default).
 
 ## Trello Sync Rules
 When syncing task_plan.md to Trello, always map as follows:
-- Goal       → Trello card (placed in "Back Log", directly under the top card in that list)
+- Goal       → Trello card (placed at the bottom of the "Back Log" list)
 - Micro-Goal → Trello checklist on that card
 - Task       → Trello checklist item
 
