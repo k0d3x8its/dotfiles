@@ -69,7 +69,12 @@ Claude appends the following block to `session-log.md`:
 
 > Paste this as your FIRST message in the next session after /clear:
 
-"{Compact summary: project name, what was built, where you left off, first action to take next session}"
+"{Compact summary: project name, what was built, where you left off, first action to take next session}
+
+Read session-log.md now to get full context. Open TODOs from last session:
+{- [ ] each incomplete item from Incomplete / Next Steps, copied verbatim}
+
+First action: {single most important next step}"
 
 ---
 ```
@@ -84,6 +89,7 @@ When the user runs `/handoff`:
 2. Read the current working directory and all files in context
 3. Fill **every field** in the handoff block — never leave a section blank or write "N/A"
 4. For **Completed** vs **Incomplete**: be honest. If it wasn't done, it goes in Incomplete.
+   When writing `### Incomplete / Next Steps` items, apply priority and annotation tags from the TODO Tags system defined in `~/.claude/CLAUDE.md`. Each `- [ ]` item should be prefixed with the appropriate tags (e.g. `[BROKEN]`, `[BLOCKER]`, `[BUG]`, `[DECISION]`, `[INVESTIGATE]`, `[FEAT]`, `[CHORE]`, `[TEST]`, `[RELEASE]`, `[LOW]`, `[BACKLOG]`). Untagged items default to Medium priority.
 5. For **Decisions Made**: capture the *why*, not just the *what* — future sessions need the reasoning
 6. For **Gotchas / Notes**: include anything the user didn't explicitly ask about but should know — potential bugs, naming inconsistencies, missed edge cases, token cost observations
 7. Append (do not overwrite) to `session-log.md` at the project root
@@ -118,6 +124,10 @@ When the user runs `/handoff`:
      ---
      ```
 9. Print the **Re-Entry Prompt** to the terminal so the user can copy it
+   - Re-entry prompt **must** include:
+     - All unchecked items (`- [ ]`) from the **Incomplete / Next Steps** section, copied verbatim
+     - Explicit directive for next Claude to `Read session-log.md` at session start
+     - Single "first action" line — the highest-priority next step
 10. Print this closing message:
    ```
    ✓ Handoff written to session-log.md
