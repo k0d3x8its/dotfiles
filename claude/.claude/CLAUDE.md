@@ -47,7 +47,7 @@ No priority tag = Medium (default).
 | `[BUG]` | Fix a broken thing | Use `/diagnose` — feedback loop → RCA → fix → post-mortem |
 | `[FEAT]` | New feature or capability | Design/build mode |
 | `[CHORE]` | Cleanup, refactor, maintenance | Low-energy batching candidate |
-| `[TEST]` | Write or fix tests | Testing session mode |
+| `[TEST]` | Write or fix tests | Use `/tdd` — red-green-refactor vertical slices |
 | `[RELEASE]` | Publish/ship related | Release workflow mode |
 | `[DECISION]` | Needs a choice before action can start | Present options + tradeoffs, don't implement |
 | `[INVESTIGATE]` | Needs research/audit before action | Read code/logs first, don't jump to solutions |
