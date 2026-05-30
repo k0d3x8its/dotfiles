@@ -89,12 +89,12 @@ When the user runs `/handoff`:
 2. Read the current working directory and all files in context. If `session-log.md` exists, **read it in full now** — you need its prior blocks for step 4b.
 3. Fill **every field** in the handoff block — never leave a section blank or write "N/A"
 4. For **Completed** vs **Incomplete**: be honest. If it wasn't done, it goes in Incomplete.
-   When writing `### Incomplete / Next Steps` items, apply priority and annotation tags from the TODO Tags system defined in `~/.claude/CLAUDE.md`. Each `- [ ]` item should be prefixed with the appropriate tags (e.g. `[BROKEN]`, `[BLOCKER]`, `[BUG]`, `[DECISION]`, `[INVESTIGATE]`, `[FEAT]`, `[CHORE]`, `[TEST]`, `[RELEASE]`, `[LOW]`, `[BACKLOG]`). Untagged items default to Medium priority.
-4b. **Carry forward prior unchecked items** — before writing `### Incomplete / Next Steps`, scan every prior `### Incomplete / Next Steps` block in `session-log.md`. For each `- [ ]` item found:
+   When writing `### Incomplete / Next Steps` items, apply priority and annotation tags from the TODO Tags system defined in `~/.claude/CLAUDE.md`. Each item **must** begin with a `- [ ]` checkbox followed by the appropriate tags (e.g. `[BROKEN]`, `[BLOCKER]`, `[BUG]`, `[DECISION]`, `[INVESTIGATE]`, `[FEAT]`, `[CHORE]`, `[TEST]`, `[RELEASE]`, `[LOW]`, `[BACKLOG]`). Untagged items default to Medium priority. **Never write a bare `- [TAG] ...` bullet without the `- [ ]` checkbox** — checkbox-less items evade the step 4b carry-forward scan and silently orphan.
+4b. **Carry forward prior unchecked items** — before writing `### Incomplete / Next Steps`, scan every prior `### Incomplete / Next Steps` block in `session-log.md`. Treat **any bullet line** under those blocks as a candidate item — a normal `- [ ]` item, OR a checkbox-less `- [TAG] ...` bullet left by an older malformed block. For each candidate found:
     - Completed this session → add to `### Completed` with `[x]`; omit from Incomplete
     - Already `- [x]` in any later block → omit
-    - Otherwise → include verbatim in this session's `### Incomplete / Next Steps`
-    **Never silently drop a prior `- [ ]` item.** If uncertain whether it was completed, carry it forward.
+    - Otherwise → include in this session's `### Incomplete / Next Steps`, copied verbatim and normalized to a `- [ ]` checkbox if it lacked one
+    **Never silently drop a prior open item — whether or not it has a `- [ ]` checkbox.** If uncertain whether it was completed, carry it forward.
 5. For **Decisions Made**: capture the *why*, not just the *what* — future sessions need the reasoning
 6. For **Gotchas / Notes**: include anything the user didn't explicitly ask about but should know — potential bugs, naming inconsistencies, missed edge cases, token cost observations
 7. Append (do not overwrite) to `session-log.md` at the project root
