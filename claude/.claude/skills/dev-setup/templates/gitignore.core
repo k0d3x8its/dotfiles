@@ -1,0 +1,27 @@
+# Environment & secrets
+.env
+.env.*
+!.env.example
+
+# Claude Code — local/ephemeral files (not project code)
+.claude/trello-board
+.claude/settings.local.json
+.claude/plugins/
+.claude/skills/
+
+# Planning & session files (local context, not source)
+task_plan.md
+findings.md
+progress.md
+session-log.md
+RELEASE-NOTES.md
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Editor
+.vscode/
+.idea/
+*.swp
+*.swo
