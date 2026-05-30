@@ -61,9 +61,12 @@ main() {
     ln -sf "$DOTFILES/claude/.claude/hooks" "$HOME/.claude/hooks"
 
     # manual skills (plugin-installed skills like kos* are reinstalled separately)
-    for skill in dev-brief dev-setup release-notes session-handoff sync-trello trello-agent; do
+    # glob every tracked skill dir so adding/removing a skill never desyncs this list
+    for skill_dir in "$DOTFILES"/claude/.claude/skills/*/; do
+        skill_dir="${skill_dir%/}"
+        skill="$(basename "$skill_dir")"
         safeguard "$HOME/.claude/skills/$skill"
-        ln -sf "$DOTFILES/claude/.claude/skills/$skill" "$HOME/.claude/skills/$skill"
+        ln -sf "$skill_dir" "$HOME/.claude/skills/$skill"
     done
 
     # ── ghostty sidebar ───────────────────────────────────────────────────────
