@@ -10,10 +10,13 @@ K0d3x personal dotfiles — Ubuntu 24.04 (Noble).
 dotfiles/
   bash/               → ~/.bashrc
   git/                → ~/.gitconfig, ~/.gitignore_global
-  claude/             → ~/.claude/ (CLAUDE.md, settings, hooks, skills)
+  claude/             → ~/.claude/ (CLAUDE.md, settings, hooks, skills, references, plugins)
+  ghostty/            → ~/.config/ghostty/sidebar.conf, autostart .desktop, ~/.local/bin/ghostty-sidebar
   scripts/            → trueline.sh (symlinked to ~/dev/trueline.sh)
   fonts/              → Sauce Code Pro Nerd Font + Menlo for Powerline
   docs/               → dev-workflow-guide.md, hooks-config.json
+  tests/              → install.bats (bats suite for install.sh)
+  .github/workflows/  → ci.yml (shellcheck + bats on push/PR)
   packages.txt        → manually installed apt packages
   install.sh          → full bootstrap script
 ```
@@ -42,6 +45,7 @@ Pass `--packages` to also install apt packages:
 | kos skills | `npx skills install kos` |
 | Particle CLI | `npm install -g particle-cli && particle login` |
 | Antigravity | Has its own CLI installer — see https://antigravity.dev |
+| Ghostty sidebar | `sudo nala install xdotool` (required for window positioning) |
 
 ## What is NOT tracked
 
