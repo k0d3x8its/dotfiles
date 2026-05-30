@@ -16,11 +16,13 @@ make_fixture() {
 
     mkdir -p "$dir/claude/.claude/plugins"
     mkdir -p "$dir/claude/.claude/hooks"
+    mkdir -p "$dir/claude/.claude/references"
     touch "$dir/claude/.claude/CLAUDE.md"
     touch "$dir/claude/.claude/settings.json"
     touch "$dir/claude/.claude/plugins/installed_plugins.json"
     touch "$dir/claude/.claude/plugins/known_marketplaces.json"
     touch "$dir/claude/.claude/hooks/hook.sh"
+    touch "$dir/claude/.claude/references/anti-patterns.md"
 
     for skill in dev-setup release-notes session-handoff sync-trello trello-agent; do
         mkdir -p "$dir/claude/.claude/skills/$skill"
@@ -240,6 +242,13 @@ EOF
 
     [[ -L "$FAKE_HOME/.claude/hooks" ]]
     [[ "$(readlink "$FAKE_HOME/.claude/hooks")" == "$FAKE_DOTFILES/claude/.claude/hooks" ]]
+}
+
+@test "claude: references is a symlink to dotfiles references dir" {
+    run_install
+
+    [[ -L "$FAKE_HOME/.claude/references" ]]
+    [[ "$(readlink "$FAKE_HOME/.claude/references")" == "$FAKE_DOTFILES/claude/.claude/references" ]]
 }
 
 @test "claude: every tracked skill is symlinked, no extras" {
