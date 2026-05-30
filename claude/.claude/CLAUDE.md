@@ -10,6 +10,9 @@ KOS (Kodex OS) is my personal knowledge management system.
 - /planning-with-files — mid-session persistent memory (task_plan.md, findings.md, progress.md)
 - /release-notes — synthesize RELEASE-NOTES.md entries into polished GitHub prose release notes
 - /find-skills — discover and install agent skills via `npx skills find [query]`. Use when asking "is there a skill for X". Browse at https://skills.sh/
+- /diagnose — structured debugging protocol (Phase 1–6): feedback loop → reproduce → hypothesise → instrument → fix → post-mortem. Maps to [BUG] tag.
+- /tdd — test-driven development with red-green-refactor vertical slices. Maps to [TEST] tag.
+- /prototype — throwaway prototype to answer a design question. Routes to logic (terminal TUI) or UI (variant switcher) branch.
 - /ce-code-review — 12-agent parallel code review before committing
 - /ce-security-audit — security scan for anything touching auth, file I/O, or external input
 - /discover — PM-style project scoping for new projects
@@ -41,7 +44,7 @@ No priority tag = Medium (default).
 
 | Tag | Meaning | How Claude responds |
 |---|---|---|
-| `[BUG]` | Fix a broken thing | Root cause analysis first, then fix |
+| `[BUG]` | Fix a broken thing | Use `/diagnose` — feedback loop → RCA → fix → post-mortem |
 | `[FEAT]` | New feature or capability | Design/build mode |
 | `[CHORE]` | Cleanup, refactor, maintenance | Low-energy batching candidate |
 | `[TEST]` | Write or fix tests | Testing session mode |
