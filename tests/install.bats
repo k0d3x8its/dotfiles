@@ -242,10 +242,16 @@ EOF
     [[ "$(readlink "$FAKE_HOME/.claude/hooks")" == "$FAKE_DOTFILES/claude/.claude/hooks" ]]
 }
 
-@test "claude: all 5 skills are symlinked, no extras" {
+@test "claude: every tracked skill is symlinked, no extras" {
     run_install
 
-    local expected=(dev-setup release-notes session-handoff sync-trello trello-agent)
+    # derive expected from the dotfiles skills dir — same source install.sh globs,
+    # so the two can never drift out of sync as skills are added/removed
+    local expected=()
+    while IFS= read -r -d '' entry; do
+        expected+=("$(basename "$entry")")
+    done < <(find "$FAKE_DOTFILES/claude/.claude/skills" -maxdepth 1 -mindepth 1 -type d -print0 | sort -z)
+
     local actual=()
     while IFS= read -r -d '' entry; do
         actual+=("$(basename "$entry")")
