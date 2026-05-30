@@ -158,3 +158,7 @@ If **planning-with-files** is active in this session:
 If a project-level `.claude/CLAUDE.md` exists:
 - Claude should note any project conventions that are relevant to open items
 - Do not reproduce the full CLAUDE.md — just reference it exists and flag anything critical
+When tagging open items in **Incomplete / Next Steps**:
+- Items tagged `[BUG]` → add note: "start next session with `/diagnose`"
+- Items tagged `[TEST]` → add note: "use `/tdd` for this work"
+- Items tagged `[FEAT]` for early-stage or unvalidated features → add note: "consider `/prototype` before building"
