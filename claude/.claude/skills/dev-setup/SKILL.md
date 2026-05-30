@@ -104,12 +104,18 @@ Based on project type, create these directories (skip any that already exist):
 | Type | Directories |
 |---|---|
 | Web app | `src/`, `public/`, `docs/` |
-| CLI / backend | `src/`, `tests/`, `docs/` |
-| Library / SDK | `src/`, `tests/`, `docs/`, `examples/` |
+| CLI / backend | `src/`, `tests/`, `docs/`, `docs/adr/` |
+| Library / SDK | `src/`, `tests/`, `docs/`, `docs/adr/`, `examples/` |
 | Script / automation | `scripts/`, `docs/` |
 | Other | Ask: "Which directories should I create?" |
 
 Place a `.gitkeep` in each empty directory so they appear in git.
+
+For CLI/backend and Library/SDK projects, note after scaffolding:
+> "`docs/adr/` is active. Record any decision that meets the three-condition ADR gate
+> (cost of change is meaningful + future reader would wonder why + alternatives were
+> considered). Format: `docs/adr/ADR-0001-short-title.md`. Full schema in
+> `~/.claude/references/kos-code-reference.md`."
 
 Print what was created.
 
