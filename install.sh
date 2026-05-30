@@ -60,6 +60,10 @@ main() {
     safeguard "$HOME/.claude/hooks"
     ln -sf "$DOTFILES/claude/.claude/hooks" "$HOME/.claude/hooks"
 
+    # references dir (on-demand vocabulary files read by skills at runtime)
+    safeguard "$HOME/.claude/references"
+    ln -sf "$DOTFILES/claude/.claude/references" "$HOME/.claude/references"
+
     # manual skills (plugin-installed skills like kos* are reinstalled separately)
     # glob every tracked skill dir so adding/removing a skill never desyncs this list
     for skill_dir in "$DOTFILES"/claude/.claude/skills/*/; do
