@@ -20,6 +20,7 @@ KOS (Kodex OS) is my personal knowledge management system.
 - Track session start time. Warn me at 45 minutes to run /handoff.
 - Always read task_plan.md, findings.md, and progress.md if they exist in the project root.
 - When I paste a re-entry prompt, treat it as ground truth for project state.
+- RELEASE-NOTES on [machine] sessions, route by what changed: if the session modified files under `~/dev/dotfiles/`, append the release-notes entry to `~/dev/dotfiles/RELEASE-NOTES.md`; if the changes were machine-only (no dotfiles impact), skip RELEASE-NOTES entirely — don't ask.
 
 ## TODO Tags
 
