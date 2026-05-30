@@ -185,3 +185,5 @@ bug, error, unresolved, critical, missing, haven't, has not, hasn't
 - **session-handoff** writes the `session-log.md` this skill reads. Run `/handoff` at end of every session to keep briefs accurate.
 - **planning-with-files** writes `task_plan.md`. This skill merges open items from it automatically if present.
 - Run `/dev-brief <project>` immediately before starting a session on that project — re-entry prompt is ready to paste after `/clear`.
+- When a Triage Block item carries `[BUG]`, append `→ /diagnose` to the line in output so the next session starts with the right skill.
+- When a Triage Block item carries `[TEST]`, append `→ /tdd`.
