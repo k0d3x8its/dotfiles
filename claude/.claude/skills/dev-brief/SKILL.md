@@ -5,7 +5,7 @@ description: Morning/context-switch brief across all projects in ~/dev. Reads se
 
 # Dev Brief Skill
 
-**Trigger:** `/dev-brief` or `/dev-brief <project>`
+**Trigger:** `/dev-brief` or `/dev-brief <project>` or `/dev-brief triage`
 **Purpose:** Produce a fast, high-signal brief across every project in `~/dev` so you can orient in under 60 seconds — what's open, what's dirty, what will burn you if you forget.
 
 ---
@@ -17,6 +17,9 @@ Full sweep of all projects in `~/dev`. One block per project with a session-log.
 
 ### Deep-dive — `/dev-brief <project>`
 Single project. Full re-entry prompt, all TODOs, all gotchas, all decisions, full git state. Use before starting a session on that project.
+
+### Triage-only — `/dev-brief triage`
+Runs full discovery + TODO collection + git reconciliation, but skips printing project blocks and orphans. Outputs only the Triage Block. Use when you just need prioritized work order without the per-project narrative. Skips reading Gotchas/Decisions sections to reduce input tokens.
 
 ---
 
@@ -137,109 +140,9 @@ See Output Format below.
 
 ## Output Format
 
-### Default mode
-
-```
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-  **DEV BRIEF — {YYYY-MM-DD}**
-  {N} projects · {Y} open TODOs · {Z} dirty
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-── **[machine]** ───────────────────────────────────────────────────────────────
-machine-wide log · {Nd} ago{[STALE]}
-
-**TODOs:**
-  ...
-
-**Gotchas / Decisions:** (same format as project blocks)
-
-────────────────────────────────────────────────────────────────────────────────
-
-── **{project-name}** ──────────────────────────────────────────────────────────
-branch: {branch} · {N} uncommitted · {N} unpushed · {Nd} ago{[STALE]}{ · RELEASE PENDING}
-
-**TODOs:**
-  ⚠ {urgent todo text}
-  · {normal todo text}
-  ✓ {auto-resolved todo text} (auto-resolved)
-
-**Gotchas:**
-  · {gotcha line}
-  · {gotcha line}
-
-**Decisions:**
-  · {decision — why}
-  · {decision — why}
-
-{N} TODO(s) auto-resolved in session-log.md   ← only shown if >0 resolved
-
-────────────────────────────────────────────────────────────────────────────────
-
-── **{next project}** ──────────────────────────────────────────────────────────
-...
-
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-**ORPHANED** (no session-log):
-  {dir} · {dir} · {dir}
-
-{Y} open TODOs across {N} projects
-Run /dev-brief <project> for re-entry prompt.
-
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-  **TRIAGE BLOCK**
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-**CRITICAL**
-  [project]  ⚠ todo text ([BROKEN] tag or broken/failing/down keywords)
-
-**HIGH**
-  [project]  todo text ([BLOCKER] tag or blocks/blocked keywords)
-  [project]  ⚠ todo text (urgent keyword, not critical)
-
-**MEDIUM**
-  [project]  todo text
-  [project]  todo text
-
-**LOW**
-  [project]  todo text ([LOW] tag or consider/evaluate/no rush)
-
-**BACKLOG**
-  [project]  todo text ([BACKLOG] tag or someday/eventually/parked)
-
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-```
-
-### Deep-dive mode (`/dev-brief <project>`)
-
-```
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-  **DEEP DIVE — {project-name}**
-  {date} · branch: {branch}
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-**GIT STATE**
-  branch:      {branch}
-  uncommitted: {N files}
-  unpushed:    {N commits}
-
-**OPEN TODOs**
-  ⚠ {urgent todo}
-  · {todo}
-  ✓ {auto-resolved todo} (auto-resolved)
-
-**GOTCHAS**
-  · {gotcha}
-
-**DECISIONS**
-  · {decision — why}
-
-**RE-ENTRY PROMPT**
-┌────────────────────────────────────────────────────────────────────────────┐
-  {paste this as first message}
-└────────────────────────────────────────────────────────────────────────────┘
-
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-```
+- **Default mode** — see `templates/format-default.md`
+- **Deep-dive mode** — see `templates/format-deep-dive.md`
+- **Triage-only mode** — header: `TRIAGE — {YYYY-MM-DD}` · `{Y} open TODOs across {N} projects`. Then Triage Block (same structure as end of default format). No project blocks, no orphans.
 
 ---
 
@@ -262,6 +165,7 @@ Run /dev-brief <project> for re-entry prompt.
 15. **task_plan.md reconciliation** — apply the same push/commit reconciliation to `task_plan.md` open items if that file exists. Same rules, same write-back format.
 16. **`[machine]` log** — `~/dev/session-log.md` is a machine-wide log with no associated git repo. Show it as the first block in the brief. Skip all git state fields (show `n/a`). Apply session parsing, reconciliation (skip git checks — no repo to check against), TODO flagging, and staleness exactly as for project logs. `/dev-brief machine` targets this file in deep-dive mode.
 17. **Triage Block** — Run Step 6 after all project blocks are built. Emit the Triage Block after the orphans list and before the final footer line. Omit any tier (HIGH/MEDIUM/LOW) that has no items. The Triage Block appears in default mode only — skip in deep-dive mode.
+18. **Triage-only mode** — When invoked as `/dev-brief triage`: run Steps 1–3 (discover, collect TODOs + git state, reconcile) and Step 6 (build triage). Skip reading Gotchas/Decisions sections in Step 2. Skip project blocks and orphans. Output triage-only format (see Output Format). Still write auto-resolved TODOs back to session-log.md.
 
 ---
 
