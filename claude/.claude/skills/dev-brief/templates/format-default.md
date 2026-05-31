@@ -20,6 +20,7 @@ branch: {branch} · {N} uncommitted · {N} unpushed · {Nd} ago{[STALE]}{ · REL
   ⚠ {urgent todo text}
   · {normal todo text}
   ✓ {auto-resolved todo text} (auto-resolved)
+  ⚑ {todo text} — possibly resolved by {hash}({repo}) — verify
 
 **Gotchas:**
   · {gotcha line}
@@ -30,6 +31,7 @@ branch: {branch} · {N} uncommitted · {N} unpushed · {Nd} ago{[STALE]}{ · REL
   · {decision — why}
 
 {N} TODO(s) auto-resolved in session-log.md   ← only shown if >0 resolved
+{N} TODO(s) ⚑ flagged possibly-resolved (advisory, not written to log)   ← only shown if >0 flagged
 
 ────────────────────────────────────────────────────────────────────────────────
 
