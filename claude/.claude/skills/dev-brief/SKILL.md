@@ -103,6 +103,28 @@ For each project, compare live git output against its open TODOs (loaded from th
 4. Only modify TODOs within the latest session block. Never touch earlier session entries.
 5. After writing, report how many TODOs were auto-resolved at the bottom of the project block.
 
+**Step 3b — Fix-commit reconcile (FLAG-ONLY, never auto-resolve):**
+
+The push/commit rules above only catch TODOs whose intent *is* "push/commit". They miss the common stale-after-fix case: a `[BUG]`/`[FEAT]`/`[RELEASE]` TODO whose underlying work was already done by a normal fix commit. This pass surfaces those for human verification — it **never** writes to `session-log.md` and **never** changes `- [ ]` to `- [x]`. It is advisory output only, recomputed every run (like git state and tiers — never cached).
+
+Run this pass only for open TODOs in the **latest session block** that are tagged `[BUG]`, `[FEAT]`, or `[RELEASE]` (the work-producing tags). Skip `[DECISION]`/`[INVESTIGATE]`/`[CHORE]`/`[DOCS]` — those don't close via a code commit.
+
+1. **Candidate commits.** Collect recent commit subjects + changed paths since the block was written:
+   ```
+   git -C ~/dev/<repo> log --since="<latest-block-date>" --no-merges --pretty='%h %s' --name-only 2>/dev/null
+   ```
+   - For a normal project's own TODOs: scan that project's repo.
+   - For `[machine]` TODOs: machine/config work lands in `~/dev/dotfiles` (and occasionally other repos), **not** in the machine log's own (absent) git. So scan `~/dev/dotfiles` plus any repo the TODO text names. This cross-repo scan is the whole point — cause #1 of the RCA was the fix-repo ≠ TODO-repo gap.
+2. **Match (conservative).** Tokenize the TODO text (strip tags, strip stopwords). Flag a TODO against a commit only on **high-signal** overlap:
+   - a **filename or path** named in the TODO appears in that commit's changed paths (strongest), OR
+   - **≥2 distinctive content words** (skill name, function, feature noun — not generic words like "fix"/"add"/"update") shared between TODO text and commit subject.
+   Prefer precision over recall — a missed flag is cheap (status quo), a noisy flag erodes trust.
+3. **Output.** Prefix the matched TODO line with `⚑` and append ` — possibly resolved by <hash>(<repo>) — verify`. Show under the project block. Never modify the log.
+4. **De-dup.** Skip any TODO the push/commit rules already auto-resolved this run.
+5. Report the flag count at the bottom of the project block, separate from the auto-resolved count.
+
+> **P2 (stable TODO IDs `[#id]` → exact commit reconcile + carry-forward dedup) is deferred to `[BACKLOG]`**, gated on P1's false-positive rate proving insufficient. Do not build the ID system unless fuzzy flagging proves too noisy in practice.
+
 ### Step 4 — Flag urgent TODOs
 
 Scan each TODO line (case-insensitive) for the urgent keywords in the **Keyword Flag Reference** below — the single canonical list. Flag matched lines with a `⚠` prefix in output.
@@ -175,6 +197,7 @@ Steps 1–7 above define the behavior. These add constraints not already stated 
 9. Dev dir is always `~/dev/` — never prompt for a path.
 10. **Auto-reconcile before printing** — write resolved items to `session-log.md` first, then render with `✓` markers. When in doubt, leave `- [ ]` untouched.
 11. **task_plan.md reconciliation** — apply the same push/commit reconciliation to `task_plan.md` open items if present.
+12. **Fix-commit flags are advisory-only (Step 3b)** — `⚑ possibly resolved` items are NEVER written to any log and NEVER auto-closed; they are recomputed every run from live git, like git state and tiers. They surface a `[BUG]`/`[FEAT]`/`[RELEASE]` TODO whose work a normal commit may have already done (the stale-after-fix gap, RCA 2026-05-30). Bias to precision: skip a doubtful match rather than emit a noisy flag.
 12. **Triage Block** — emit after the orphans list, before the footer. Omit empty tiers. Default mode only — skip in deep-dive.
 
 ---
