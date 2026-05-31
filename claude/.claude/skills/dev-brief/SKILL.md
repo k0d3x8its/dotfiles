@@ -44,12 +44,27 @@ If `~/dev/session-log.md` exists, treat it as a special project named `[machine]
 
 ### Step 2 — Per active project, gather data
 
-**Parse session-log.md (latest session block only):**
+**Cache gate first (mtime read-skip) — see the Triage Cache section below.**
+For each active project (and `[machine]`), decide whether to READ the log or trust the cache:
+```bash
+live=$(stat -c %Y "$log" 2>/dev/null)              # log's modification time (epoch seconds)
+cached=$(awk -v want="$proj" '/^## /{cur=substr($0,4);next} /^mtime:/&&cur==want{sub(/^mtime:[[:space:]]*/,"");print;exit}' ~/dev/TRIAGE-BLOCK.md 2>/dev/null)
+```
+- `live` empty → **GONE** (log deleted; drop the project's cache block, omit from brief)
+- `cached` empty → **READ** (cold: never cached)
+- `live > cached` → **READ** (log changed since last brief)
+- `live <= cached` → **HIT** (nothing changed; skip the log read)
+
+**On HIT:** load the project's open-TODO lines verbatim from its `## {project}` block in `~/dev/TRIAGE-BLOCK.md`. **Do NOT read the session-log.** (Gotchas/Decisions/re-entry are not cached — they're only needed for deep-dive mode, which always READs its single target project.)
+
+**On READ/cold, parse session-log.md (latest session block only):**
 - Session date/time (from `## Session Handoff — {date}` header — latest one at top)
 - All unchecked TODOs: lines matching `- [ ]`
 - Gotchas section: all bullet lines under `### Gotchas / Notes`
 - Decisions section: first 3 bullet lines under `### Decisions Made`
 - Re-entry prompt: full block under `### Re-Entry Prompt` (used in deep-dive mode)
+
+**After a READ, refresh the cache:** rewrite that project's `## {project}` block in `~/dev/TRIAGE-BLOCK.md` with the current `mtime:` and the verbatim open-TODO lines just parsed. (Write-through: `/handoff` does the same for the project it just logged — see session-handoff.)
 
 **Run git commands (from that project's directory):**
 ```bash
@@ -70,7 +85,9 @@ If `task_plan.md` exists, extract unchecked items (`- [ ]`) from it and merge in
 
 ### Step 3 — Reconcile session-log against live git state
 
-For each project, compare live git output against open TODOs in the latest session block.
+For each project, compare live git output against its open TODOs (loaded from the cache on a HIT, from the log on a READ). Git state is **always live** — never cached; `git log @{u}..` / `status` output is tiny.
+
+**Self-healing on HIT:** if reconciliation resolves a TODO it must WRITE the change to `session-log.md` (per the rules below). That write bumps the log's mtime, so the next brief will READ that project and refresh its cache block. A HIT therefore never strands a resolved TODO.
 
 **Reconciliation rules:**
 
@@ -100,7 +117,7 @@ Compute days since last session:
 
 ### Step 6 — Build priority triage
 
-After collecting all open TODOs across all projects (post-reconciliation), assign each to one of five tiers using tag-first detection, falling back to keyword heuristics for untagged items.
+After collecting all open TODOs across all projects (post-reconciliation), assign each to one of five tiers using tag-first detection, falling back to keyword heuristics for untagged items. **Tiers are recomputed fresh every run — never cached** (tag→tier rules still evolve; a cached tier would serve stale priority). The cache stores only mtime + raw TODO lines.
 
 **Tag-first rules (mechanical — no judgment needed):** map priority tags to tiers per the **TODO Tags** table in `~/.claude/CLAUDE.md` (`[BROKEN]`→Critical, `[BLOCKER]`→High, `[LOW]`→Low, `[BACKLOG]`→Backlog, untagged→Medium). dev-brief-specific rule: if both `[BROKEN]` and `[BLOCKER]` are present, the item is Critical.
 
@@ -148,16 +165,17 @@ See Output Format below.
 Steps 1–7 above define the behavior. These add constraints not already stated there (don't restate the steps):
 
 1. **Execute immediately** — no clarifying questions.
-2. Run all git commands in parallel to keep output fast.
-3. **Latest session only** — parse the topmost `## Session Handoff` block; earlier ones are history, not active state.
-4. If a project has zero open TODOs, show `· (no open TODOs)` — never skip silently.
-5. If `session-log.md` has no `### Incomplete / Next Steps` section, note `· (no TODO section found)`.
-6. **Orphans** — list every *directory* in `~/dev/` lacking a `session-log.md`. Root files are never listed (except `~/dev/session-log.md`, handled as `[machine]`).
-7. Print output as plain markdown — no code-block wrapper around the brief.
-8. Dev dir is always `~/dev/` — never prompt for a path.
-9. **Auto-reconcile before printing** — write resolved items to `session-log.md` first, then render with `✓` markers. When in doubt, leave `- [ ]` untouched.
-10. **task_plan.md reconciliation** — apply the same push/commit reconciliation to `task_plan.md` open items if present.
-11. **Triage Block** — emit after the orphans list, before the footer. Omit empty tiers. Default mode only — skip in deep-dive.
+2. **Cache gate before any log read** — `stat` every session-log and decide READ/HIT/GONE against `~/dev/TRIAGE-BLOCK.md` (see Step 2 + Triage Cache section). Only READ logs that are cold or changed; trust the cache on a HIT. Refresh each READ project's cache block. Deep-dive mode always READs its single target (skip the gate there).
+3. Run all git commands in parallel to keep output fast.
+4. **Latest session only** — parse the topmost `## Session Handoff` block; earlier ones are history, not active state.
+5. If a project has zero open TODOs, show `· (no open TODOs)` — never skip silently.
+6. If `session-log.md` has no `### Incomplete / Next Steps` section, note `· (no TODO section found)`.
+7. **Orphans** — list every *directory* in `~/dev/` lacking a `session-log.md`. Root files are never listed (except `~/dev/session-log.md`, handled as `[machine]`).
+8. Print output as plain markdown — no code-block wrapper around the brief.
+9. Dev dir is always `~/dev/` — never prompt for a path.
+10. **Auto-reconcile before printing** — write resolved items to `session-log.md` first, then render with `✓` markers. When in doubt, leave `- [ ]` untouched.
+11. **task_plan.md reconciliation** — apply the same push/commit reconciliation to `task_plan.md` open items if present.
+12. **Triage Block** — emit after the orphans list, before the footer. Omit empty tiers. Default mode only — skip in deep-dive.
 
 ---
 
@@ -169,6 +187,34 @@ Flag a TODO with `⚠` if it contains any of (case-insensitive):
 failing, broken, not yet, do not, DO NOT, warning, stale, never, never committed,
 bug, error, unresolved, critical, missing, haven't, has not, hasn't
 ```
+
+---
+
+## Triage Cache — `~/dev/TRIAGE-BLOCK.md`
+
+A single machine-wide cache that lets the brief skip reading unchanged session-logs. On a quiet day every log is a HIT and the brief reads only this ~0.5 KB file instead of ~175 KB of logs.
+
+**Format** — one block per *active* project (logged dirs only; orphans are never cached):
+```
+<!-- triage-cache v1 | dev-brief read-skip | "## <project>" then "mtime: <epoch>" then verbatim "- [ ]" lines -->
+
+## [machine]
+mtime: 1780231639
+- [ ] [BROKEN][INVESTIGATE] ...verbatim open-TODO line from the latest session block...
+- [ ] [BLOCKER][DECISION] ...
+
+## batctrl
+mtime: 1780189650
+- [ ] [BUG] ...
+```
+
+**Rules:**
+- `mtime:` = `stat -c %Y` of that project's session-log at the time it was last READ.
+- TODO lines = the verbatim `- [ ]` lines from the **latest** session block only. They are single-line in session-logs, so the cache parses line-by-line (no multi-line escaping).
+- Stores **only** mtime + raw TODO lines. **Never** caches tiers (recomputed each run) or git state (always live).
+- **Writers:** dev-brief refreshes a block after a READ; session-handoff refreshes the block for the project it just logged (write-through, keeps it a HIT next brief). The cache is idempotent derived state — safe to delete; a cold rebuild costs one full read pass.
+- **GONE:** if a cached `## {project}` has no live log, drop the block.
+- `[machine]` log = `~/dev/session-log.md`; project logs = `~/dev/{project}/session-log.md`.
 
 ---
 
