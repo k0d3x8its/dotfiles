@@ -116,29 +116,24 @@ When the user runs `/handoff`:
      { cat "$tmp"; printf '\n## %s\nmtime: %s\n' "$proj" "$mt"; printf '%s\n' "$INCOMPLETE_LINES"; } > ~/dev/TRIAGE-BLOCK.md
      ```
    - The cache is idempotent derived state — if this step fails, dev-brief self-heals by READ-ing on the next run.
-8. Ask the user: "Write a release notes entry to RELEASE-NOTES.md? (yes / skip)"
-   - If **skip**: proceed to step 9. Do not touch RELEASE-NOTES.md.
-   - If **yes**: append a raw session entry to `RELEASE-NOTES.md` at the project root
-   - If `RELEASE-NOTES.md` does not exist, create it with this header first:
+8. Ask the user: "Write a changelog entry to CHANGELOG.md? (yes / skip)"
+   - If **skip**: proceed to step 9. Do not touch CHANGELOG.md.
+   - If **yes**: prepend product-facing change bullets to the `## [Unreleased]` section of `CHANGELOG.md` at the project root
+   - If `CHANGELOG.md` does not exist, create it:
      ```markdown
-     # Release Notes (Scratch)
-     > Accumulated by session-handoff. Consumed by /release-notes. Never committed.
-     ---
+     # Changelog
+
+     ## [Unreleased]
+
      ```
-   - Append the following block:
+   - If `CHANGELOG.md` exists but has no `## [Unreleased]` section, insert one immediately after the `# Changelog` heading
+   - Write product-facing changes only — no internal tooling, no Claude artifacts, no session overhead
+   - Format: slim Keep-a-Changelog bullets, prepended under `## [Unreleased]` (before any existing bullets in that section):
      ```markdown
-     ## Session — {YYYY-MM-DD hh:MM AM/PM}
-
-     ### Changes
-     {Bullet list of product-facing changes made this session — no internal tooling, no Claude artifacts}
-
-     ### Why
-     {1–2 sentences on the motivation or problem solved}
-
-     ### Notable Decisions
-     {Any decisions that affect the product or user experience}
-
-     ---
+     - Added X
+     - Changed Y
+     - Fixed Z
+     - Removed W
      ```
 9. Print the **Re-Entry Prompt** to the terminal so the user can copy it
    - Re-entry prompt **must** include:
