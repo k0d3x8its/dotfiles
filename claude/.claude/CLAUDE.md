@@ -5,19 +5,9 @@ Solo developer. Builder. Ubuntu 24.04 (Noble). Tools: Neovim, Nala, Git.
 KOS (Kodex OS) is my personal knowledge management system.
 
 ## Skills Available
-- /handoff or /session-handoff — end-of-session context preservation, logs to session-log.md
-- /dev-brief — morning/context-switch brief across all ~/dev projects: open TODOs, git state, gotchas, branch, staleness. /dev-brief <project> for deep-dive + re-entry prompt.
-- /planning-with-files — mid-session persistent memory (task_plan.md, findings.md, progress.md)
-- /release-notes — synthesize RELEASE-NOTES.md entries into polished GitHub prose release notes
-- /find-skills — discover and install agent skills via `npx skills find [query]`. Use when asking "is there a skill for X". Browse at https://skills.sh/
-- /diagnose — structured debugging protocol (Phase 1–6): feedback loop → reproduce → hypothesise → instrument → fix → post-mortem. Maps to [BUG] tag.
-- /tdd — test-driven development with red-green-refactor vertical slices. Maps to [TEST] tag.
-- /prototype — throwaway prototype to answer a design question. Routes to logic (terminal TUI) or UI (variant switcher) branch.
-- /ce-code-review — 12-agent parallel code review before committing
-- /ce-security-audit — security scan for anything touching auth, file I/O, or external input
-- /discover — PM-style project scoping for new projects
-- /write-prd — generate a structured product requirements document
-- /sync-trello — push current Goals from task_plan.md to Trello (card → checklist → items)
+The harness auto-lists every custom skill + its description each session — names below are the slash aliases, not re-described here. Tag routing lives in the TODO Tags table.
+`/handoff` `/dev-brief` `/planning-with-files` `/release-notes` `/find-skills` `/diagnose` `/tdd` `/prototype` `/sync-trello`
+External (not auto-surfaced): `/ce-code-review` `/ce-security-audit` `/discover` `/write-prd`
 
 ## Session Rules
 - Track session start time. Warn me at 45 minutes to run /handoff.
