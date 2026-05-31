@@ -12,6 +12,7 @@
   ⚠ {urgent todo}
   · {todo}
   ✓ {auto-resolved todo} (auto-resolved)
+  ⚑ {todo} — possibly resolved by {hash}({repo}) — verify
 
 **GOTCHAS**
   · {gotcha}
