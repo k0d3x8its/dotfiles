@@ -71,7 +71,7 @@ Claude appends the following block to `session-log.md`:
 
 "{Compact summary: project name, what was built, where you left off, first action to take next session}
 
-Read session-log.md now to get full context. Open TODOs from last session: see the `### Incomplete / Next Steps` section above in this same block — every unchecked `- [ ]` item there is the live TODO list. (Pointer, not a copy: the list is NOT re-embedded here, to keep the log small. The terminal-printed re-entry in step 9 splices the verbatim list in for a self-contained paste.)
+Read session-log.md now to get full context. Open TODOs from last session: see the `### Incomplete / Next Steps` section above in this same block — every unchecked `- [ ]` item there is the live TODO list. (Pointer, not a copy: the list is NOT re-embedded here, to keep the log small. The terminal-printed re-entry in step 9 splices the **Top-5 attention set** in for a self-contained paste; the full list stays here + in `/dev-brief` triage.)
 
 First action: {single most important next step}"
 
@@ -161,7 +161,14 @@ When the user runs `/handoff`:
      ```
 9. Print the **Re-Entry Prompt** to the terminal so the user can copy it. **Two variants, by destination:**
    - **Logged variant (the `### Re-Entry Prompt` section written in step 7):** prose summary + first-action only, with a *pointer* to the block's `### Incomplete / Next Steps` instead of the TODO list. Never re-embed the verbatim list in the log — it duplicates the Incomplete section in the same block (~3.5K tok of dead re-read every dev-brief/handoff load). This is the dup-kill.
-   - **Terminal variant (printed here in step 9, what the user actually pastes):** the SAME prose + first-action, but with the verbatim `- [ ]` list **spliced in** — read the Incomplete section you just wrote and inline every unchecked item, copied verbatim, **do not summarize, compress, reorder, or omit any item, even if the list is long.** The paste must be self-contained; the log must not. You build the terminal variant by expanding the logged variant's pointer with the Incomplete list — no second authored copy.
+   - **Terminal variant (printed here in step 9, what the user actually pastes):** the SAME prose + first-action, but with only the **Top-5 attention set** spliced in (selection rule in step 9b) — copied **verbatim** from the Incomplete section, not re-authored or summarized. After the 5, print one pointer line: `+{N} more open TODOs — see the \`### Incomplete / Next Steps\` section in the latest block, or run /dev-brief for full triage.` (omit if 5 or fewer total). The paste stays lean and action-focused; the full carry-forward list lives only in the log + cache.
+   - **Both variants point at the same Incomplete section as the source of truth — neither is an authored second copy of the TODO list.** The full open-work set is never trimmed in the log; only the paste is curated down to 5.
+9b. **Top-5 attention set (selection rule for the terminal paste).** From the `### Incomplete / Next Steps` you just wrote, pick at most 5 items that most need attention next session, ranked:
+   1. **The first-action item** — always slot 1.
+   2. **Items created or advanced *this* session** — they carry live context; next session is warmest on them. Order by priority tier.
+   3. **Highest-priority carry-forwards** to fill remaining slots — tier order Critical (`[BROKEN]`) → High (`[BLOCKER]`) → Medium → Low (`[LOW]`) → Backlog (`[BACKLOG]`); within a tier, ⚠-urgent first, then items whose text relates to files touched this session.
+   - **Exclude** `[WAITING]` (poll-only, not actionable) and `[BACKLOG]` items unless fewer than 5 higher-priority items exist.
+   - Selection affects **only** the terminal paste. Never reorder, drop, or trim the logged `### Incomplete / Next Steps` — carry-forward integrity (step 4b) is absolute.
    - Both variants **must** include:
      - Explicit directive for next Claude to `Read session-log.md` at session start
      - Single "first action" line — the highest-priority next step
