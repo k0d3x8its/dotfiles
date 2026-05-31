@@ -1,6 +1,6 @@
 ---
 name: sync-trello
-description: Sync the current project's task_plan.md to Trello. Reads Goals, Micro-Goals, and Tasks and pushes them to a Trello board as cards, checklists, and checklist items. Skips Goals already tagged with [trello:ID]. Annotates task_plan.md after each card creation. Board is resolved per-project. Triggers on /sync-trello.
+description: Sync task_plan.md to Trello — Goals→cards, Micro-Goals→checklists, Tasks→items. Idempotent (skips Goals tagged [trello:ID]); annotates task_plan.md after each card. Board resolved per-project. Triggers on /sync-trello.
 allowed-tools:
   - Bash
   - Read
