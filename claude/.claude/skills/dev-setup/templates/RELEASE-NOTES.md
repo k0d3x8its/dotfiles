@@ -1,3 +1,3 @@
-# Release Notes (Scratch)
-> Accumulated by session-handoff. Consumed by /release-notes. Never committed.
+# Release Notes (Generated)
+> Output of /release-notes. Ephemeral — not committed. Clear after posting to GitHub.
 ---
