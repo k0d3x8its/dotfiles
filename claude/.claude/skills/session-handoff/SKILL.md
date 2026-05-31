@@ -71,8 +71,7 @@ Claude appends the following block to `session-log.md`:
 
 "{Compact summary: project name, what was built, where you left off, first action to take next session}
 
-Read session-log.md now to get full context. Open TODOs from last session:
-{- [ ] each incomplete item from Incomplete / Next Steps, copied verbatim}
+Read session-log.md now to get full context. Open TODOs from last session: see the `### Incomplete / Next Steps` section above in this same block — every unchecked `- [ ]` item there is the live TODO list. (Pointer, not a copy: the list is NOT re-embedded here, to keep the log small. The terminal-printed re-entry in step 9 splices the verbatim list in for a self-contained paste.)
 
 First action: {single most important next step}"
 
@@ -160,9 +159,10 @@ When the user runs `/handoff`:
      - Fixed Z
      - Removed W
      ```
-9. Print the **Re-Entry Prompt** to the terminal so the user can copy it
-   - Re-entry prompt **must** include:
-     - All unchecked items (`- [ ]`) from the **Incomplete / Next Steps** section, copied verbatim — **do not summarize, compress, reorder, or omit any item, even if the list is long**
+9. Print the **Re-Entry Prompt** to the terminal so the user can copy it. **Two variants, by destination:**
+   - **Logged variant (the `### Re-Entry Prompt` section written in step 7):** prose summary + first-action only, with a *pointer* to the block's `### Incomplete / Next Steps` instead of the TODO list. Never re-embed the verbatim list in the log — it duplicates the Incomplete section in the same block (~3.5K tok of dead re-read every dev-brief/handoff load). This is the dup-kill.
+   - **Terminal variant (printed here in step 9, what the user actually pastes):** the SAME prose + first-action, but with the verbatim `- [ ]` list **spliced in** — read the Incomplete section you just wrote and inline every unchecked item, copied verbatim, **do not summarize, compress, reorder, or omit any item, even if the list is long.** The paste must be self-contained; the log must not. You build the terminal variant by expanding the logged variant's pointer with the Incomplete list — no second authored copy.
+   - Both variants **must** include:
      - Explicit directive for next Claude to `Read session-log.md` at session start
      - Single "first action" line — the highest-priority next step
 10. Print this closing message:
