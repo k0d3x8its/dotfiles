@@ -139,7 +139,7 @@ When the user runs `/handoff`:
    → Run /clear now to reset the cache
    → Paste the Re-Entry Prompt above as your first message in the new session
    ```
-10. **Do not run `/clear` automatically** — the user does this manually
+11. **Do not run `/clear` automatically** — the user does this manually
 ---
 
 ## Cache Optimization Notes
