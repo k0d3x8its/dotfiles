@@ -88,10 +88,7 @@ For each project, compare live git output against open TODOs in the latest sessi
 
 ### Step 4 — Flag urgent TODOs
 
-Scan each TODO line for these keywords (case-insensitive):
-`failing`, `broken`, `not yet`, `do not`, `DO NOT`, `warning`, `stale`, `never`, `bug`, `error`, `unresolved`, `critical`, `missing`
-
-Flag matched lines with `⚠` prefix in output.
+Scan each TODO line (case-insensitive) for the urgent keywords in the **Keyword Flag Reference** below — the single canonical list. Flag matched lines with a `⚠` prefix in output.
 
 ### Step 5 — Calculate staleness
 
@@ -148,24 +145,19 @@ See Output Format below.
 
 ## Claude Instructions (Read Before Executing)
 
-1. **Execute immediately** — no clarifying questions. Start with `find ~/dev -mindepth 1 -maxdepth 1 -type d -printf '%f\n' | sort`. Also check for `~/dev/session-log.md` (the `[machine]` log) in the same pass.
-2. Run all git commands in parallel via bash to keep output fast.
-3. **Latest session only** — session-log.md may have multiple `## Session Handoff` blocks. Parse only the topmost (most recent) block. Earlier sessions are historical context, not active state.
-4. If git commands fail (not a repo, no upstream, no commits), show the reason inline — do not omit the project.
-5. If a project has zero open TODOs, show `· (no open TODOs)` — do not skip the project silently.
-6. If `session-log.md` exists but has no `### Incomplete / Next Steps` section, note `· (no TODO section found)`.
-7. **task_plan.md items** — label them `[plan]` in the TODO list so they're distinguishable from session-log items.
-8. **Orphans** — list all *directories* in `~/dev/` that have no `session-log.md`. Files in `~/dev/` root are never listed (except `session-log.md` which is handled as `[machine]`). Do not skip orphan dirs.
-9. **Staleness** — mark any project whose last session date is >7 days old with `[STALE]` next to the date.
-10. **RELEASE PENDING** — only show if `RELEASE-NOTES.md` is a non-empty file.
-11. Print output as plain markdown — no code block wrapper around the brief itself.
-12. Dev dir is always `~/dev/` — do not prompt for path.
-13. **Auto-reconcile before printing** — run Step 3 reconciliation before rendering output. Write resolved items to `session-log.md` first, then render the brief with `✓` markers. The brief reflects the updated state.
-14. **Reconcile conservatively** — only resolve TODOs with clear push/commit intent confirmed by live git. When in doubt, leave `- [ ]` untouched and show it normally in the brief.
-15. **task_plan.md reconciliation** — apply the same push/commit reconciliation to `task_plan.md` open items if that file exists. Same rules, same write-back format.
-16. **`[machine]` log** — `~/dev/session-log.md` is a machine-wide log with no associated git repo. Show it as the first block in the brief. Skip all git state fields (show `n/a`). Apply session parsing, reconciliation (skip git checks — no repo to check against), TODO flagging, and staleness exactly as for project logs. `/dev-brief machine` targets this file in deep-dive mode.
-17. **Triage Block** — Run Step 6 after all project blocks are built. Emit the Triage Block after the orphans list and before the final footer line. Omit any tier (HIGH/MEDIUM/LOW) that has no items. The Triage Block appears in default mode only — skip in deep-dive mode.
-18. **Triage-only mode** — When invoked as `/dev-brief triage`: run Steps 1–3 (discover, collect TODOs + git state, reconcile) and Step 6 (build triage). Skip reading Gotchas/Decisions sections in Step 2. Skip project blocks and orphans. Output triage-only format (see Output Format). Still write auto-resolved TODOs back to session-log.md.
+Steps 1–7 above define the behavior. These add constraints not already stated there (don't restate the steps):
+
+1. **Execute immediately** — no clarifying questions.
+2. Run all git commands in parallel to keep output fast.
+3. **Latest session only** — parse the topmost `## Session Handoff` block; earlier ones are history, not active state.
+4. If a project has zero open TODOs, show `· (no open TODOs)` — never skip silently.
+5. If `session-log.md` has no `### Incomplete / Next Steps` section, note `· (no TODO section found)`.
+6. **Orphans** — list every *directory* in `~/dev/` lacking a `session-log.md`. Root files are never listed (except `~/dev/session-log.md`, handled as `[machine]`).
+7. Print output as plain markdown — no code-block wrapper around the brief.
+8. Dev dir is always `~/dev/` — never prompt for a path.
+9. **Auto-reconcile before printing** — write resolved items to `session-log.md` first, then render with `✓` markers. When in doubt, leave `- [ ]` untouched.
+10. **task_plan.md reconciliation** — apply the same push/commit reconciliation to `task_plan.md` open items if present.
+11. **Triage Block** — emit after the orphans list, before the footer. Omit empty tiers. Default mode only — skip in deep-dive.
 
 ---
 
@@ -174,7 +166,7 @@ See Output Format below.
 Flag a TODO with `⚠` if it contains any of (case-insensitive):
 
 ```
-failing, broken, not yet, do not, DO NOT, warning, stale, never committed,
+failing, broken, not yet, do not, DO NOT, warning, stale, never, never committed,
 bug, error, unresolved, critical, missing, haven't, has not, hasn't
 ```
 
