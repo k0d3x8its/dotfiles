@@ -58,7 +58,7 @@ cached=$(awk -v want="$proj" '/^## /{cur=substr($0,4);next} /^mtime:/&&cur==want
 **On HIT:** load the project's open-TODO lines verbatim from its `## {project}` block in `~/dev/TRIAGE-BLOCK.md`. **Do NOT read the session-log.** (Gotchas/Decisions/re-entry are not cached — they're only needed for deep-dive mode, which always READs its single target project.)
 
 **On READ/cold, parse session-log.md (latest session block only):**
-- Session date/time (from `## Session Handoff — {date}` header — latest one at top)
+- Session date/time (from `## Session Handoff — {date}` header — parse every block's date and take the NEWEST by date; do NOT assume position. Logs vary: the machine log is newest-at-top, kos is newest-at-bottom)
 - All unchecked TODOs: lines matching `- [ ]`
 - Gotchas section: all bullet lines under `### Gotchas / Notes`
 - Decisions section: first 3 bullet lines under `### Decisions Made`
@@ -167,7 +167,7 @@ Steps 1–7 above define the behavior. These add constraints not already stated 
 1. **Execute immediately** — no clarifying questions.
 2. **Cache gate before any log read** — `stat` every session-log and decide READ/HIT/GONE against `~/dev/TRIAGE-BLOCK.md` (see Step 2 + Triage Cache section). Only READ logs that are cold or changed; trust the cache on a HIT. Refresh each READ project's cache block. Deep-dive mode always READs its single target (skip the gate there).
 3. Run all git commands in parallel to keep output fast.
-4. **Latest session only** — parse the topmost `## Session Handoff` block; earlier ones are history, not active state.
+4. **Latest session only** — block ordering is NOT consistent across logs (machine log is newest-at-top; kos is newest-at-bottom). Parse the date in every `## Session Handoff — {date}` header and select the block with the newest date as the active one. Never assume position (top or bottom) = latest. All other blocks are history.
 5. If a project has zero open TODOs, show `· (no open TODOs)` — never skip silently.
 6. If `session-log.md` has no `### Incomplete / Next Steps` section, note `· (no TODO section found)`.
 7. **Orphans** — list every *directory* in `~/dev/` lacking a `session-log.md`. Root files are never listed (except `~/dev/session-log.md`, handled as `[machine]`).
