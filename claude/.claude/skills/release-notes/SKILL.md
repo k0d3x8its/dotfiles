@@ -23,7 +23,7 @@ description: Synthesize accumulated RELEASE-NOTES.md session entries into polish
 When you run `/release-notes`:
 
 1. **Read `RELEASE-NOTES.md`** — parse all session entries since the last release
-2. **Read `CHANGELOG.md`** — use the latest version block to understand scope
+2. **Read `CHANGELOG.md` if it exists** — use the latest version block for scope; skip if absent (RELEASE-NOTES→CHANGELOG migration is a pending decision)
 3. **Ask for the version tag** if not obvious from context (e.g. `v1.0.1`)
 4. **Generate prose release notes** — narrative style, not bullet changelog. Explain what changed and why it matters to the user. Group related changes. Lead with the most impactful change.
 5. **Print the output** — rendered markdown, ready to copy-paste into a GitHub draft release
@@ -68,7 +68,7 @@ The output is rendered markdown — no code block wrapper. Print it directly so 
 
 ## Claude Instructions (Read Before Executing)
 
-1. **Do not ask clarifying questions upfront** — read `RELEASE-NOTES.md` and `CHANGELOG.md` first, then ask for version tag if missing
+1. **Do not ask clarifying questions upfront** — read `RELEASE-NOTES.md` (and `CHANGELOG.md` if present) first, then ask for version tag if missing
 2. If `RELEASE-NOTES.md` is empty or missing, tell the user and stop — do not fabricate notes
 3. Group session entries thematically, not chronologically
 4. Ignore internal tooling notes (Claude Code artifacts, session overhead) — focus on product changes
