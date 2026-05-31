@@ -116,6 +116,31 @@ When the user runs `/handoff`:
      { cat "$tmp"; printf '\n## %s\nmtime: %s\n' "$proj" "$mt"; printf '%s\n' "$INCOMPLETE_LINES"; } > ~/dev/TRIAGE-BLOCK.md
      ```
    - The cache is idempotent derived state — if this step fails, dev-brief self-heals by READ-ing on the next run.
+7c. **Rotate the log if it exceeds N blocks** — only for logs under `~/dev/` (same guard as 7b). Keeps the live `session-log.md` small so dev-brief/handoff reads stay cheap; older blocks move to a sibling `ARCHIVE-LOG.md`. **N = 3** (keep the newest 3 session blocks live). Tools never read `ARCHIVE-LOG.md` — it is cold human-only history; every still-open TODO is cumulatively carried forward into the newest block, so archiving older blocks loses no open work.
+   - Run this AFTER 7b. It is position-independent: it date-parses every `## Session Handoff — {date}` header and keeps the newest N by **date**, never by file position (block order may be mixed in legacy logs).
+   - If block count ≤ N, do nothing.
+   - Otherwise: move the oldest `(count − N)` blocks to `ARCHIVE-LOG.md` (ascending, newest-at-bottom), preserving the log's header chunk; rewrite the live log as header + newest N blocks.
+   ```bash
+   N=3; LOG="$LOG"                                   # LOG = the session-log just written
+   DIR=$(dirname "$LOG"); ARCH="$DIR/ARCHIVE-LOG.md"
+   mapfile -t H < <(grep -n '^## Session Handoff' "$LOG" | cut -d: -f1)
+   if (( ${#H[@]} > N )); then
+     TOTAL=$(wc -l < "$LOG"); rot=$(mktemp); hdr=$(mktemp)
+     for ((i=0;i<${#H[@]};i++)); do
+       s=${H[i]}; (( i+1<${#H[@]} )) && e=$(( H[i+1]-1 )) || e=$TOTAL
+       ds=$(sed -n "${s}p" "$LOG" | grep -oP '\d{4}-\d{2}-\d{2} \d{1,2}:\d{2} [AP]M')
+       printf '%s %s %s\n' "$(date -d "$ds" +%s)" "$s" "$e"
+     done | sort -n > "$rot"
+     head -n "$(( ${H[0]}-1 ))" "$LOG" > "$hdr"
+     [ -f "$ARCH" ] || printf '# Session Log — Archive\n> Rotated-out session-handoff blocks (newest-at-bottom). Auto-maintained by /handoff step 7c. Cold human history; tools do not read this.\n---\n\n' > "$ARCH"
+     head -n -"$N" "$rot" | while read -r ep s e; do sed -n "${s},${e}p" "$LOG" >> "$ARCH"; done   # oldest → archive
+     cp "$hdr" "$LOG.tmp"
+     tail -n "$N" "$rot" | while read -r ep s e; do sed -n "${s},${e}p" "$LOG" >> "$LOG.tmp"; done  # newest N stay live
+     mv "$LOG.tmp" "$LOG"; rm -f "$rot" "$hdr"
+   fi
+   ```
+   - **Rotation bumps the log's mtime** (the `mv` rewrites it) — so after rotating, **re-run the 7b cache refresh** with a fresh `stat -c %Y "$LOG"`, otherwise the cache reads stale and the next brief needlessly re-READs. The TODO lines are unchanged (newest block stays live), only `mtime:` needs updating.
+   - Idempotent: if rotation fails, the log just stays longer than N this session; next `/handoff` retries. Never deletes blocks — they move to the archive.
 8. Ask the user: "Write a changelog entry to CHANGELOG.md? (yes / skip)"
    - If **skip**: proceed to step 9. Do not touch CHANGELOG.md.
    - If **yes**: prepend product-facing change bullets to the `## [Unreleased]` section of `CHANGELOG.md` at the project root
