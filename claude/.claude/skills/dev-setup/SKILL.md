@@ -24,7 +24,7 @@ allowed-tools:
 5. Creates `.claude/CLAUDE.md` from template
 6. Scaffolds `.claude/settings.json` with baseline permissions
 7. Configures `.claude/trello-board` for `/sync-trello`
-8. Initializes planning files: `task_plan.md`, `findings.md`, `progress.md`, `session-log.md`, `RELEASE-NOTES.md`
+8. Initializes planning files: `task_plan.md`, `findings.md`, `progress.md`, `session-log.md`, `CHANGELOG.md`
 9. Creates `.gitignore`
 10. Checks git / offers `git init`
 11. Offers GitHub repo creation via `gh`
@@ -48,7 +48,7 @@ write where. Read the template, substitute these tokens, write to the destinatio
 | `{{BOARD}}` | Step 10 board name, or `not configured — run /sync-trello to set up` |
 | `{{DATE}}` | today |
 
-Static templates (`settings.json`, `session-log.md`, `RELEASE-NOTES.md`, `gitignore.core`)
+Static templates (`settings.json`, `session-log.md`, `CHANGELOG.md`, `gitignore.core`)
 have no tokens — copy verbatim.
 
 ---
@@ -161,7 +161,7 @@ If skipped: note in summary that `/sync-trello` will ask at runtime.
 
 ### Step 11: Initialize planning files
 
-Check which of these exist: `task_plan.md`, `findings.md`, `progress.md`, `session-log.md`, `RELEASE-NOTES.md`
+Check which of these exist: `task_plan.md`, `findings.md`, `progress.md`, `session-log.md`, `CHANGELOG.md`
 
 For each missing file, write the matching `templates/<name>` (no prompt — always wanted):
 
@@ -171,7 +171,7 @@ For each missing file, write the matching `templates/<name>` (no prompt — alwa
 | `findings.md` | `{{PROJECT_NAME}}`, `{{DATE}}` |
 | `progress.md` | `{{PROJECT_NAME}}`, `{{DATE}}` |
 | `session-log.md` | none (static) |
-| `RELEASE-NOTES.md` | none (static) |
+| `CHANGELOG.md` | none (static) |
 
 Print which files were created (skip already-existing ones silently).
 
@@ -253,7 +253,7 @@ Created:
   .claude/CLAUDE.md
   .claude/settings.json
   .claude/trello-board → "[board]"  (or: not configured)
-  task_plan.md, findings.md, progress.md, session-log.md, RELEASE-NOTES.md
+  task_plan.md, findings.md, progress.md, session-log.md, CHANGELOG.md
   .gitignore
   Git: [initialized / already existed]
   GitHub: [repo URL / skipped]
@@ -271,6 +271,7 @@ What's next:
 
 - Safe to re-run. Checks before overwriting every file.
 - `.claude/` created automatically if missing.
-- `RELEASE-NOTES.md` is consumed by `/release-notes` and written to by `/handoff`. Never commit it.
+- `CHANGELOG.md` accumulates changes under `## [Unreleased]` via `/handoff`. Commit it — it's tracked source.
+- `RELEASE-NOTES.md` is generated output from `/release-notes`. Never commit it (already in `.gitignore`).
 - `.claude/trello-board` contains a board name — excluded from git via `.gitignore`.
 - Project-level `.claude/CLAUDE.md` is separate from global `~/.claude/CLAUDE.md`. Both are active.
