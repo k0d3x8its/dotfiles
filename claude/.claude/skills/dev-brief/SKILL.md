@@ -62,7 +62,7 @@ cached=$(awk -v want="$proj" '/^## /{cur=substr($0,4);next} /^mtime:/&&cur==want
 - All unchecked TODOs: lines matching `- [ ]`
 - Gotchas section: all bullet lines under `### Gotchas / Notes`
 - Decisions section: first 3 bullet lines under `### Decisions Made`
-- Re-entry prompt: full block under `### Re-Entry Prompt` (used in deep-dive mode)
+- Re-entry prompt: full block under `### Re-Entry Prompt` (used in deep-dive mode). **Splice on render:** as of the handoff dup-kill, this section stores prose + first-action with a *pointer* to `### Incomplete / Next Steps`, NOT the verbatim TODO list. When printing the deep-dive RE-ENTRY PROMPT box, expand that pointer — inline every unchecked `- [ ]` item from the same block's Incomplete section so the printed paste is self-contained. The log stays small; the printed prompt stays complete.
 
 **After a READ, refresh the cache — MANDATORY, runs in triage mode too:** rewrite that project's `## {project}` block in `~/dev/TRIAGE-BLOCK.md` with the verbatim open-TODO lines just parsed and `mtime:` = a FRESH `stat -c %Y` of the log taken *after* any Step-3 self-heal write. Then re-`stat` the log and confirm the written `mtime:` equals live; if it doesn't match, the block is still stale and the next brief will needlessly re-READ — rewrite until they match. **Why this is not optional:** skipping the refresh is the #1 cache bug — an unrefreshed block leaves `cached < live`, so every later brief re-reads an unchanged log and the cache never pays off. Triage mode is output-minimal but MUST still do this write-back. (Write-through: `/handoff` does the same for the project it just logged — see session-handoff.)
 
