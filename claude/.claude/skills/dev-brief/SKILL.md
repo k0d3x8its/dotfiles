@@ -64,7 +64,7 @@ cached=$(awk -v want="$proj" '/^## /{cur=substr($0,4);next} /^mtime:/&&cur==want
 - Decisions section: first 3 bullet lines under `### Decisions Made`
 - Re-entry prompt: full block under `### Re-Entry Prompt` (used in deep-dive mode)
 
-**After a READ, refresh the cache:** rewrite that project's `## {project}` block in `~/dev/TRIAGE-BLOCK.md` with the current `mtime:` and the verbatim open-TODO lines just parsed. (Write-through: `/handoff` does the same for the project it just logged — see session-handoff.)
+**After a READ, refresh the cache — MANDATORY, runs in triage mode too:** rewrite that project's `## {project}` block in `~/dev/TRIAGE-BLOCK.md` with the verbatim open-TODO lines just parsed and `mtime:` = a FRESH `stat -c %Y` of the log taken *after* any Step-3 self-heal write. Then re-`stat` the log and confirm the written `mtime:` equals live; if it doesn't match, the block is still stale and the next brief will needlessly re-READ — rewrite until they match. **Why this is not optional:** skipping the refresh is the #1 cache bug — an unrefreshed block leaves `cached < live`, so every later brief re-reads an unchanged log and the cache never pays off. Triage mode is output-minimal but MUST still do this write-back. (Write-through: `/handoff` does the same for the project it just logged — see session-handoff.)
 
 **Run git commands (from that project's directory):**
 ```bash
@@ -87,7 +87,7 @@ If `task_plan.md` exists, extract unchecked items (`- [ ]`) from it and merge in
 
 For each project, compare live git output against its open TODOs (loaded from the cache on a HIT, from the log on a READ). Git state is **always live** — never cached; `git log @{u}..` / `status` output is tiny.
 
-**Self-healing on HIT:** if reconciliation resolves a TODO it must WRITE the change to `session-log.md` (per the rules below). That write bumps the log's mtime, so the next brief will READ that project and refresh its cache block. A HIT therefore never strands a resolved TODO.
+**Self-healing on HIT:** if reconciliation resolves a TODO it must WRITE the change to `session-log.md` (per the rules below). That write bumps the log's mtime. **Immediately after the write, refresh this project's cache block** — fresh `stat -c %Y` + the now-current open-TODO lines (drop the resolved `- [x]` line) — so the block stays a HIT next brief instead of self-invalidating into a needless cold re-READ of an otherwise-unchanged log. A HIT therefore never strands a resolved TODO *and* never forces the next brief to re-read it.
 
 **Reconciliation rules:**
 
@@ -165,7 +165,7 @@ See Output Format below.
 Steps 1–7 above define the behavior. These add constraints not already stated there (don't restate the steps):
 
 1. **Execute immediately** — no clarifying questions.
-2. **Cache gate before any log read** — `stat` every session-log and decide READ/HIT/GONE against `~/dev/TRIAGE-BLOCK.md` (see Step 2 + Triage Cache section). Only READ logs that are cold or changed; trust the cache on a HIT. Refresh each READ project's cache block. Deep-dive mode always READs its single target (skip the gate there).
+2. **Cache gate before any log read** — `stat` every session-log and decide READ/HIT/GONE against `~/dev/TRIAGE-BLOCK.md` (see Step 2 + Triage Cache section). Only READ logs that are cold or changed; trust the cache on a HIT. **Refresh each READ project's cache block is MANDATORY — including in triage mode — and verified (`stat` after write == live mtime); an unrefreshed block re-reads forever.** After any Step-3 self-heal write to a log, re-refresh that block with the post-write mtime. Deep-dive mode always READs its single target (skip the gate there).
 3. Run all git commands in parallel to keep output fast.
 4. **Latest session only** — block ordering is NOT consistent across logs (machine log is newest-at-top; kos is newest-at-bottom). Parse the date in every `## Session Handoff — {date}` header and select the block with the newest date as the active one. Never assume position (top or bottom) = latest. All other blocks are history.
 5. If a project has zero open TODOs, show `· (no open TODOs)` — never skip silently.
