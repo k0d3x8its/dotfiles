@@ -1,39 +1,40 @@
 ---
 name: release-notes
-description: Synthesize accumulated RELEASE-NOTES.md session entries into polished GitHub prose release notes. Triggers on /release-notes.
+description: Read CHANGELOG.md [Unreleased] section and generate polished GitHub prose release notes. Optionally promotes [Unreleased] to a version entry and writes output to RELEASE-NOTES.md.
 ---
 
 # Release Notes Skill
 
 **Trigger:** `/release-notes`
-**Purpose:** Read the accumulated `RELEASE-NOTES.md` scratch file from session-handoff entries and produce human-readable, prose-style GitHub release notes ready to paste into a GitHub draft release.
+**Purpose:** Read the `## [Unreleased]` section of `CHANGELOG.md` and produce human-readable, prose-style GitHub release notes ready to paste into a GitHub draft release.
 
 ---
 
 ## When to Use This
 
 - You're about to tag a new version and create a GitHub Release
-- You've had one or more sessions that updated `RELEASE-NOTES.md`
-- You want to turn raw session notes into polished release prose
+- One or more sessions have added entries to `CHANGELOG.md [Unreleased]`
+- You want to turn changelog bullets into polished release prose
 
 ---
 
 ## What Claude Will Do
 
-When you run `/release-notes`:
-
-1. **Read `RELEASE-NOTES.md`** — parse all session entries since the last release
-2. **Read `CHANGELOG.md` if it exists** — use the latest version block for scope; skip if absent (RELEASE-NOTES→CHANGELOG migration is a pending decision)
-3. **Ask for the version tag** if not obvious from context (e.g. `v1.0.1`)
-4. **Generate prose release notes** — narrative style, not bullet changelog. Explain what changed and why it matters to the user. Group related changes. Lead with the most impactful change.
+1. **Read `CHANGELOG.md`** — extract the `## [Unreleased]` section (everything between `## [Unreleased]` and the next `##` header)
+2. If `[Unreleased]` is empty, missing, or `CHANGELOG.md` doesn't exist: tell the user and stop
+3. **Ask for the version tag** if not provided (e.g. `v1.0.1`)
+4. **Generate prose release notes** — narrative style, not bullets. Explain what changed and why it matters to the user. Group related changes. Lead with the most impactful change.
 5. **Print the output** — rendered markdown, ready to copy-paste into a GitHub draft release
-6. **Ask if you want to clear `RELEASE-NOTES.md`** — once notes are published, the file should be wiped for the next version cycle
+6. **Write output to `RELEASE-NOTES.md`** — ephemeral output file, never committed; create the file if absent
+7. **Ask: "Promote `[Unreleased]` to `vX.Y.Z` and reset for next cycle? (yes / no)"**
+   - If **yes**: rename `## [Unreleased]` → `## vX.Y.Z (YYYY-MM-DD)` in `CHANGELOG.md` and prepend a fresh empty `## [Unreleased]` section above it
+   - If **no**: leave `CHANGELOG.md` unchanged
 
 ---
 
 ## Output Format
 
-The output is rendered markdown — no code block wrapper. Print it directly so the user can copy-paste straight into GitHub.
+Rendered markdown — no code block wrapper. Print directly so the user can copy-paste straight into GitHub.
 
 ---
 
@@ -68,17 +69,17 @@ The output is rendered markdown — no code block wrapper. Print it directly so 
 
 ## Claude Instructions (Read Before Executing)
 
-1. **Do not ask clarifying questions upfront** — read `RELEASE-NOTES.md` (and `CHANGELOG.md` if present) first, then ask for version tag if missing
-2. If `RELEASE-NOTES.md` is empty or missing, tell the user and stop — do not fabricate notes
-3. Group session entries thematically, not chronologically
-4. Ignore internal tooling notes (Claude Code artifacts, session overhead) — focus on product changes
-5. After printing notes, ask: `Clear RELEASE-NOTES.md for the next version cycle? (yes/no)`
-6. If yes: wipe the file contents but keep the file (leave it empty, not deleted)
+1. **Do not ask clarifying questions upfront** — read `CHANGELOG.md` first, then ask for version tag if missing
+2. If `[Unreleased]` is empty, missing, or `CHANGELOG.md` absent: tell the user and stop — do not fabricate notes
+3. Group changelog bullets thematically, not by order of entry
+4. Ignore internal tooling entries (Claude Code artifacts, session overhead) — focus on product changes
+5. After printing notes, write output to `RELEASE-NOTES.md`, then ask about promoting `[Unreleased]` to a version
+6. When promoting: replace `## [Unreleased]` with `## vX.Y.Z (YYYY-MM-DD)` in-place; prepend fresh `## [Unreleased]\n\n` above it
 
 ---
 
 ## Integration With session-handoff
 
-`session-handoff` automatically appends a raw entry to `RELEASE-NOTES.md` at the end of each session. This skill consumes those entries when it's time to release.
+`session-handoff` prepends changelog bullets to `CHANGELOG.md [Unreleased]` at the end of each session. This skill reads that section when it's time to release and optionally promotes it to a versioned entry.
 
-`RELEASE-NOTES.md` is in `.gitignore` — it is a local scratch file, never committed.
+`RELEASE-NOTES.md` is in `.gitignore` — ephemeral output, never committed.
