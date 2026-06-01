@@ -54,7 +54,7 @@ PRIORITY_MAP = {
 URGENT_KEYWORDS = [
     "failing", "broken", "not yet", "do not", "warning", "stale", "never",
     "never committed", "bug", "unresolved", "critical", "missing",
-    "haven't", "has not", "hasn't",
+    "haven't", "has not", "hasn't", "error",
 ]
 
 
