@@ -104,7 +104,15 @@ def parse_cache(path: Path) -> dict:
         if line.startswith("## "):
             current = line[3:].strip()
             projects[current] = []
+        elif current and line.startswith("path: "):
+            # pointer format: read TODOS.md directly
+            todos_path = Path(line[6:].strip()).expanduser()
+            if todos_path.exists():
+                for tline in todos_path.read_text().splitlines():
+                    if tline.startswith("- [ ]"):
+                        projects[current].append(tline)
         elif current and line.startswith("- [ ]"):
+            # legacy content format: backward compat for unmigrated projects
             projects[current].append(line)
     return projects
 
@@ -128,7 +136,8 @@ def find_orphans(projects: dict) -> list:
     for d in sorted(DEV.iterdir()):
         if not d.is_dir() or d.name.startswith("."):
             continue
-        if not (d / "session-log.md").exists() and d.name not in tracked:
+        has_log = any((d / f).exists() for f in ("SESSION-LOG.md", "session-log.md", "TODOS.md"))
+        if not has_log and d.name not in tracked:
             result.append(d.name)
     return result
 
