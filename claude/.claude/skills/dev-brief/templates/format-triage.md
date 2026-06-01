@@ -31,8 +31,8 @@ Open in Neovim → `:LivePreview` to render in browser with live-preview.nvim.
 | `[SYNC]`        | `#a9e34b` |
 | `[WAITING]`     | `#adb5bd` |
 | `[SECURITY]`    | `#2563eb` |
-| `[DOCS]`        | `#74c0fc` |
-| `[PERFORMANCE]` | `#ffd43b` |
+| `[DOCS]`        | `#63e6be` |
+| `[PERFORMANCE]` | `#fd7e14` |
 
 ### Priority tags (match their tier color)
 
