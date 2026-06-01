@@ -92,6 +92,14 @@ main() {
     safeguard "$HOME/dev/trueline.sh"
     ln -sf "$DOTFILES/scripts/trueline.sh" "$HOME/dev/trueline.sh"
 
+    # ── update-triage ─────────────────────────────────────────────────────────
+
+    log "installing update-triage"
+    mkdir -p "$HOME/.local/bin"
+    safeguard "$HOME/.local/bin/update-triage"
+    ln -sf "$DOTFILES/scripts/update-triage" "$HOME/.local/bin/update-triage"
+    chmod +x "$DOTFILES/scripts/update-triage"
+
     # ── neovim ────────────────────────────────────────────────────────────────
 
     log "setting up neovim config"
