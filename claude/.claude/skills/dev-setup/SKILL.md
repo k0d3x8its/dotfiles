@@ -25,7 +25,7 @@ allowed-tools:
 6. Scaffolds `.claude/settings.json` with baseline permissions
 7. Configures `.claude/trello-board` for `/sync-trello`
 8. Initializes planning files: `task_plan.md`, `findings.md`, `progress.md`, `session-log.md`, `CHANGELOG.md`
-9. Creates `.gitignore`
+9. Creates `.gitignore`, or append-if-missing merges into an existing one
 10. Checks git / offers `git init`
 11. Offers GitHub repo creation via `gh`
 12. Reminds about `/ce-setup`
@@ -177,11 +177,9 @@ Print which files were created (skip already-existing ones silently).
 
 ---
 
-### Step 12: Create .gitignore
+### Step 12: Create / merge .gitignore
 
-Check if `.gitignore` exists — if so, ask before overwriting.
-
-Write `templates/gitignore.core` (static) to `.gitignore`, then append the type-specific block:
+The required entry set = `templates/gitignore.core` (static) **plus** the type-specific block below:
 
 | Type | Additional entries |
 |---|---|
@@ -189,6 +187,23 @@ Write `templates/gitignore.core` (static) to `.gitignore`, then append the type-
 | CLI / backend | `node_modules/`, `dist/`, `build/`, `__pycache__/`, `*.pyc`, `venv/`, `.venv/` |
 | Library / SDK | `node_modules/`, `dist/`, `coverage/`, `*.egg-info/` |
 | Script / automation | `__pycache__/`, `*.pyc`, `venv/`, `.venv/`, `*.log` |
+
+**Apply by whether `.gitignore` already exists — never overwrite, never skip wholesale:**
+
+- **No `.gitignore`:** write `gitignore.core` then append the type-specific block. Done.
+- **`.gitignore` exists:** **append-if-missing merge** — do NOT overwrite (loses the user's project ignores) and do NOT skip (planning/session files from Step 11 then leak into git, the original bug):
+  1. Read the existing `.gitignore`. Build the set of pattern lines already present — compare on the **trimmed, non-comment, non-blank** line so `node_modules/` matches regardless of section or surrounding comments.
+  2. From the required set (core + type block), select only patterns **not** already present.
+  3. If none are missing → leave the file untouched (idempotent; re-running `/dev-setup` is a no-op here).
+  4. If ≥1 missing → append a single marked block at the end:
+     ```
+     # --- added by /dev-setup ---
+     {missing patterns, in core-then-type order}
+     ```
+     Only the marker line plus the missing patterns. Never reorder, rewrite, or delete existing lines.
+  5. If the `# --- added by /dev-setup ---` marker already exists from a prior run, append the newly-missing patterns under that same marker rather than adding a second one.
+
+**Why a marked append-merge:** an existing repo's `.gitignore` is user-authored and must survive; but the Step-11 planning files (`task_plan.md`, `findings.md`, `progress.md`, `session-log.md`, `RELEASE-NOTES.md`) and `.claude/trello-board` MUST be ignored or they leak. Merging the missing lines under a clear marker satisfies both and stays idempotent across re-runs.
 
 ---
 
