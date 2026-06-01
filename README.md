@@ -15,7 +15,7 @@ dotfiles/
   scripts/            → trueline.sh (→ ~/dev/trueline.sh), update-triage, update-cache, rotate-log
   fonts/              → Sauce Code Pro Nerd Font + Menlo for Powerline
   docs/               → dev-workflow-guide.md, hooks-config.json
-  tests/              → install.bats (bats suite), test_update_triage.py (Python unit tests)
+  tests/              → install.bats (bats suite), test_update_triage.py, test_rotate_log.py (Python unit tests)
   .github/workflows/  → ci.yml (shellcheck + bats + Python tests on push/PR)
   packages.txt        → manually installed apt packages
   install.sh          → full bootstrap script
