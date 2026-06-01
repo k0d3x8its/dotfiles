@@ -11,6 +11,9 @@
 - ➕ `dev-brief` Step 3b fix-commit reconcile (stale-after-fix protection P1, RCA 2026-05-30): flags open `[BUG]`/`[FEAT]`/`[RELEASE]` TODOs whose work a normal commit may have already done, as `⚑ possibly resolved by <hash>(<repo>) — verify`. Advisory-only — never writes the log, never auto-closes, recomputed live each run like git state. For `[machine]` TODOs it scans `~/dev/dotfiles` + named repos (the fix-repo ≠ TODO-repo gap). Conservative matching (path/filename or ≥2 distinctive content words) biases to precision. P2 (stable `[#id]` exact reconcile) deferred to backlog, gated on P1 noise.
 - ➕ `session-handoff` step 7c: auto-rotates `session-log.md` — keeps the newest 3 session blocks live, moves older blocks to a sibling `ARCHIVE-LOG.md` (date-sorted, newest-at-bottom). Cuts the machine log's dev-brief/handoff read cost ~74% (220 KB → 57 KB).
 
+### Fixed
+- 🐛 `dev-setup` Step 12 `.gitignore` no longer overwrite-or-skip: on an existing repo, "skip" left the Step-11 planning/session files (`task_plan.md`, `findings.md`, `progress.md`, `session-log.md`, `RELEASE-NOTES.md`, `.claude/trello-board`) un-ignored, leaking them into git; "overwrite" clobbered the user's existing ignores. Now an **append-if-missing merge** — adds only absent patterns under a `# --- added by /dev-setup ---` marker, never touches existing lines, idempotent across re-runs.
+
 ---
 
 <!--
