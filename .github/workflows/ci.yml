@@ -25,4 +25,4 @@ jobs:
         run: bats --tap tests/
 
       - name: Run Python tests
-        run: python3 tests/test_update_triage.py
+        run: python3 -m unittest discover -s tests -p "test_*.py" -v
