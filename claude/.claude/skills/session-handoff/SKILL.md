@@ -140,6 +140,10 @@ When the user runs `/handoff`:
    ```
    - **Rotation bumps the log's mtime** (the `mv` rewrites it) — so after rotating, **re-run the 7b cache refresh** with a fresh `stat -c %Y "$LOG"`, otherwise the cache reads stale and the next brief needlessly re-READs. The TODO lines are unchanged (newest block stays live), only `mtime:` needs updating.
    - Idempotent: if rotation fails, the log just stays longer than N this session; next `/handoff` retries. Never deletes blocks — they move to the archive.
+7d. **Regenerate TRIAGE-BLOCK.md** — run `update-triage` (symlinked to `~/.local/bin/update-triage`) via Bash. This is a zero-token shell script that reads `.triage-cache` and rewrites `~/dev/TRIAGE-BLOCK.md` with HTML color spans. Run after 7c (and after any 7b re-refresh triggered by rotation). If the command fails, note it but don't block the handoff.
+   ```bash
+   update-triage 2>/dev/null || echo "(update-triage failed — run manually to refresh TRIAGE-BLOCK.md)"
+   ```
 8. Ask the user: "Write a changelog entry to CHANGELOG.md? (yes / skip)"
    - If **skip**: proceed to step 9. Do not touch CHANGELOG.md.
    - If **yes**: prepend product-facing change bullets to the `## [Unreleased]` section of `CHANGELOG.md` at the project root
