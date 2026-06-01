@@ -6,14 +6,14 @@ KOS (Kodex OS) is my personal knowledge management system.
 
 ## Skills Available
 The harness auto-lists every custom skill + its description each session — names below are the slash aliases, not re-described here. Tag routing lives in the TODO Tags table.
-`/handoff` `/dev-brief` `/planning-with-files` `/release-notes` `/find-skills` `/diagnose` `/tdd` `/prototype` `/sync-trello`
+`/handoff` `/changelog` `/dev-brief` `/planning-with-files` `/release-notes` `/find-skills` `/diagnose` `/tdd` `/prototype` `/sync-trello`
 External (not auto-surfaced): `/ce-code-review` `/ce-security-audit` `/discover` `/write-prd`
 
 ## Session Rules
 - Track session start time. Warn me at 45 minutes to run /handoff.
 - Always read task_plan.md, findings.md, and progress.md if they exist in the project root.
 - When I paste a re-entry prompt: treat decisions, background context, and architectural choices as authoritative. Reconcile task state (completed/open/in-progress) against current files (task_plan.md, progress.md, `git log --oneline -5`) before acting — file state wins on conflicts.
-- CHANGELOG on [machine] sessions, route by what changed: if the session modified files under `~/dev/dotfiles/`, prepend a changelog entry to `~/dev/dotfiles/CHANGELOG.md` under `## [Unreleased]`; if the changes were machine-only (no dotfiles impact), skip — don't ask.
+- CHANGELOG: use `/changelog` manually when a session produces changelog-worthy changes. Works for any project (including dotfiles). Do not auto-update changelogs inline.
 
 ## TODO Tags
 
