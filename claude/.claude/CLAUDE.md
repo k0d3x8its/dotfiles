@@ -41,7 +41,7 @@ No priority tag = Medium (default). `[TEST]` overrides all other priority tags.
 | `[TEST]` | Write or fix tests | Use `/tdd` — red-green-refactor vertical slices |
 | `[RELEASE]` | Publish/ship related | Release workflow mode |
 | `[DECISION]` | Needs a choice before action can start | Present options + tradeoffs, don't implement |
-| `[INVESTIGATE]` | Needs research/audit before action | Read code/logs first, don't jump to solutions |
+| `[INVESTIGATE]` | Needs research, audit, or open sweep before action — no hypothesis required | Read code/logs first, don't jump to solutions. Output findings list; spawn new tasks from it. |
 | `[SYNC]` | Spans two+ repos that must stay aligned | Audit BOTH sides for drift; don't assume one is canonical. Keep one canonical TODO (machine log) + pointer stubs in each repo |
 | `[WAITING]` | Blocked on something OUTSIDE my control (PR review, upstream, monitoring) | Poll/check status, don't nag or try to action. Distinct from `[BLOCKER]` (which gates other work) |
 | `[SECURITY]` | Security-sensitive (auth, secrets, perms, input handling) | Drop caveman, write careful, flag blast radius, suggest `/ce-security-audit` |
