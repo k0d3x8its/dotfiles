@@ -6,18 +6,22 @@ KOS (Kodex OS) is my personal knowledge management system.
 
 ## Skills Available
 The harness auto-lists every custom skill + its description each session — names below are the slash aliases, not re-described here. Tag routing lives in the TODO Tags table.
-`/handoff` `/changelog` `/dev-brief` `/planning-with-files` `/release-notes` `/find-skills` `/diagnose` `/tdd` `/prototype` `/sync-trello`
+`/handoff` `/handoff-return` `/checkpoint` `/changelog` `/dev-brief` `/planning-with-files` `/release-notes` `/find-skills` `/diagnose` `/tdd` `/prototype` `/sync-trello`
 External (not auto-surfaced): `/ce-code-review` `/ce-security-audit` `/discover` `/write-prd`
 
 ## Session Rules
-- Track session start time. Warn me at 45 minutes to run /handoff.
+- Track session start time. Warn me at 45 minutes to run /handoff (lean fork) or /checkpoint (durable) depending on whether I'm stopping.
+- Session tools — three, by job:
+  - `/handoff` (push/fork): lean mid-session tangent. Emits reason-first re-entry prompt. NO SESSION-LOG narrative. ~400 tok. Use to spin off a side-issue with clean context.
+  - `/handoff-return` (pop/merge): close a tangent, auto-sync its findings to TODOS.md, print paste-back block for the still-alive main session. ~400 tok.
+  - `/checkpoint` (durable): end-of-work-session close. Writes SESSION-LOG narrative + rotate-log + triage. ~2K tok. Use when real decisions were made — lean /handoff does NOT persist the why, so a dropped session loses it.
 - Always read task_plan.md, findings.md, and progress.md if they exist in the project root.
 - When I paste a re-entry prompt: treat decisions, background context, and architectural choices as authoritative. Reconcile task state (completed/open/in-progress) against current files (task_plan.md, progress.md, `git log --oneline -5`) before acting — file state wins on conflicts.
 - CHANGELOG: use `/changelog` manually when a session produces changelog-worthy changes. Works for any project (including dotfiles). Do not auto-update changelogs inline.
 
 ## TODO Tags
 
-When writing TODOs to TODOS.md (via /handoff or inline), prefix items with the appropriate tags. Tags combine freely: `[BROKEN][BUG]`, `[BLOCKER][DECISION]`, etc.
+When writing TODOs to TODOS.md (via /handoff, /handoff-return, /checkpoint, or inline), prefix items with the appropriate tags. Tags combine freely: `[BROKEN][BUG]`, `[BLOCKER][DECISION]`, etc.
 
 **Priority tags** — control which Triage Block tier the item lands in:
 
