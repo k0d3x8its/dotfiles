@@ -1,178 +1,69 @@
 ---
 name: session-handoff
-description: Gracefully close a Claude Code session, preserve all context, write a structured handoff to SESSION-LOG.md, update TODOS.md, and prepare a clean re-entry prompt for the next session. Triggers on /handoff.
+description: Lean mid-session fork. Spins off a focused tangent from the main session — emits a reason-first re-entry prompt (why it forked + scope + first action) so you can open a fresh, clean-context session to chase a side-issue. Does NOT write SESSION-LOG narrative. Triggers on /handoff. When the tangent is done, use /handoff-return to merge findings back. For durable end-of-day close, use /checkpoint.
 ---
 
-# Session Handoff Skill
+# Session Handoff Skill (push / fork)
 
 **Trigger:** `/handoff`
-**Purpose:** Close a session cleanly — write narrative to `SESSION-LOG.md`, sync open work to `TODOS.md`, print a re-entry prompt.
+**Purpose:** Fork a *tangent* off the current session. Print a focused re-entry prompt so a fresh session can chase a side-issue with clean context — then `/handoff-return` merges its findings back into the still-alive main session.
+
+**Mental model — push/pop:** `/handoff` pushes a tangent; `/handoff-return` pops it back with findings. This is lightweight context-passing between adjacent sessions, **not** durable memory. For end-of-work-session narrative, use `/checkpoint`.
 
 ---
 
-## When to Use This
+## When to Use
 
-- ~50 minutes into a session (approaching the 1-hour cache TTL)
-- Switching tasks or contexts mid-project
-- Context window getting heavy (`/context`)
-- Natural stopping point or end of day
+- Main session hits a side-issue worth chasing in isolation (a chore, a bug, an investigation)
+- You want clean context for the tangent without losing the main thread
+- The main session usually **stays open** — you'll paste findings back into it via `/handoff-return`
 
----
-
-## What Claude Will Do
-
-1. Audit the session — files touched, commands run, decisions made
-2. Update `TODOS.md` — remove completed items, add new ones
-3. Append a narrative block to `SESSION-LOG.md`
-4. Refresh the triage pipeline (`update-cache` → `rotate-log` → `update-triage`)
-5. Print the re-entry prompt
-
----
-
-## Handoff Output Format
-
-Appended to `SESSION-LOG.md`:
-
-```markdown
----
-## Session Handoff — {YYYY-MM-DD hh:MM AM/PM}
-
-### Goal
-
-{1–2 sentence description of what this session set out to accomplish}
-
-### Completed
-
-- [x] {Item finished and removed from TODOS.md}
-
-### Decisions Made
-
-- **{Decision}** — {why, so you don't re-litigate it next session}
-
-### Files Touched
-
-- `path/to/file` — {what changed and why}
-
-### Gotchas / Notes
-
-- {Tech debt, edge cases, things to watch out for}
-
-### Re-Entry Prompt
-
-> "{Compact summary: project, what was built, where you left off, first action next session.
-> Read SESSION-LOG.md and TODOS.md. First action: {step}}"
-
----
-```
-
-No `### Incomplete / Next Steps` in the block — open work lives in `TODOS.md` only.
+**Crash-safety caveat:** this does NOT persist the *why* to disk. If the tangent involves real decisions you must not lose, use `/checkpoint` instead — a dropped session loses anything only in conversation.
 
 ---
 
 ## Claude Instructions (Read Before Executing)
 
-**1.** Execute immediately. No clarifying questions.
+**1.** Execute immediately. No clarifying questions. The *reason for the fork* is already in the current conversation — extract it; do not ask.
 
-**2.** Read:
-   - `TODOS.md` in the project root (canonical open work)
-   - The **most recent block only** of `SESSION-LOG.md` (for Goal/Decisions context)
-   - If `TODOS.md` does not exist: create it with this header, then scan all prior `### Incomplete / Next Steps` blocks in `SESSION-LOG.md` and migrate every unchecked `- [ ]` item into it (one-time migration, deduplicated):
-     ```markdown
-     # {project} TODOS
+**2.** Light TODOS touch only:
+   - If the tangent corresponds to an existing `TODOS.md` item, note it.
+   - If forking reveals a new open item, append it to `TODOS.md` with tags from `~/.claude/CLAUDE.md` (`- [ ]` + tags; untagged = Medium). Update the `Last updated:` date.
+   - Do **not** write a SESSION-LOG narrative block. That is `/checkpoint`'s job.
 
-     > Canonical open TODO list. Maintained by /handoff. Never duplicate into SESSION-LOG.md.
-     > Last updated: {YYYY-MM-DD}
-
-     ---
-
-     ```
-
-**3.** Fill every field in the handoff block — never leave a section blank.
-
-**4.** Update `TODOS.md` in-place:
-   - Items **completed this session** → remove from `TODOS.md`; add to `### Completed` with `[x]`
-   - **New open items** discovered this session → append to `TODOS.md` with appropriate tags from the TODO Tags system in `~/.claude/CLAUDE.md`. Every item must begin `- [ ]` followed by tags. Untagged = Medium priority.
-   - All other items → leave verbatim, do not reorder
-   - Update the `Last updated:` date in the header
-
-**5.** For **Decisions Made**: capture the *why*, not just the *what*.
-
-**6.** For **Gotchas / Notes**: include anything worth flagging — bugs, edge cases, token cost observations, things the user didn't ask about but should know.
-
-**7.** Append the narrative block to `SESSION-LOG.md` at the project root.
-   - If `SESSION-LOG.md` does not exist, create it with this header first:
-     ```markdown
-     # Session Log
-     > Auto-generated by session-handoff skill. Do not edit manually mid-session.
-     ---
-     ```
-
-**7b.** Run `update-cache` to refresh the triage cache pointer — only for logs under `~/dev/`:
-   - Project name = `[machine]` if log is `~/dev/SESSION-LOG.md`; otherwise `basename` of the log's parent directory
-   - TODOS path = `{log_dir}/TODOS.md`
+**3.** Refresh triage (only for logs under `~/dev/`):
    ```bash
-   update-cache '{project}' '{todos_path}'
+   update-triage 2>/dev/null || echo "(update-triage failed — run manually)"
    ```
 
-**7c.** Run `rotate-log` to keep the live log bounded at 3 blocks, then refresh the cache mtime:
-   ```bash
-   rotate-log '{log_path}' 3
-   update-cache '{project}' '{todos_path}'
+**4.** Print the **Tangent Re-Entry Prompt** to the terminal:
+
    ```
-   Both calls are idempotent. If either fails, note it but don't block the handoff.
+   ── Tangent fork ──────────────────────────────
+   Reason: {why this forked off the main session — the trigger}
+   Scope:  {what the tangent should accomplish, bounded}
+   First action: {single concrete step}
 
-**7d.** Regenerate `TRIAGE-BLOCK.md`:
-   ```bash
-   update-triage 2>/dev/null || echo "(update-triage failed — run manually to refresh TRIAGE-BLOCK.md)"
-   ```
-
-**8.** Changelog: use `/changelog` manually if this session produced changelog-worthy changes. Do not auto-update inline — CLAUDE.md delegates this to `/changelog`.
-
-**9.** Print the **Re-Entry Prompt** to the terminal. Two variants:
-
-   - **Logged variant** (written into `### Re-Entry Prompt` in step 7): prose summary + first-action + pointer to `TODOS.md`. No TODO list embedded — pointer only.
-   - **Terminal variant** (printed now for the user to copy): same prose + first-action, plus the **Top-5** from `TODOS.md` (step 9b). After the 5, print: `+{N} more open TODOs — see TODOS.md or run /dev-brief` (omit if ≤5 total).
-
-   Both variants must include:
-   - Directive for next Claude to read `SESSION-LOG.md` and `TODOS.md` at session start
-   - Single "first action" line
-
-**9b.** **Top-5 selection** — from `TODOS.md`, pick at most 5 by tier order:
-   Critical (`[BROKEN]`) → High (`[BLOCKER]`) → Medium (default) → Low (`[LOW]`)
-   - Skip `[WAITING]` and `[BACKLOG]` items unless fewer than 5 remain after excluding them
-   - Copy verbatim from `TODOS.md` — do not re-author or summarize
-
-**10.** Print closing message:
-   ```
-   ✓ Handoff written to SESSION-LOG.md
-   ✓ TODOS.md updated
-   → Run /clear now to reset the cache
-   → Paste the Re-Entry Prompt above as your first message in the new session
+   At session start: read TODOS.md. For what's next across projects, read TRIAGE-BLOCK.md.
+   When done, run /handoff-return to merge findings back into the main session.
+   ──────────────────────────────────────────────
    ```
 
-**11.** Do not run `/clear` automatically — the user does this manually.
+   - **Reason-first** — the reason is the parameter passed down; lead with it.
+   - Keep it tight. No top-5, no narrative, no decisions log.
+
+**5.** Print closing message:
+   ```
+   ✓ Tangent prompt ready (no SESSION-LOG written — this is a fork, not a checkpoint)
+   → Open a new session and paste the Tangent Re-Entry Prompt above
+   → Main session can stay open; /handoff-return merges findings back when you're done
+   ```
+
+**6.** Do not run `/clear` automatically.
 
 ---
 
-## Cache Optimization Notes
+## Related
 
-This skill exists to work around Claude Code's **1-hour cache TTL**.
-
-- Cached tokens cost **10% of normal input** — let them expire and you pay full price again
-- A session idle past ~60 min forces a full re-cache of all conversation history
-- The re-entry prompt gives the next session enough context to hit the ground running
-
-**Rule of thumb:** Run `/handoff` at ~50 minutes → `/clear` → paste re-entry. Never let the cache expire on you.
-
----
-
-## Integration With Other Skills
-
-If **planning-with-files** is active: read `task_plan.md`, `findings.md`, and `progress.md` before generating the handoff. Sync completed/open items between `task_plan.md` and `TODOS.md`.
-
-If a project-level `.claude/CLAUDE.md` exists: note any conventions relevant to open items. Do not reproduce it — just flag anything critical.
-
-Skill routing for new items added to `TODOS.md`:
-- `[BUG]` → note: "start next session with `/diagnose`"
-- `[TEST]` → note: "use `/tdd`"
-- `[FEAT]` early-stage → note: "consider `/prototype` before building"
+- `/handoff-return` — pop: summarize the tangent's findings and sync them to `TODOS.md`
+- `/checkpoint` — durable end-of-work-session close with full narrative
