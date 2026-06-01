@@ -1,0 +1,55 @@
+#!/usr/bin/env python3
+"""
+update-cache: update one project's block in ~/dev/.triage-cache with a pointer to its TODOS.md.
+Usage: update-cache <project> <todos_path>
+Zero Claude tokens. Called by /handoff step 7b (replaces inline awk).
+"""
+
+import sys
+from pathlib import Path
+
+CACHE = Path.home() / "dev" / ".triage-cache"
+CACHE_HEADER = (
+    '<!-- triage-cache v1 | dev-brief read-skip | '
+    '"## <project>" then "mtime: <epoch>" then '
+    '"path: <todos>" (pointer) or verbatim "- [ ]" lines (legacy) -->\n'
+)
+
+
+def remove_project_block(lines: list, project: str) -> list:
+    out, skip = [], False
+    for line in lines:
+        if line.startswith("## "):
+            skip = line.strip() == f"## {project}"
+        if not skip:
+            out.append(line)
+    return out
+
+
+def update_cache(project: str, todos_path: Path) -> None:
+    mtime = int(todos_path.stat().st_mtime)
+
+    if CACHE.exists():
+        lines = CACHE.read_text().splitlines(keepends=True)
+    else:
+        lines = CACHE_HEADER.splitlines(keepends=True)
+
+    lines = remove_project_block(lines, project)
+    new_block = f"\n## {project}\nmtime: {mtime}\npath: {todos_path}\n"
+    CACHE.write_text("".join(lines).rstrip() + new_block)
+    print(f"✓ cache updated: {project} → {todos_path} (mtime {mtime})")
+
+
+if __name__ == "__main__":
+    if len(sys.argv) != 3:
+        print("Usage: update-cache <project> <todos_path>", file=sys.stderr)
+        sys.exit(1)
+
+    project = sys.argv[1]
+    todos_path = Path(sys.argv[2]).expanduser().resolve()
+
+    if not todos_path.exists():
+        print(f"TODOS.md not found: {todos_path}", file=sys.stderr)
+        sys.exit(1)
+
+    update_cache(project, todos_path)
