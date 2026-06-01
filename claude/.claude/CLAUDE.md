@@ -25,10 +25,11 @@ When writing TODOs to TODOS.md (via /handoff or inline), prefix items with the a
 |---|---|---|
 | `[BROKEN]` | Something is broken right now — tool down, build failing, can't work | Critical |
 | `[BLOCKER]` | Must happen before other work can start | High |
+| `[TEST]` | Unverified test — always critical; use `/tdd` to close | Critical |
 | `[LOW]` | Not urgent — do soon but not this week | Low |
 | `[BACKLOG]` | Captured, deferred, no timeline | Backlog |
 
-No priority tag = Medium (default).
+No priority tag = Medium (default). `[TEST]` overrides all other priority tags.
 
 **Annotation tags** — describe the type of work so Claude enters the right mode:
 
