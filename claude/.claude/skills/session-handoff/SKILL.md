@@ -1,37 +1,37 @@
 ---
 name: session-handoff
-description: Gracefully close a Claude Code session, preserve all context, write a structured handoff to session-log.md, and prepare a clean re-entry prompt for the next session. Triggers on /handoff.
+description: Gracefully close a Claude Code session, preserve all context, write a structured handoff to SESSION-LOG.md, update TODOS.md, and prepare a clean re-entry prompt for the next session. Triggers on /handoff.
 ---
 
 # Session Handoff Skill
 
 **Trigger:** `/handoff`
-**Purpose:** Gracefully close a Claude Code session, preserve all context, write a structured handoff to `session-log.md`, and prepare a clean re-entry prompt for the next session.
+**Purpose:** Close a session cleanly — write narrative to `SESSION-LOG.md`, sync open work to `TODOS.md`, print a re-entry prompt.
 
 ---
 
 ## When to Use This
 
-- You've been in a session for **~50 minutes** (approaching the 1-hour cache TTL)
-- You're switching tasks or contexts mid-project
-- Your context window is getting heavy (check `/context`)
-- You hit a natural stopping point and want to log progress
-- You're about to close your terminal for the day
+- ~50 minutes into a session (approaching the 1-hour cache TTL)
+- Switching tasks or contexts mid-project
+- Context window getting heavy (`/context`)
+- Natural stopping point or end of day
+
 ---
 
 ## What Claude Will Do
 
-When you run `/handoff`, Claude will:
+1. Audit the session — files touched, commands run, decisions made
+2. Update `TODOS.md` — remove completed items, add new ones
+3. Append a narrative block to `SESSION-LOG.md`
+4. Refresh the triage pipeline (`update-cache` → `rotate-log` → `update-triage`)
+5. Print the re-entry prompt
 
-1. **Audit the session** — scan all files touched, commands run, decisions made, open questions
-2. **Write the handoff** — append a structured entry to `session-log.md`
-3. **Print the re-entry prompt** — a compact block you paste into the next fresh session
-4. **Remind you to `/clear`** — so the next session starts with a clean cache
 ---
 
 ## Handoff Output Format
 
-Claude appends the following block to `session-log.md`:
+Appended to `SESSION-LOG.md`:
 
 ```markdown
 ---
@@ -43,146 +43,115 @@ Claude appends the following block to `session-log.md`:
 
 ### Completed
 
-- [x] {Thing that was finished}
-- [x] {Another completed item}
-
-### Incomplete / Next Steps
-
-- [ ] {Thing that still needs doing}
-- [ ] {Follow-up task or open question}
+- [x] {Item finished and removed from TODOS.md}
 
 ### Decisions Made
 
-- **{Decision}** — {why it was made, so you don't re-litigate it next session}
-- **{Decision}** — {reasoning}
+- **{Decision}** — {why, so you don't re-litigate it next session}
 
 ### Files Touched
 
-- `path/to/file.md` — {what changed and why}
-- `path/to/other.js` — {what changed and why}
+- `path/to/file` — {what changed and why}
 
 ### Gotchas / Notes
 
-- {Anything Claude noticed — tech debt, edge cases, things to watch out for}
+- {Tech debt, edge cases, things to watch out for}
 
 ### Re-Entry Prompt
 
-> Paste this as your FIRST message in the next session after /clear:
-
-"{Compact summary: project name, what was built, where you left off, first action to take next session}
-
-Read session-log.md now to get full context. Open TODOs from last session: see the `### Incomplete / Next Steps` section above in this same block — every unchecked `- [ ]` item there is the live TODO list. (Pointer, not a copy: the list is NOT re-embedded here, to keep the log small. The terminal-printed re-entry in step 9 splices the **Top-5 attention set** in for a self-contained paste; the full list stays here + in `/dev-brief` triage.)
-
-First action: {single most important next step}"
+> "{Compact summary: project, what was built, where you left off, first action next session.
+> Read SESSION-LOG.md and TODOS.md. First action: {step}}"
 
 ---
 ```
+
+No `### Incomplete / Next Steps` in the block — open work lives in `TODOS.md` only.
 
 ---
 
 ## Claude Instructions (Read Before Executing)
 
-When the user runs `/handoff`:
+**1.** Execute immediately. No clarifying questions.
 
-1. **Do not ask clarifying questions** — execute immediately
-2. Read the current working directory and all files in context. If `session-log.md` exists, **read it in full now** — you need its prior blocks for step 4b.
-3. Fill **every field** in the handoff block — never leave a section blank or write "N/A"
-4. For **Completed** vs **Incomplete**: be honest. If it wasn't done, it goes in Incomplete.
-   When writing `### Incomplete / Next Steps` items, apply priority and annotation tags from the TODO Tags system defined in `~/.claude/CLAUDE.md`. Each item **must** begin with a `- [ ]` checkbox followed by the appropriate tags (e.g. `[BROKEN]`, `[BLOCKER]`, `[BUG]`, `[DECISION]`, `[INVESTIGATE]`, `[FEAT]`, `[CHORE]`, `[TEST]`, `[RELEASE]`, `[LOW]`, `[BACKLOG]`). Untagged items default to Medium priority. **Never write a bare `- [TAG] ...` bullet without the `- [ ]` checkbox** — checkbox-less items evade the step 4b carry-forward scan and silently orphan.
-4b. **Carry forward prior unchecked items** — before writing `### Incomplete / Next Steps`, scan every prior `### Incomplete / Next Steps` block in `session-log.md`. Treat **any bullet line** under those blocks as a candidate item — a normal `- [ ]` item, OR a checkbox-less `- [TAG] ...` bullet left by an older malformed block. For each candidate found:
-    - Completed this session → add to `### Completed` with `[x]`; omit from Incomplete
-    - Already `- [x]` in any later block → omit
-    - Otherwise → include in this session's `### Incomplete / Next Steps`, copied verbatim and normalized to a `- [ ]` checkbox if it lacked one
-    **Never silently drop a prior open item — whether or not it has a `- [ ]` checkbox.** If uncertain whether it was completed, carry it forward.
-5. For **Decisions Made**: capture the *why*, not just the *what* — future sessions need the reasoning
-6. For **Gotchas / Notes**: include anything the user didn't explicitly ask about but should know — potential bugs, naming inconsistencies, missed edge cases, token cost observations
-7. Append (do not overwrite) to `session-log.md` at the project root
-   - If `session-log.md` does not exist, create it with this header first:
+**2.** Read:
+   - `TODOS.md` in the project root (canonical open work)
+   - The **most recent block only** of `SESSION-LOG.md` (for Goal/Decisions context)
+   - If `TODOS.md` does not exist: create it with this header, then scan all prior `### Incomplete / Next Steps` blocks in `SESSION-LOG.md` and migrate every unchecked `- [ ]` item into it (one-time migration, deduplicated):
+     ```markdown
+     # {project} TODOS
+
+     > Canonical open TODO list. Maintained by /handoff. Never duplicate into SESSION-LOG.md.
+     > Last updated: {YYYY-MM-DD}
+
+     ---
+
+     ```
+
+**3.** Fill every field in the handoff block — never leave a section blank.
+
+**4.** Update `TODOS.md` in-place:
+   - Items **completed this session** → remove from `TODOS.md`; add to `### Completed` with `[x]`
+   - **New open items** discovered this session → append to `TODOS.md` with appropriate tags from the TODO Tags system in `~/.claude/CLAUDE.md`. Every item must begin `- [ ]` followed by tags. Untagged = Medium priority.
+   - All other items → leave verbatim, do not reorder
+   - Update the `Last updated:` date in the header
+
+**5.** For **Decisions Made**: capture the *why*, not just the *what*.
+
+**6.** For **Gotchas / Notes**: include anything worth flagging — bugs, edge cases, token cost observations, things the user didn't ask about but should know.
+
+**7.** Append the narrative block to `SESSION-LOG.md` at the project root.
+   - If `SESSION-LOG.md` does not exist, create it with this header first:
      ```markdown
      # Session Log
      > Auto-generated by session-handoff skill. Do not edit manually mid-session.
      ---
      ```
-7b. **Write-through the triage cache** — only if this session-log lives under `~/dev/` (so `/dev-brief` tracks it). After appending the new block, refresh this project's entry in `~/dev/.triage-cache` so the next brief is a HIT (no re-read). Steps:
-   - Project name = basename of the project dir, or `[machine]` if the log is `~/dev/session-log.md`.
-   - New mtime = `stat -c %Y` of the just-written session-log.
-   - New TODO lines = the verbatim `- [ ]` items from the `### Incomplete / Next Steps` you just wrote.
-   - Replace this project's `## {project}` block (drop the old one if present, append the new), preserving every other project's block. If `~/dev/.triage-cache` doesn't exist, create it with the `<!-- triage-cache v1 ... -->` header (format spec lives in dev-brief/SKILL.md). Example block-replace:
-     ```bash
-     proj='[machine]'; mt=$(stat -c %Y "$LOG")        # LOG = the session-log just written
-     tmp=$(mktemp)
-     awk -v p="## $proj" 'BEGIN{skip=0} /^## /{skip=($0==p)} skip{next} {print}' ~/dev/.triage-cache > "$tmp" 2>/dev/null
-     { cat "$tmp"; printf '\n## %s\nmtime: %s\n' "$proj" "$mt"; printf '%s\n' "$INCOMPLETE_LINES"; } > ~/dev/.triage-cache
-     ```
-   - The cache is idempotent derived state — if this step fails, dev-brief self-heals by READ-ing on the next run.
-7c. **Rotate the log if it exceeds N blocks** — only for logs under `~/dev/` (same guard as 7b). Keeps the live `session-log.md` small so dev-brief/handoff reads stay cheap; older blocks move to a sibling `ARCHIVE-LOG.md`. **N = 3** (keep the newest 3 session blocks live). Tools never read `ARCHIVE-LOG.md` — it is cold human-only history; every still-open TODO is cumulatively carried forward into the newest block, so archiving older blocks loses no open work.
-   - Run this AFTER 7b. It is position-independent: it date-parses every `## Session Handoff — {date}` header and keeps the newest N by **date**, never by file position (block order may be mixed in legacy logs).
-   - If block count ≤ N, do nothing.
-   - Otherwise: move the oldest `(count − N)` blocks to `ARCHIVE-LOG.md` (ascending, newest-at-bottom), preserving the log's header chunk; rewrite the live log as header + newest N blocks.
+
+**7b.** Run `update-cache` to refresh the triage cache pointer — only for logs under `~/dev/`:
+   - Project name = `[machine]` if log is `~/dev/SESSION-LOG.md`; otherwise `basename` of the log's parent directory
+   - TODOS path = `{log_dir}/TODOS.md`
    ```bash
-   N=3; LOG="$LOG"                                   # LOG = the session-log just written
-   DIR=$(dirname "$LOG"); ARCH="$DIR/ARCHIVE-LOG.md"
-   mapfile -t H < <(grep -n '^## Session Handoff' "$LOG" | cut -d: -f1)
-   if (( ${#H[@]} > N )); then
-     TOTAL=$(wc -l < "$LOG"); rot=$(mktemp); hdr=$(mktemp)
-     for ((i=0;i<${#H[@]};i++)); do
-       s=${H[i]}; (( i+1<${#H[@]} )) && e=$(( H[i+1]-1 )) || e=$TOTAL
-       ds=$(sed -n "${s}p" "$LOG" | grep -oP '\d{4}-\d{2}-\d{2} \d{1,2}:\d{2} [AP]M')
-       printf '%s %s %s\n' "$(date -d "$ds" +%s)" "$s" "$e"
-     done | sort -n > "$rot"
-     head -n "$(( ${H[0]}-1 ))" "$LOG" > "$hdr"
-     [ -f "$ARCH" ] || printf '# Session Log — Archive\n> Rotated-out session-handoff blocks (newest-at-bottom). Auto-maintained by /handoff step 7c. Cold human history; tools do not read this.\n---\n\n' > "$ARCH"
-     head -n -"$N" "$rot" | while read -r ep s e; do sed -n "${s},${e}p" "$LOG" >> "$ARCH"; done   # oldest → archive
-     cp "$hdr" "$LOG.tmp"
-     tail -n "$N" "$rot" | while read -r ep s e; do sed -n "${s},${e}p" "$LOG" >> "$LOG.tmp"; done  # newest N stay live
-     mv "$LOG.tmp" "$LOG"; rm -f "$rot" "$hdr"
-   fi
+   update-cache '{project}' '{todos_path}'
    ```
-   - **Rotation bumps the log's mtime** (the `mv` rewrites it) — so after rotating, **re-run the 7b cache refresh** with a fresh `stat -c %Y "$LOG"`, otherwise the cache reads stale and the next brief needlessly re-READs. The TODO lines are unchanged (newest block stays live), only `mtime:` needs updating.
-   - Idempotent: if rotation fails, the log just stays longer than N this session; next `/handoff` retries. Never deletes blocks — they move to the archive.
-7d. **Regenerate TRIAGE-BLOCK.md** — run `update-triage` (symlinked to `~/.local/bin/update-triage`) via Bash. This is a zero-token shell script that reads `.triage-cache` and rewrites `~/dev/TRIAGE-BLOCK.md` with HTML color spans. Run after 7c (and after any 7b re-refresh triggered by rotation). If the command fails, note it but don't block the handoff.
+
+**7c.** Run `rotate-log` to keep the live log bounded at 3 blocks, then refresh the cache mtime:
+   ```bash
+   rotate-log '{log_path}' 3
+   update-cache '{project}' '{todos_path}'
+   ```
+   Both calls are idempotent. If either fails, note it but don't block the handoff.
+
+**7d.** Regenerate `TRIAGE-BLOCK.md`:
    ```bash
    update-triage 2>/dev/null || echo "(update-triage failed — run manually to refresh TRIAGE-BLOCK.md)"
    ```
-8. Ask the user: "Write a changelog entry to CHANGELOG.md? (yes / skip)"
-   - If **skip**: proceed to step 9. Do not touch CHANGELOG.md.
-   - If **yes**: prepend product-facing change bullets to the `## [Unreleased]` section of `CHANGELOG.md` at the project root
-   - If `CHANGELOG.md` does not exist, create it:
-     ```markdown
-     # Changelog
 
-     ## [Unreleased]
+**8.** Changelog: follow the rule in `~/.claude/CLAUDE.md` — if this session modified files under `~/dev/dotfiles/`, prepend a changelog entry to `~/dev/dotfiles/CHANGELOG.md` under `## [Unreleased]`. If machine-only changes, skip. Do not prompt the user.
 
-     ```
-   - If `CHANGELOG.md` exists but has no `## [Unreleased]` section, insert one immediately after the `# Changelog` heading
-   - Write product-facing changes only — no internal tooling, no Claude artifacts, no session overhead
-   - Format: slim Keep-a-Changelog bullets, prepended under `## [Unreleased]` (before any existing bullets in that section):
-     ```markdown
-     - Added X
-     - Changed Y
-     - Fixed Z
-     - Removed W
-     ```
-9. Print the **Re-Entry Prompt** to the terminal so the user can copy it. **Two variants, by destination:**
-   - **Logged variant (the `### Re-Entry Prompt` section written in step 7):** prose summary + first-action only, with a *pointer* to the block's `### Incomplete / Next Steps` instead of the TODO list. Never re-embed the verbatim list in the log — it duplicates the Incomplete section in the same block (~3.5K tok of dead re-read every dev-brief/handoff load). This is the dup-kill.
-   - **Terminal variant (printed here in step 9, what the user actually pastes):** the SAME prose + first-action, but with only the **Top-5 attention set** spliced in (selection rule in step 9b) — copied **verbatim** from the Incomplete section, not re-authored or summarized. After the 5, print one pointer line: `+{N} more open TODOs — see the \`### Incomplete / Next Steps\` section in the latest block, or run /dev-brief for full triage.` (omit if 5 or fewer total). The paste stays lean and action-focused; the full carry-forward list lives only in the log + cache.
-   - **Both variants point at the same Incomplete section as the source of truth — neither is an authored second copy of the TODO list.** The full open-work set is never trimmed in the log; only the paste is curated down to 5.
-9b. **Top-5 attention set (selection rule for the terminal paste).** From the `### Incomplete / Next Steps` you just wrote, pick at most 5 items that most need attention next session, ranked:
-   1. **The first-action item** — always slot 1.
-   2. **Items created or advanced *this* session** — they carry live context; next session is warmest on them. Order by priority tier.
-   3. **Highest-priority carry-forwards** to fill remaining slots — tier order Critical (`[BROKEN]`) → High (`[BLOCKER]`) → Medium → Low (`[LOW]`) → Backlog (`[BACKLOG]`); within a tier, ⚠-urgent first, then items whose text relates to files touched this session.
-   - **Exclude** `[WAITING]` (poll-only, not actionable) and `[BACKLOG]` items unless fewer than 5 higher-priority items exist.
-   - Selection affects **only** the terminal paste. Never reorder, drop, or trim the logged `### Incomplete / Next Steps` — carry-forward integrity (step 4b) is absolute.
-   - Both variants **must** include:
-     - Explicit directive for next Claude to `Read session-log.md` at session start
-     - Single "first action" line — the highest-priority next step
-10. Print this closing message:
+**9.** Print the **Re-Entry Prompt** to the terminal. Two variants:
+
+   - **Logged variant** (written into `### Re-Entry Prompt` in step 7): prose summary + first-action + pointer to `TODOS.md`. No TODO list embedded — pointer only.
+   - **Terminal variant** (printed now for the user to copy): same prose + first-action, plus the **Top-5** from `TODOS.md` (step 9b). After the 5, print: `+{N} more open TODOs — see TODOS.md or run /dev-brief` (omit if ≤5 total).
+
+   Both variants must include:
+   - Directive for next Claude to read `SESSION-LOG.md` and `TODOS.md` at session start
+   - Single "first action" line
+
+**9b.** **Top-5 selection** — from `TODOS.md`, pick at most 5 by tier order:
+   Critical (`[BROKEN]`) → High (`[BLOCKER]`) → Medium (default) → Low (`[LOW]`)
+   - Skip `[WAITING]` and `[BACKLOG]` items unless fewer than 5 remain after excluding them
+   - Copy verbatim from `TODOS.md` — do not re-author or summarize
+
+**10.** Print closing message:
    ```
-   ✓ Handoff written to session-log.md
+   ✓ Handoff written to SESSION-LOG.md
+   ✓ TODOS.md updated
    → Run /clear now to reset the cache
    → Paste the Re-Entry Prompt above as your first message in the new session
    ```
-11. **Do not run `/clear` automatically** — the user does this manually
+
+**11.** Do not run `/clear` automatically — the user does this manually.
+
 ---
 
 ## Cache Optimization Notes
@@ -191,22 +160,19 @@ This skill exists to work around Claude Code's **1-hour cache TTL**.
 
 - Cached tokens cost **10% of normal input** — let them expire and you pay full price again
 - A session idle past ~60 min forces a full re-cache of all conversation history
-- This skill lets you exit cleanly before that happens
 - The re-entry prompt gives the next session enough context to hit the ground running
+
 **Rule of thumb:** Run `/handoff` at ~50 minutes → `/clear` → paste re-entry. Never let the cache expire on you.
 
 ---
 
 ## Integration With Other Skills
 
-If **planning-with-files** is active in this session:
-- Claude should read `task_plan.md`, `findings.md`, and `progress.md` before generating the handoff
-- The handoff **Incomplete / Next Steps** should mirror the open items in `task_plan.md`
-- After `/clear`, the re-entry prompt should instruct the next session to re-read those files first
-If a project-level `.claude/CLAUDE.md` exists:
-- Claude should note any project conventions that are relevant to open items
-- Do not reproduce the full CLAUDE.md — just reference it exists and flag anything critical
-When tagging open items in **Incomplete / Next Steps**:
-- Items tagged `[BUG]` → add note: "start next session with `/diagnose`"
-- Items tagged `[TEST]` → add note: "use `/tdd` for this work"
-- Items tagged `[FEAT]` for early-stage or unvalidated features → add note: "consider `/prototype` before building"
+If **planning-with-files** is active: read `task_plan.md`, `findings.md`, and `progress.md` before generating the handoff. Sync completed/open items between `task_plan.md` and `TODOS.md`.
+
+If a project-level `.claude/CLAUDE.md` exists: note any conventions relevant to open items. Do not reproduce it — just flag anything critical.
+
+Skill routing for new items added to `TODOS.md`:
+- `[BUG]` → note: "start next session with `/diagnose`"
+- `[TEST]` → note: "use `/tdd`"
+- `[FEAT]` early-stage → note: "consider `/prototype` before building"
