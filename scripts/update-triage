@@ -69,6 +69,8 @@ def is_urgent(line: str) -> bool:
 
 
 def get_tier(tags: list, line: str) -> str:
+    if "TEST" in tags:
+        return "CRITICAL"
     for tag in tags:
         if tag in PRIORITY_MAP:
             return PRIORITY_MAP[tag]
