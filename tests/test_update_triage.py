@@ -245,5 +245,156 @@ class TestUpdateCacheMtime(unittest.TestCase):
             self.assertEqual(count, 1, f"Expected 1 block, found {count}")
 
 
+class TestIsUrgentFullCoverage(unittest.TestCase):
+    def test_not_yet(self):
+        self.assertTrue(triage.is_urgent("not yet implemented"))
+
+    def test_do_not(self):
+        self.assertTrue(triage.is_urgent("do not deploy this"))
+
+    def test_hasnt(self):
+        self.assertTrue(triage.is_urgent("hasn't been fixed"))
+
+    def test_has_not(self):
+        self.assertTrue(triage.is_urgent("has not been merged"))
+
+    def test_warning(self):
+        self.assertTrue(triage.is_urgent("warning in CI output"))
+
+    def test_stale(self):
+        self.assertTrue(triage.is_urgent("stale branch needs cleanup"))
+
+    def test_never(self):
+        self.assertTrue(triage.is_urgent("never lands on main"))
+
+    def test_error(self):
+        self.assertTrue(triage.is_urgent("error in deploy step"))
+
+    def test_backtick_excludes_keyword(self):
+        self.assertFalse(triage.is_urgent("call `never_retry()` here"))
+
+    def test_case_insensitive(self):
+        self.assertTrue(triage.is_urgent("STALE branch"))
+
+
+class TestGetTierConflictingTags(unittest.TestCase):
+    def test_broken_beats_low(self):
+        self.assertEqual(triage.get_tier(["BROKEN", "LOW"], "thing"), "CRITICAL")
+
+    def test_test_beats_backlog(self):
+        self.assertEqual(triage.get_tier(["TEST", "BACKLOG"], "verify"), "CRITICAL")
+
+    def test_test_beats_low(self):
+        self.assertEqual(triage.get_tier(["TEST", "LOW"], "verify"), "CRITICAL")
+
+    def test_first_priority_tag_wins(self):
+        # BLOCKER before LOW → HIGH
+        self.assertEqual(triage.get_tier(["BLOCKER", "LOW"], "thing"), "HIGH")
+
+
+class TestStripPriorityTags(unittest.TestCase):
+    def test_strips_broken(self):
+        self.assertNotIn("[BROKEN]", triage.strip_priority_tags("[BROKEN] fix this"))
+
+    def test_strips_blocker(self):
+        self.assertNotIn("[BLOCKER]", triage.strip_priority_tags("[BLOCKER] must do first"))
+
+    def test_strips_low(self):
+        self.assertNotIn("[LOW]", triage.strip_priority_tags("[LOW] optional"))
+
+    def test_strips_backlog(self):
+        self.assertNotIn("[BACKLOG]", triage.strip_priority_tags("[BACKLOG] someday"))
+
+    def test_whitespace_normalized(self):
+        result = triage.strip_priority_tags("[BROKEN]   lots   of   space")
+        self.assertNotIn("  ", result)
+
+    def test_annotation_tags_preserved(self):
+        result = triage.strip_priority_tags("[LOW][BUG] broken thing")
+        self.assertIn("[BUG]", result)
+
+
+class TestColorizeTags(unittest.TestCase):
+    def test_known_tag_gets_color_span(self):
+        result = triage.colorize_tags("[BUG] broken thing")
+        self.assertIn('<span style="color:', result)
+        self.assertIn("[BUG]", result)
+
+    def test_unknown_tag_passes_through(self):
+        result = triage.colorize_tags("[MYUNKNOWNTAG] thing")
+        self.assertIn("[MYUNKNOWNTAG]", result)
+        self.assertNotIn("<span", result)
+
+    def test_tag_in_backtick_not_colorized(self):
+        result = triage.colorize_tags("run `[BUG]` inline")
+        self.assertNotIn("<span", result)
+        self.assertIn("`[BUG]`", result)
+
+    def test_multiple_known_tags_all_colorized(self):
+        result = triage.colorize_tags("[BUG][FEAT] something")
+        self.assertEqual(result.count("<span"), 2)
+
+    def test_correct_color_applied(self):
+        result = triage.colorize_tags("[TEST] verify")
+        self.assertIn("#74c0fc", result)
+
+
+class TestFmtLine(unittest.TestCase):
+    def test_project_without_brackets_gets_brackets(self):
+        result = triage.fmt_line("machine", "- [ ] [BUG] fix thing", False)
+        self.assertIn("[machine]", result)
+
+    def test_project_with_brackets_unchanged(self):
+        result = triage.fmt_line("[machine]", "- [ ] [BUG] fix thing", False)
+        self.assertIn("[machine]", result)
+        self.assertNotIn("[[machine]]", result)
+
+    def test_urgent_prefix_applied(self):
+        result = triage.fmt_line("proj", "- [ ] broken thing", True)
+        self.assertIn("⚠", result)
+
+    def test_no_prefix_when_not_urgent(self):
+        result = triage.fmt_line("proj", "- [ ] normal thing", False)
+        self.assertNotIn("⚠", result)
+
+    def test_priority_tags_stripped_from_text(self):
+        result = triage.fmt_line("proj", "- [ ] [LOW] optional chore", False)
+        self.assertNotIn("[LOW]", result)
+
+    def test_raw_prefix_stripped(self):
+        result = triage.fmt_line("proj", "- [ ] do the thing", False)
+        self.assertNotIn("- [ ]", result)
+
+
+class TestRemoveProjectBlock(unittest.TestCase):
+    def test_target_block_removed(self):
+        lines = [
+            "## proj-a\n", "mtime: 1\n", "- [ ] task\n",
+            "## proj-b\n", "mtime: 2\n", "- [ ] other\n",
+        ]
+        result = cache.remove_project_block(lines, "proj-a")
+        self.assertNotIn("## proj-a\n", result)
+
+    def test_adjacent_blocks_preserved(self):
+        lines = [
+            "## proj-a\n", "mtime: 1\n",
+            "## proj-b\n", "mtime: 2\n", "- [ ] keep\n",
+        ]
+        result = cache.remove_project_block(lines, "proj-a")
+        self.assertIn("## proj-b\n", result)
+        self.assertIn("- [ ] keep\n", result)
+
+    def test_nonexistent_project_leaves_lines_unchanged(self):
+        lines = ["## proj-a\n", "mtime: 1\n"]
+        result = cache.remove_project_block(lines, "ghost")
+        self.assertEqual(result, lines)
+
+    def test_partial_name_match_not_removed(self):
+        lines = ["## proj\n", "mtime: 1\n", "## proj-extended\n", "mtime: 2\n"]
+        result = cache.remove_project_block(lines, "proj")
+        self.assertNotIn("## proj\n", result)
+        self.assertIn("## proj-extended\n", result)
+
+
 if __name__ == "__main__":
     unittest.main(verbosity=2)
