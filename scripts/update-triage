@@ -149,7 +149,6 @@ def build_triage(projects: dict) -> dict:
 def fmt_line(project: str, raw: str, urgent: bool) -> str:
     text = raw[6:].strip()
     text = strip_priority_tags(text)
-    text = truncate(text)
     text = colorize_tags(text)
     prefix = "⚠ " if urgent else ""
     proj_display = project if project.startswith("[") else f"[{project}]"
