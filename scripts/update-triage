@@ -1,0 +1,229 @@
+#!/usr/bin/env python3
+"""
+update-triage: reads ~/dev/.triage-cache, writes ~/dev/TRIAGE-BLOCK.md
+Zero Claude tokens. Called by /handoff step 7d; also run manually.
+"""
+
+import re
+import sys
+from datetime import datetime
+from pathlib import Path
+
+CACHE = Path.home() / "dev" / ".triage-cache"
+OUTPUT = Path.home() / "dev" / "TRIAGE-BLOCK.md"
+DEV = Path.home() / "dev"
+
+TIER_COLORS = {
+    "CRITICAL": "#ff1a1a",
+    "HIGH":     "#cc0000",
+    "MEDIUM":   "#e05000",
+    "LOW":      "#ffd700",
+    "BACKLOG":  "#4d94ff",
+}
+
+TIER_LABELS = {
+    "CRITICAL": "🔴 CRITICAL",
+    "HIGH":     "🟥 HIGH",
+    "MEDIUM":   "🔶 MEDIUM",
+    "LOW":      "🟡 LOW",
+    "BACKLOG":  "🔵 BACKLOG",
+}
+
+ANNOTATION_COLORS = {
+    "BUG":         "#ff6b6b",
+    "FEAT":        "#51cf66",
+    "CHORE":       "#868e96",
+    "TEST":        "#74c0fc",
+    "RELEASE":     "#da77f2",
+    "DECISION":    "#ffa94d",
+    "INVESTIGATE": "#a855f7",
+    "SYNC":        "#a9e34b",
+    "WAITING":     "#adb5bd",
+    "SECURITY":    "#2563eb",
+    "DOCS":        "#63e6be",
+    "PERFORMANCE": "#fd7e14",
+}
+
+PRIORITY_MAP = {
+    "BROKEN":  "CRITICAL",
+    "BLOCKER": "HIGH",
+    "LOW":     "LOW",
+    "BACKLOG": "BACKLOG",
+}
+
+URGENT_KEYWORDS = [
+    "failing", "broken", "not yet", "do not", "warning", "stale", "never",
+    "never committed", "bug", "unresolved", "critical", "missing",
+    "haven't", "has not", "hasn't",
+]
+
+
+def parse_tags(line: str) -> list:
+    return re.findall(r"\[([A-Z][A-Z0-9_-]*)\]", line)
+
+
+def is_urgent(line: str) -> bool:
+    # strip backtick spans before keyword scan to avoid matching code descriptions
+    stripped = re.sub(r"`[^`]*`", "", line).lower()
+    return any(kw in stripped for kw in URGENT_KEYWORDS)
+
+
+def get_tier(tags: list, line: str) -> str:
+    for tag in tags:
+        if tag in PRIORITY_MAP:
+            return PRIORITY_MAP[tag]
+    return "HIGH" if is_urgent(line) else "MEDIUM"
+
+
+def colorize_tags(text: str) -> str:
+    def replace(m):
+        tag = m.group(1)
+        color = ANNOTATION_COLORS.get(tag)
+        return f'<span style="color:{color};">[{tag}]</span>' if color else m.group(0)
+    # only colorize tags outside backtick spans
+    parts = re.split(r"(`[^`]*`)", text)
+    return "".join(
+        part if i % 2 == 1 else re.sub(r"\[([A-Z][A-Z0-9_-]*)\]", replace, part)
+        for i, part in enumerate(parts)
+    )
+
+
+def strip_priority_tags(text: str) -> str:
+    text = re.sub(r"\[(BROKEN|BLOCKER|LOW|BACKLOG)\]", "", text)
+    return re.sub(r"\s+", " ", text).strip()
+
+
+def truncate(text: str, n: int = 80) -> str:
+    return text if len(text) <= n else text[:n] + "…"
+
+
+def parse_cache(path: Path) -> dict:
+    projects = {}
+    current = None
+    for line in path.read_text().splitlines():
+        if line.startswith("## "):
+            current = line[3:].strip()
+            projects[current] = []
+        elif current and line.startswith("- [ ]"):
+            projects[current].append(line)
+    return projects
+
+
+def release_pending(projects: dict) -> list:
+    pending = []
+    for proj in projects:
+        if proj == "[machine]":
+            continue
+        rn = DEV / proj / "RELEASE-NOTES.md"
+        if rn.exists() and rn.stat().st_size > 0:
+            pending.append(proj)
+    return sorted(pending)
+
+
+def find_orphans(projects: dict) -> list:
+    tracked = set()
+    for p in projects:
+        tracked.add(p.strip("[]"))
+    result = []
+    for d in sorted(DEV.iterdir()):
+        if not d.is_dir() or d.name.startswith("."):
+            continue
+        if not (d / "session-log.md").exists() and d.name not in tracked:
+            result.append(d.name)
+    return result
+
+
+def build_triage(projects: dict) -> dict:
+    tiers = {t: [] for t in TIER_COLORS}
+    for proj, todos in projects.items():
+        for line in todos:
+            tags = parse_tags(line)
+            tier = get_tier(tags, line)
+            urgent = is_urgent(line)
+            tiers[tier].append((proj, line, urgent))
+    for tier in tiers:
+        tiers[tier].sort(key=lambda x: (0 if x[2] else 1, x[0]))
+    return tiers
+
+
+def fmt_line(project: str, raw: str, urgent: bool) -> str:
+    text = raw[6:].strip()
+    text = strip_priority_tags(text)
+    text = truncate(text)
+    text = colorize_tags(text)
+    prefix = "⚠ " if urgent else ""
+    proj_display = project if project.startswith("[") else f"[{project}]"
+    return f"- {prefix}**{proj_display}** {text}"
+
+
+def write_output(tiers: dict, projects: dict, path: Path) -> None:
+    now = datetime.now().strftime("%Y-%m-%d %I:%M %p")
+    total = sum(len(v) for v in tiers.values())
+    n_proj = len([p for p, todos in projects.items() if todos])
+
+    lines = [
+        "# Triage Block",
+        "",
+        f"*Updated: {now} — run `update-triage` to refresh*",
+        f"*{total} open TODOs across {n_proj} projects*",
+    ]
+
+    pending = release_pending(projects)
+    if pending:
+        lines.append(f"\n**RELEASE PENDING:** {' · '.join(pending)}")
+
+    lines += ["", "---", ""]
+
+    for tier in TIER_COLORS:
+        items = tiers[tier]
+        if not items:
+            continue
+        color = TIER_COLORS[tier]
+        label = TIER_LABELS[tier]
+        lines += [
+            f'## <span style="color:{color};font-weight:bold;">{label}</span>',
+            "",
+        ]
+        for proj, raw, urgent in items:
+            lines.append(fmt_line(proj, raw, urgent))
+        lines.append("")
+
+    orphan_list = find_orphans(projects)
+    if orphan_list:
+        lines += [
+            "---",
+            "",
+            f"**Orphans (no session-log):** {' · '.join(orphan_list)}",
+            "",
+        ]
+
+    lines += [
+        "---",
+        "",
+        '<span style="color:#555;font-size:0.85em;">'
+        "~/dev/TRIAGE-BLOCK.md · auto-updated by update-triage after /handoff"
+        "</span>",
+        "",
+    ]
+
+    path.write_text("\n".join(lines))
+    print(f"✓ TRIAGE-BLOCK.md — {total} TODOs across {n_proj} projects")
+    if pending:
+        print(f"  RELEASE PENDING: {', '.join(pending)}")
+    if orphan_list:
+        print(f"  Orphans: {', '.join(orphan_list)}")
+
+
+if __name__ == "__main__":
+    if not CACHE.exists():
+        print(f"Cache not found: {CACHE}", file=sys.stderr)
+        print("Run /dev-brief triage to build the cache.", file=sys.stderr)
+        sys.exit(1)
+
+    projects = parse_cache(CACHE)
+    if not projects:
+        print(f"Cache empty: {CACHE}", file=sys.stderr)
+        sys.exit(1)
+
+    tiers = build_triage(projects)
+    write_output(tiers, projects, OUTPUT)
