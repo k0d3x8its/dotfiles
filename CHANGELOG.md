@@ -3,6 +3,15 @@
 ## [Unreleased]
 
 ### Added
+- ➕ `tests/test_update_triage.py` — 27 unittests for `update-triage` and `update-cache` (parse_cache pointer format, get_tier all tiers, is_urgent backtick exclusion, build_triage sort, update-cache mtime correctness, dedup).
+- ➕ `[TEST]` priority tag — always resolves to CRITICAL tier, overrides all other priority tags. Documented in CLAUDE.md.
+
+### Changed
+- 🔧 `scripts/update-triage` `get_tier` — `[TEST]` tag now always returns CRITICAL regardless of other tags present.
+- 🔧 `CLAUDE.md` — `[TEST]` added to priority tag table as CRITICAL; note that it overrides all other priority tags.
+- 🔧 `.github/workflows/ci.yml` — added `python3 tests/test_update_triage.py` step after bats suite.
+
+### Added
 - ➕ `scripts/update-cache`: pointer-only triage cache updater — stats TODOS.md, writes 3-line pointer block to `.triage-cache`. Replaces inline awk in `/handoff` step 7b. Zero Claude tokens.
 - ➕ `scripts/rotate-log`: Python log rotation — keeps newest N session blocks live in SESSION-LOG.md, moves older blocks to ARCHIVE-LOG.md. Replaces inline bash in `/handoff` step 7c.
 - ➕ `TODOS.md` per-project canonical TODO source — separates open work from session narrative. SESSION-LOG.md is now narrative-only; TODOS.md is the single source of truth for open items.
