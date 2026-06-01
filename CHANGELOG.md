@@ -2,6 +2,18 @@
 
 ## [Unreleased]
 
+### Added
+- ➕ `scripts/update-cache`: pointer-only triage cache updater — stats TODOS.md, writes 3-line pointer block to `.triage-cache`. Replaces inline awk in `/handoff` step 7b. Zero Claude tokens.
+- ➕ `scripts/rotate-log`: Python log rotation — keeps newest N session blocks live in SESSION-LOG.md, moves older blocks to ARCHIVE-LOG.md. Replaces inline bash in `/handoff` step 7c.
+- ➕ `TODOS.md` per-project canonical TODO source — separates open work from session narrative. SESSION-LOG.md is now narrative-only; TODOS.md is the single source of truth for open items.
+
+### Changed
+- 🔧 `session-handoff` skill rewritten — reads TODOS.md (not full SESSION-LOG.md), calls update-cache/rotate-log scripts, removes step 8 changelog prompt (CLAUDE.md auto-routes), simplifies Top-5 selection to tier-order. ~3.5K tokens per run vs ~10K prior.
+- 🔧 `dev-brief` skill updated — supports TODOS.md projects (pointer cache format), SESSION-LOG.md rename, updated reconcile write routing.
+- 🔧 `scripts/update-triage` — handles pointer-format cache entries; find_orphans checks SESSION-LOG.md and TODOS.md alongside session-log.md.
+- 🔧 `CLAUDE.md` — TODO tag reference updated from session-log.md to TODOS.md.
+- 🔧 `session-log.md` renamed to `SESSION-LOG.md`.
+
 ### Changed
 - 🔧 `CLAUDE.md` re-entry prompt rule: softened "ground truth" to trust-but-verify (Option C). Decisions/context/architectural choices remain authoritative; task state reconciles against task_plan.md, progress.md, and `git log --oneline -5` — file state wins on conflicts.
 
