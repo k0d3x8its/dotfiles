@@ -16,7 +16,7 @@ description: Morning/context-switch brief across all projects in ~/dev. Reads se
 Full sweep of all projects in `~/dev`. One block per project with a session-log. Orphaned projects (no session-log) listed at the bottom.
 
 ### Deep-dive — `/dev-brief <project>`
-Single project. Full re-entry prompt, all TODOs, all gotchas, all decisions, full git state. Use before starting a session on that project.
+Single project. Full re-entry prompt, all TODOs, all gotchas, all decisions, full git state. Use before starting a session on that project. **OPEN TODOs are tiered by priority (severity descending: Critical → High → Medium → Low → Backlog) and tag-grouped within each tier** — apply the same Step-6 tier assignment used by the Triage Block, but render it inside this single project's block (see Step 7 / deep-dive template). This is distinct from the cross-project Triage Block, which deep-dive still skips.
 
 ### Triage-only — `/dev-brief triage`
 Runs full discovery + TODO collection + git reconciliation, but skips printing project blocks and orphans. Outputs only the Triage Block. Use when you just need prioritized work order without the per-project narrative. Skips reading Gotchas/Decisions sections to reduce input tokens.
@@ -167,6 +167,8 @@ After collecting all open TODOs across all projects (post-reconciliation), assig
 - Omit any tier that has no items
 - Do not include auto-resolved (✓) items
 - Strip priority tags (`[BROKEN]`, `[BLOCKER]`, `[LOW]`, `[BACKLOG]`) from displayed text — tier already communicates that. Keep annotation tags visible.
+
+**Deep-dive application (single-project OPEN TODOs):** in deep-dive mode, render that one project's OPEN TODOs with the SAME tier assignment as above — tier headers `CRITICAL → HIGH → MEDIUM → LOW → BACKLOG` top-to-bottom (omit empty tiers), and **within each tier group by annotation tag** (`[BUG]`, `[FEAT]`, `[CHORE]`, `[TEST]`, `[RELEASE]`, `[DECISION]`, `[INVESTIGATE]`, `[DOCS]`, …). Within a tag group, ⚠/⚑-marked items first, then source order. An item with multiple annotation tags files under its first tag. Untagged items group under `[misc]`. Keep the `⚠`/`⚑` prefixes; strip priority tags from text (tier shows it). Auto-resolved `✓` items are listed once at the bottom, untiered. This replaces the old flat verbatim OPEN TODOs list — full-context deep-dive now reads severity-first.
 
 ### Step 7 — Print output
 
