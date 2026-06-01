@@ -19,7 +19,7 @@ Full sweep of all projects in `~/dev`. One block per project with a session-log.
 Single project. Full re-entry prompt, all TODOs, all gotchas, all decisions, full git state. Use before starting a session on that project. **OPEN TODOs are tiered by priority (severity descending: Critical → High → Medium → Low → Backlog) and tag-grouped within each tier** — apply the same Step-6 tier assignment used by the Triage Block, but render it inside this single project's block (see Step 7 / deep-dive template). This is distinct from the cross-project Triage Block, which deep-dive still skips.
 
 ### Triage-only — `/dev-brief triage`
-Runs full discovery + TODO collection + git reconciliation, but skips printing project blocks and orphans. Outputs only the Triage Block. Use when you just need prioritized work order without the per-project narrative. Skips reading Gotchas/Decisions sections to reduce input tokens.
+Runs full discovery + TODO collection + git reconciliation, but skips printing project blocks and orphans. Outputs only the Triage Block. Use when you just need prioritized work order without the per-project narrative. Skips reading Gotchas/Decisions sections to reduce input tokens. After terminal output, writes `~/dev/TRIAGE-BLOCK.md` — HTML-colored visual dashboard (see `templates/format-triage.md`).
 
 ---
 
@@ -48,14 +48,14 @@ If `~/dev/session-log.md` exists, treat it as a special project named `[machine]
 For each active project (and `[machine]`), decide whether to READ the log or trust the cache:
 ```bash
 live=$(stat -c %Y "$log" 2>/dev/null)              # log's modification time (epoch seconds)
-cached=$(awk -v want="$proj" '/^## /{cur=substr($0,4);next} /^mtime:/&&cur==want{sub(/^mtime:[[:space:]]*/,"");print;exit}' ~/dev/TRIAGE-BLOCK.md 2>/dev/null)
+cached=$(awk -v want="$proj" '/^## /{cur=substr($0,4);next} /^mtime:/&&cur==want{sub(/^mtime:[[:space:]]*/,"");print;exit}' ~/dev/.triage-cache 2>/dev/null)
 ```
 - `live` empty → **GONE** (log deleted; drop the project's cache block, omit from brief)
 - `cached` empty → **READ** (cold: never cached)
 - `live > cached` → **READ** (log changed since last brief)
 - `live <= cached` → **HIT** (nothing changed; skip the log read)
 
-**On HIT:** load the project's open-TODO lines verbatim from its `## {project}` block in `~/dev/TRIAGE-BLOCK.md`. **Do NOT read the session-log.** (Gotchas/Decisions/re-entry are not cached — they're only needed for deep-dive mode, which always READs its single target project.)
+**On HIT:** load the project's open-TODO lines verbatim from its `## {project}` block in `~/dev/.triage-cache`. **Do NOT read the session-log.** (Gotchas/Decisions/re-entry are not cached — they're only needed for deep-dive mode, which always READs its single target project.)
 
 **On READ/cold, parse session-log.md (latest session block only):**
 - Session date/time (from `## Session Handoff — {date}` header — parse every block's date and take the NEWEST by date; do NOT assume position. Logs vary: the machine log is newest-at-top, kos is newest-at-bottom)
@@ -64,7 +64,7 @@ cached=$(awk -v want="$proj" '/^## /{cur=substr($0,4);next} /^mtime:/&&cur==want
 - Decisions section: first 3 bullet lines under `### Decisions Made`
 - Re-entry prompt: full block under `### Re-Entry Prompt` (used in deep-dive mode). **Splice on render:** as of the handoff dup-kill, this section stores prose + first-action with a *pointer* to `### Incomplete / Next Steps`, NOT the verbatim TODO list. When printing the deep-dive RE-ENTRY PROMPT box, expand that pointer — inline every unchecked `- [ ]` item from the same block's Incomplete section so the printed paste is self-contained. The log stays small; the printed prompt stays complete.
 
-**After a READ, refresh the cache — MANDATORY, runs in triage mode too:** rewrite that project's `## {project}` block in `~/dev/TRIAGE-BLOCK.md` with the verbatim open-TODO lines just parsed and `mtime:` = a FRESH `stat -c %Y` of the log taken *after* any Step-3 self-heal write. Then re-`stat` the log and confirm the written `mtime:` equals live; if it doesn't match, the block is still stale and the next brief will needlessly re-READ — rewrite until they match. **Why this is not optional:** skipping the refresh is the #1 cache bug — an unrefreshed block leaves `cached < live`, so every later brief re-reads an unchanged log and the cache never pays off. Triage mode is output-minimal but MUST still do this write-back. (Write-through: `/handoff` does the same for the project it just logged — see session-handoff.)
+**After a READ, refresh the cache — MANDATORY, runs in triage mode too:** rewrite that project's `## {project}` block in `~/dev/.triage-cache` with the verbatim open-TODO lines just parsed and `mtime:` = a FRESH `stat -c %Y` of the log taken *after* any Step-3 self-heal write. Then re-`stat` the log and confirm the written `mtime:` equals live; if it doesn't match, the block is still stale and the next brief will needlessly re-READ — rewrite until they match. **Why this is not optional:** skipping the refresh is the #1 cache bug — an unrefreshed block leaves `cached < live`, so every later brief re-reads an unchanged log and the cache never pays off. Triage mode is output-minimal but MUST still do this write-back. (Write-through: `/handoff` does the same for the project it just logged — see session-handoff.)
 
 **Run git commands (from that project's directory):**
 ```bash
@@ -180,7 +180,7 @@ See Output Format below.
 
 - **Default mode** — see `templates/format-default.md`
 - **Deep-dive mode** — see `templates/format-deep-dive.md`
-- **Triage-only mode** — header: `TRIAGE — {YYYY-MM-DD}` · `{Y} open TODOs across {N} projects`. Then Triage Block (same structure as end of default format). No project blocks, no orphans.
+- **Triage-only mode** — header: `TRIAGE — {YYYY-MM-DD}` · `{Y} open TODOs across {N} projects`. Then Triage Block (same structure as end of default format). No project blocks, no orphans. Then write `~/dev/TRIAGE-BLOCK.md` using the HTML color format in `templates/format-triage.md`.
 
 ---
 
@@ -189,7 +189,7 @@ See Output Format below.
 Steps 1–7 above define the behavior. These add constraints not already stated there (don't restate the steps):
 
 1. **Execute immediately** — no clarifying questions.
-2. **Cache gate before any log read** — `stat` every session-log and decide READ/HIT/GONE against `~/dev/TRIAGE-BLOCK.md` (see Step 2 + Triage Cache section). Only READ logs that are cold or changed; trust the cache on a HIT. **Refresh each READ project's cache block is MANDATORY — including in triage mode — and verified (`stat` after write == live mtime); an unrefreshed block re-reads forever.** After any Step-3 self-heal write to a log, re-refresh that block with the post-write mtime. Deep-dive mode always READs its single target (skip the gate there).
+2. **Cache gate before any log read** — `stat` every session-log and decide READ/HIT/GONE against `~/dev/.triage-cache` (see Step 2 + Triage Cache section). Only READ logs that are cold or changed; trust the cache on a HIT. **Refresh each READ project's cache block is MANDATORY — including in triage mode — and verified (`stat` after write == live mtime); an unrefreshed block re-reads forever.** After any Step-3 self-heal write to a log, re-refresh that block with the post-write mtime. Deep-dive mode always READs its single target (skip the gate there).
 3. Run all git commands in parallel to keep output fast.
 4. **Latest session only** — block ordering is NOT consistent across logs (machine log is newest-at-top; kos is newest-at-bottom). Parse the date in every `## Session Handoff — {date}` header and select the block with the newest date as the active one. Never assume position (top or bottom) = latest. All other blocks are history.
 5. If a project has zero open TODOs, show `· (no open TODOs)` — never skip silently.
@@ -200,7 +200,8 @@ Steps 1–7 above define the behavior. These add constraints not already stated 
 10. **Auto-reconcile before printing** — write resolved items to `session-log.md` first, then render with `✓` markers. When in doubt, leave `- [ ]` untouched.
 11. **task_plan.md reconciliation** — apply the same push/commit reconciliation to `task_plan.md` open items if present.
 12. **Fix-commit flags are advisory-only (Step 3b)** — `⚑ possibly resolved` items are NEVER written to any log and NEVER auto-closed; they are recomputed every run from live git, like git state and tiers. They surface a `[BUG]`/`[FEAT]`/`[RELEASE]` TODO whose work a normal commit may have already done (the stale-after-fix gap, RCA 2026-05-30). Bias to precision: skip a doubtful match rather than emit a noisy flag.
-12. **Triage Block** — emit after the orphans list, before the footer. Omit empty tiers. Default mode only — skip in deep-dive.
+13. **Triage Block** — emit after the orphans list, before the footer. Omit empty tiers. Default mode only — skip in deep-dive.
+14. **Visual triage write (triage mode only)** — after terminal output, write `~/dev/TRIAGE-BLOCK.md` using `templates/format-triage.md` as the format guide. Do not write in default or deep-dive mode.
 
 ---
 
@@ -215,7 +216,7 @@ bug, error, unresolved, critical, missing, haven't, has not, hasn't
 
 ---
 
-## Triage Cache — `~/dev/TRIAGE-BLOCK.md`
+## Triage Cache — `~/dev/.triage-cache`
 
 A single machine-wide cache that lets the brief skip reading unchanged session-logs. On a quiet day every log is a HIT and the brief reads only this ~0.5 KB file instead of ~175 KB of logs.
 
