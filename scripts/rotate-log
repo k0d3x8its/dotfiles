@@ -1,0 +1,96 @@
+#!/usr/bin/env python3
+"""
+rotate-log: keep the newest N session-handoff blocks live; move older ones to ARCHIVE-LOG.md.
+Usage: rotate-log <log_path> [N]   (default N=3)
+Zero Claude tokens. Called by /handoff step 7c.
+Prints "rotated" if rotation occurred so caller knows to re-run update-cache.
+"""
+
+import re
+import sys
+from datetime import datetime
+from pathlib import Path
+
+BLOCK_RE = re.compile(r"^## Session Handoff")
+DATE_RE = re.compile(r"(\d{4}-\d{2}-\d{2} \d{1,2}:\d{2} [AP]M)")
+ARCHIVE_HEADER = (
+    "# Session Log — Archive\n"
+    "> Rotated-out session-handoff blocks (newest-at-bottom). "
+    "Auto-maintained by rotate-log. Cold human history; tools do not read this.\n"
+    "---\n\n"
+)
+
+
+def parse_blocks(lines: list) -> tuple:
+    """Return (header_lines, [(epoch, start, end), ...]) in file order."""
+    header, blocks, i = [], [], 0
+
+    while i < len(lines) and not BLOCK_RE.match(lines[i]):
+        header.append(lines[i])
+        i += 1
+
+    while i < len(lines):
+        if BLOCK_RE.match(lines[i]):
+            start = i
+            epoch = 0
+            m = DATE_RE.search(lines[i])
+            if m:
+                try:
+                    epoch = int(datetime.strptime(m.group(1), "%Y-%m-%d %I:%M %p").timestamp())
+                except ValueError:
+                    pass
+            j = i + 1
+            while j < len(lines) and not BLOCK_RE.match(lines[j]):
+                j += 1
+            blocks.append((epoch, start, j))
+            i = j
+        else:
+            i += 1
+
+    return header, blocks
+
+
+def rotate(log_path: Path, n: int) -> bool:
+    lines = log_path.read_text().splitlines(keepends=True)
+    header, blocks = parse_blocks(lines)
+
+    if len(blocks) <= n:
+        return False
+
+    by_date = sorted(blocks, key=lambda x: x[0])
+    to_archive = by_date[:-n]        # oldest (count-N)
+    to_keep = sorted(by_date[-n:], key=lambda x: x[1])  # newest N, file order
+
+    arch_path = log_path.parent / "ARCHIVE-LOG.md"
+    if not arch_path.exists():
+        arch_path.write_text(ARCHIVE_HEADER)
+
+    with arch_path.open("a") as f:
+        for _, s, e in sorted(to_archive, key=lambda x: x[0]):  # oldest-first in archive
+            f.writelines(lines[s:e])
+
+    new_lines = header[:]
+    for _, s, e in to_keep:
+        new_lines.extend(lines[s:e])
+
+    log_path.write_text("".join(new_lines))
+    return True
+
+
+if __name__ == "__main__":
+    if len(sys.argv) < 2:
+        print("Usage: rotate-log <log_path> [N]", file=sys.stderr)
+        sys.exit(1)
+
+    log_path = Path(sys.argv[1]).expanduser().resolve()
+    n = int(sys.argv[2]) if len(sys.argv) > 2 else 3
+
+    if not log_path.exists():
+        print(f"Log not found: {log_path}", file=sys.stderr)
+        sys.exit(1)
+
+    rotated = rotate(log_path, n)
+    if rotated:
+        print(f"rotated: kept newest {n} blocks in {log_path.name}")
+    else:
+        print(f"no rotation needed ({log_path.name} has ≤{n} blocks)")
