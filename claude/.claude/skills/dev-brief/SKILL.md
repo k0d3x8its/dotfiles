@@ -19,7 +19,7 @@ Full sweep of all projects in `~/dev`. One block per project with a session-log.
 Single project. Full re-entry prompt, all TODOs, all gotchas, all decisions, full git state. Use before starting a session on that project. **OPEN TODOs are tiered by priority (severity descending: Critical → High → Medium → Low → Backlog) and tag-grouped within each tier** — apply the same Step-6 tier assignment used by the Triage Block, but render it inside this single project's block (see Step 7 / deep-dive template). This is distinct from the cross-project Triage Block, which deep-dive still skips.
 
 ### Triage-only — `/dev-brief triage`
-Runs full discovery + TODO collection + git reconciliation, but skips printing project blocks and orphans. Outputs only the Triage Block. Use when you just need prioritized work order without the per-project narrative. Skips reading Gotchas/Decisions sections to reduce input tokens. After terminal output, writes `~/dev/TRIAGE-BLOCK.md` — HTML-colored visual dashboard (see `templates/format-triage.md`).
+**Primary use: cache repair.** Runs full discovery + TODO collection + git reconciliation when `.triage-cache` is stale, corrupted, or missing project blocks. Skips printing project blocks and orphans; outputs only the Triage Block to terminal. After terminal output, calls `update-triage` (see instruction 14) to regenerate `~/dev/TRIAGE-BLOCK.md`. Under normal operation, `TRIAGE-BLOCK.md` is maintained by the `update-triage` shell script after every `/handoff` — run `/dev-brief triage` only when the cache needs a manual rebuild.
 
 ---
 
@@ -180,7 +180,7 @@ See Output Format below.
 
 - **Default mode** — see `templates/format-default.md`
 - **Deep-dive mode** — see `templates/format-deep-dive.md`
-- **Triage-only mode** — header: `TRIAGE — {YYYY-MM-DD}` · `{Y} open TODOs across {N} projects`. Then Triage Block (same structure as end of default format). No project blocks, no orphans. Then write `~/dev/TRIAGE-BLOCK.md` using the HTML color format in `templates/format-triage.md`.
+- **Triage-only mode** — header: `TRIAGE — {YYYY-MM-DD}` · `{Y} open TODOs across {N} projects`. Then Triage Block (same structure as end of default format). No project blocks, no orphans. Then run `update-triage` via Bash (see instruction 14) — do not generate HTML directly.
 
 ---
 
@@ -201,7 +201,7 @@ Steps 1–7 above define the behavior. These add constraints not already stated 
 11. **task_plan.md reconciliation** — apply the same push/commit reconciliation to `task_plan.md` open items if present.
 12. **Fix-commit flags are advisory-only (Step 3b)** — `⚑ possibly resolved` items are NEVER written to any log and NEVER auto-closed; they are recomputed every run from live git, like git state and tiers. They surface a `[BUG]`/`[FEAT]`/`[RELEASE]` TODO whose work a normal commit may have already done (the stale-after-fix gap, RCA 2026-05-30). Bias to precision: skip a doubtful match rather than emit a noisy flag.
 13. **Triage Block** — emit after the orphans list, before the footer. Omit empty tiers. Default mode only — skip in deep-dive.
-14. **Visual triage write (triage mode only)** — after terminal output, write `~/dev/TRIAGE-BLOCK.md` using `templates/format-triage.md` as the format guide. Do not write in default or deep-dive mode.
+14. **Visual triage write (triage mode only)** — after terminal output, run `update-triage` via Bash to regenerate `~/dev/TRIAGE-BLOCK.md`. The shell script reads `.triage-cache` (just refreshed this run) and writes the HTML-colored file — no need for Claude to generate the HTML directly. Do not write in default or deep-dive mode.
 
 ---
 
