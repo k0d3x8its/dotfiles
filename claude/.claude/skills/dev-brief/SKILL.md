@@ -1,6 +1,6 @@
 ---
 name: dev-brief
-description: Morning/context-switch brief across all projects in ~/dev. Reads session-log.md per project, surfaces open TODOs, live git state, gotchas, decisions, branch, and release-pending signals. Auto-reconciles session-log TODOs against live git state. Triggers on /dev-brief or /dev-brief <project>.
+description: Morning/context-switch brief across all projects in ~/dev. Reads TODOS.md or SESSION-LOG.md per project, surfaces open TODOs, live git state, gotchas, decisions, branch, and release-pending signals. Auto-reconciles TODOs against live git state. Triggers on /dev-brief or /dev-brief <project>.
 ---
 
 # Dev Brief Skill
@@ -33,14 +33,14 @@ find ~/dev -mindepth 1 -maxdepth 1 -type d -printf '%f\n' | sort
 ```
 
 For each directory, check:
-- Does `session-log.md` exist? → active project
-- No `session-log.md`? → orphan, collect for summary at end
+- Does `TODOS.md`, `SESSION-LOG.md`, or `session-log.md` exist? → active project
+- None of the above? → orphan, collect for summary at end
 
 **Also check for machine-level log:**
 ```bash
-[ -f ~/dev/session-log.md ] && echo "EXISTS"
+[ -f ~/dev/SESSION-LOG.md ] || [ -f ~/dev/session-log.md ] && echo "EXISTS"
 ```
-If `~/dev/session-log.md` exists, treat it as a special project named `[machine]` with no git state. Apply the same session parsing, reconciliation, TODO flagging, and staleness rules. Show it as the first block in the brief. In deep-dive mode, `/dev-brief machine` targets this file.
+If `~/dev/SESSION-LOG.md` or `~/dev/session-log.md` exists, treat it as a special project named `[machine]` with no git state. Apply the same session parsing, reconciliation, TODO flagging, and staleness rules. Show it as the first block in the brief. In deep-dive mode, `/dev-brief machine` targets this file.
 
 ### Step 2 — Per active project, gather data
 
@@ -57,14 +57,19 @@ cached=$(awk -v want="$proj" '/^## /{cur=substr($0,4);next} /^mtime:/&&cur==want
 
 **On HIT:** load the project's open-TODO lines verbatim from its `## {project}` block in `~/dev/.triage-cache`. **Do NOT read the session-log.** (Gotchas/Decisions/re-entry are not cached — they're only needed for deep-dive mode, which always READs its single target project.)
 
-**On READ/cold, parse session-log.md (latest session block only):**
+**On READ/cold:**
+- If `TODOS.md` exists: read all `- [ ]` lines from it for TODOs. Read SESSION-LOG.md/session-log.md (latest block only) for session date, Gotchas, Decisions, and Re-Entry Prompt.
+- Else: parse SESSION-LOG.md or session-log.md (latest block only) for all of the below.
 - Session date/time (from `## Session Handoff — {date}` header — parse every block's date and take the NEWEST by date; do NOT assume position. Logs vary: the machine log is newest-at-top, kos is newest-at-bottom)
-- All unchecked TODOs: lines matching `- [ ]`
+- All unchecked TODOs: lines matching `- [ ]` (from TODOS.md if it exists, else from Incomplete section)
 - Gotchas section: all bullet lines under `### Gotchas / Notes`
 - Decisions section: first 3 bullet lines under `### Decisions Made`
-- Re-entry prompt: full block under `### Re-Entry Prompt` (used in deep-dive mode). **Splice on render:** as of the handoff dup-kill, this section stores prose + first-action with a *pointer* to `### Incomplete / Next Steps`, NOT the verbatim TODO list. When printing the deep-dive RE-ENTRY PROMPT box, expand that pointer — inline every unchecked `- [ ]` item from the same block's Incomplete section so the printed paste is self-contained. The log stays small; the printed prompt stays complete.
+- Re-entry prompt: full block under `### Re-Entry Prompt` (used in deep-dive mode). **Splice on render:** this section stores prose + first-action with a pointer to TODOS.md (or `### Incomplete / Next Steps` for legacy logs). When printing the deep-dive RE-ENTRY PROMPT box, expand that pointer — inline every unchecked `- [ ]` item from TODOS.md (or the same block's Incomplete section) so the printed paste is self-contained.
 
-**After a READ, refresh the cache — MANDATORY, runs in triage mode too:** rewrite that project's `## {project}` block in `~/dev/.triage-cache` with the verbatim open-TODO lines just parsed and `mtime:` = a FRESH `stat -c %Y` of the log taken *after* any Step-3 self-heal write. Then re-`stat` the log and confirm the written `mtime:` equals live; if it doesn't match, the block is still stale and the next brief will needlessly re-READ — rewrite until they match. **Why this is not optional:** skipping the refresh is the #1 cache bug — an unrefreshed block leaves `cached < live`, so every later brief re-reads an unchanged log and the cache never pays off. Triage mode is output-minimal but MUST still do this write-back. (Write-through: `/handoff` does the same for the project it just logged — see session-handoff.)
+**After a READ, refresh the cache — MANDATORY, runs in triage mode too:**
+- For **TODOS.md projects**: call `update-cache <project> <todos_path>` — the script stats TODOS.md and writes a pointer block. Do this after any Step-3 self-heal write to TODOS.md.
+- For **legacy session-log projects**: rewrite that project's `## {project}` block in `~/dev/.triage-cache` with the verbatim open-TODO lines just parsed and `mtime:` = a FRESH `stat -c %Y` of the log taken *after* any Step-3 self-heal write.
+In both cases, re-`stat` the tracked file and confirm the written `mtime:` equals live; an unrefreshed block re-reads forever. **Why this is not optional:** skipping the refresh is the #1 cache bug. Triage mode is output-minimal but MUST still do this write-back. (Write-through: `/handoff` does the same — see session-handoff.)
 
 **Run git commands (from that project's directory):**
 ```bash
@@ -87,7 +92,7 @@ If `task_plan.md` exists, extract unchecked items (`- [ ]`) from it and merge in
 
 For each project, compare live git output against its open TODOs (loaded from the cache on a HIT, from the log on a READ). Git state is **always live** — never cached; `git log @{u}..` / `status` output is tiny.
 
-**Self-healing on HIT:** if reconciliation resolves a TODO it must WRITE the change to `session-log.md` (per the rules below). That write bumps the log's mtime. **Immediately after the write, refresh this project's cache block** — fresh `stat -c %Y` + the now-current open-TODO lines (drop the resolved `- [x]` line) — so the block stays a HIT next brief instead of self-invalidating into a needless cold re-READ of an otherwise-unchanged log. A HIT therefore never strands a resolved TODO *and* never forces the next brief to re-read it.
+**Self-healing on HIT:** if reconciliation resolves a TODO, write the change (per the rules below). That write bumps the file's mtime. **Immediately after the write, refresh this project's cache block** (call `update-cache` for TODOS.md projects; inline awk for legacy) — so the block stays a HIT next brief instead of self-invalidating into a needless cold re-READ of an otherwise-unchanged file. A HIT therefore never strands a resolved TODO *and* never forces the next brief to re-read it.
 
 **Reconciliation rules:**
 
@@ -97,7 +102,7 @@ For each project, compare live git output against its open TODOs (loaded from th
 | `git status --short` = 0 files | `uncommitted`, `not yet committed`, `stage`, `dirty`, `git add`, `commit changes` | Auto-resolve |
 
 **Auto-resolve means:**
-1. In `session-log.md`: change the matched `- [ ]` line to `- [x]` and append ` *(auto-resolved by dev-brief {YYYY-MM-DD})*`
+1. **TODOS.md project**: remove the matched `- [ ]` line from `TODOS.md`; call `update-cache <project> <todos_path>`. **Legacy session-log project**: change the matched `- [ ]` line to `- [x]` in `SESSION-LOG.md` or `session-log.md` and append ` *(auto-resolved by dev-brief {YYYY-MM-DD})*`
 2. In the brief output: show the item with a `✓` prefix instead of `·` and label `(auto-resolved)`
 3. Do NOT auto-resolve if the TODO text is ambiguous — e.g. "consider committing X" or "decide whether to push". Only resolve when the intent is clearly a push/commit action that live git confirms is done.
 4. Only modify TODOs within the latest session block. Never touch earlier session entries.
@@ -105,7 +110,7 @@ For each project, compare live git output against its open TODOs (loaded from th
 
 **Step 3b — Fix-commit reconcile (FLAG-ONLY, never auto-resolve):**
 
-The push/commit rules above only catch TODOs whose intent *is* "push/commit". They miss the common stale-after-fix case: a `[BUG]`/`[FEAT]`/`[RELEASE]` TODO whose underlying work was already done by a normal fix commit. This pass surfaces those for human verification — it **never** writes to `session-log.md` and **never** changes `- [ ]` to `- [x]`. It is advisory output only, recomputed every run (like git state and tiers — never cached).
+The push/commit rules above only catch TODOs whose intent *is* "push/commit". They miss the common stale-after-fix case: a `[BUG]`/`[FEAT]`/`[RELEASE]` TODO whose underlying work was already done by a normal fix commit. This pass surfaces those for human verification — it **never** writes to any file and **never** changes `- [ ]` to `- [x]`. It is advisory output only, recomputed every run (like git state and tiers — never cached).
 
 Run this pass only for open TODOs in the **latest session block** that are tagged `[BUG]`, `[FEAT]`, or `[RELEASE]` (the work-producing tags). Skip `[DECISION]`/`[INVESTIGATE]`/`[CHORE]`/`[DOCS]` — those don't close via a code commit.
 
@@ -193,11 +198,11 @@ Steps 1–7 above define the behavior. These add constraints not already stated 
 3. Run all git commands in parallel to keep output fast.
 4. **Latest session only** — block ordering is NOT consistent across logs (machine log is newest-at-top; kos is newest-at-bottom). Parse the date in every `## Session Handoff — {date}` header and select the block with the newest date as the active one. Never assume position (top or bottom) = latest. All other blocks are history.
 5. If a project has zero open TODOs, show `· (no open TODOs)` — never skip silently.
-6. If `session-log.md` has no `### Incomplete / Next Steps` section, note `· (no TODO section found)`.
-7. **Orphans** — list every *directory* in `~/dev/` lacking a `session-log.md`. Root files are never listed (except `~/dev/session-log.md`, handled as `[machine]`).
+6. If project has no `TODOS.md` and `SESSION-LOG.md`/`session-log.md` has no `### Incomplete / Next Steps` section, note `· (no TODO section found)`.
+7. **Orphans** — list every *directory* in `~/dev/` lacking `TODOS.md`, `SESSION-LOG.md`, or `session-log.md`. Root files are never listed (except `~/dev/SESSION-LOG.md` or `~/dev/session-log.md`, handled as `[machine]`).
 8. Print output as plain markdown — no code-block wrapper around the brief.
 9. Dev dir is always `~/dev/` — never prompt for a path.
-10. **Auto-reconcile before printing** — write resolved items to `session-log.md` first, then render with `✓` markers. When in doubt, leave `- [ ]` untouched.
+10. **Auto-reconcile before printing** — write resolved items to `TODOS.md` (TODOS.md projects) or `SESSION-LOG.md`/`session-log.md` (legacy) first, then render with `✓` markers. When in doubt, leave `- [ ]` untouched.
 11. **task_plan.md reconciliation** — apply the same push/commit reconciliation to `task_plan.md` open items if present.
 12. **Fix-commit flags are advisory-only (Step 3b)** — `⚑ possibly resolved` items are NEVER written to any log and NEVER auto-closed; they are recomputed every run from live git, like git state and tiers. They surface a `[BUG]`/`[FEAT]`/`[RELEASE]` TODO whose work a normal commit may have already done (the stale-after-fix gap, RCA 2026-05-30). Bias to precision: skip a doubtful match rather than emit a noisy flag.
 13. **Triage Block** — emit after the orphans list, before the footer. Omit empty tiers. Default mode only — skip in deep-dive.
@@ -220,33 +225,34 @@ bug, error, unresolved, critical, missing, haven't, has not, hasn't
 
 A single machine-wide cache that lets the brief skip reading unchanged session-logs. On a quiet day every log is a HIT and the brief reads only this ~0.5 KB file instead of ~175 KB of logs.
 
-**Format** — one block per *active* project (logged dirs only; orphans are never cached):
+**Format** — one block per *active* project (logged dirs only; orphans are never cached). Two formats, both valid:
 ```
-<!-- triage-cache v1 | dev-brief read-skip | "## <project>" then "mtime: <epoch>" then verbatim "- [ ]" lines -->
+<!-- triage-cache v1 | dev-brief read-skip | "## <project>" then "mtime: <epoch>" then
+     "path: <todos>" (pointer — TODOS.md projects) or verbatim "- [ ]" lines (legacy) -->
 
-## [machine]
-mtime: 1780231639
-- [ ] [BROKEN][INVESTIGATE] ...verbatim open-TODO line from the latest session block...
-- [ ] [BLOCKER][DECISION] ...
+## [machine]           ← pointer format (TODOS.md project)
+mtime: 1780324513
+path: /home/k0d3x/dev/TODOS.md
 
-## batctrl
+## batctrl             ← legacy format (session-log.md project)
 mtime: 1780189650
 - [ ] [BUG] ...
 ```
 
 **Rules:**
-- `mtime:` = `stat -c %Y` of that project's session-log at the time it was last READ.
-- TODO lines = the verbatim `- [ ]` lines from the **latest** session block only. They are single-line in session-logs, so the cache parses line-by-line (no multi-line escaping).
-- Stores **only** mtime + raw TODO lines. **Never** caches tiers (recomputed each run) or git state (always live).
-- **Writers:** dev-brief refreshes a block after a READ; session-handoff refreshes the block for the project it just logged (write-through, keeps it a HIT next brief). The cache is idempotent derived state — safe to delete; a cold rebuild costs one full read pass.
-- **GONE:** if a cached `## {project}` has no live log, drop the block.
-- `[machine]` log = `~/dev/session-log.md`; project logs = `~/dev/{project}/session-log.md`.
+- `mtime:` = `stat -c %Y` of the tracked file (TODOS.md for pointer projects; session-log for legacy).
+- **Pointer format**: `path:` line points to TODOS.md; `parse_cache` (in update-triage) reads that file for TODO lines.
+- **Legacy format**: TODO lines are verbatim `- [ ]` lines from the latest session block.
+- Stores **only** mtime + source pointer or raw lines. **Never** caches tiers (recomputed each run) or git state (always live).
+- **Writers:** dev-brief refreshes a block after a READ; session-handoff calls `update-cache` for TODOS.md projects (write-through, keeps it a HIT next brief). Cache is idempotent derived state — safe to delete; cold rebuild costs one full read pass.
+- **GONE:** if a cached `## {project}` has no live file (TODOS.md or session-log), drop the block.
+- `[machine]` → `~/dev/TODOS.md` (or `~/dev/SESSION-LOG.md` / `~/dev/session-log.md` for legacy); project logs → `~/dev/{project}/TODOS.md` (or session-log).
 
 ---
 
 ## Integration Notes
 
-- **session-handoff** writes the `session-log.md` this skill reads. Run `/handoff` at end of every session to keep briefs accurate.
+- **session-handoff** writes `SESSION-LOG.md` and `TODOS.md` that this skill reads. Run `/handoff` at end of every session to keep briefs accurate.
 - **planning-with-files** writes `task_plan.md`. This skill merges open items from it automatically if present.
 - Run `/dev-brief <project>` immediately before starting a session on that project — re-entry prompt is ready to paste after `/clear`.
 - When a Triage Block item carries `[BUG]`, append `→ /diagnose` to the line in output so the next session starts with the right skill.
