@@ -23,3 +23,6 @@ jobs:
 
       - name: Run tests
         run: bats --tap tests/
+
+      - name: Run Python tests
+        run: python3 tests/test_update_triage.py
