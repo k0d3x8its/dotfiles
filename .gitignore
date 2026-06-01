@@ -26,6 +26,7 @@ claude/.claude/plugins/plugin-catalog-cache.json
 # Claude session artifacts — generated, not config
 session-log.md
 RELEASE-NOTES.md
+TODOS.md
 
 # General
 .DS_Store
