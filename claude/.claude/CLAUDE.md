@@ -17,7 +17,7 @@ External (not auto-surfaced): `/ce-code-review` `/ce-security-audit` `/discover`
 
 ## TODO Tags
 
-When writing TODOs to session-log.md (via /handoff or inline), prefix items with the appropriate tags. Tags combine freely: `[BROKEN][BUG]`, `[BLOCKER][DECISION]`, etc.
+When writing TODOs to TODOS.md (via /handoff or inline), prefix items with the appropriate tags. Tags combine freely: `[BROKEN][BUG]`, `[BLOCKER][DECISION]`, etc.
 
 **Priority tags** — control which Triage Block tier the item lands in:
 
