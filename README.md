@@ -12,11 +12,11 @@ dotfiles/
   git/                → ~/.gitconfig, ~/.gitignore_global
   claude/             → ~/.claude/ (CLAUDE.md, settings, hooks, skills, references, plugins)
   ghostty/            → ~/.config/ghostty/sidebar.conf, autostart .desktop, ~/.local/bin/ghostty-sidebar
-  scripts/            → trueline.sh (symlinked to ~/dev/trueline.sh)
+  scripts/            → trueline.sh (→ ~/dev/trueline.sh), update-triage, update-cache, rotate-log
   fonts/              → Sauce Code Pro Nerd Font + Menlo for Powerline
   docs/               → dev-workflow-guide.md, hooks-config.json
-  tests/              → install.bats (bats suite for install.sh)
-  .github/workflows/  → ci.yml (shellcheck + bats on push/PR)
+  tests/              → install.bats (bats suite), test_update_triage.py (Python unit tests)
+  .github/workflows/  → ci.yml (shellcheck + bats + Python tests on push/PR)
   packages.txt        → manually installed apt packages
   install.sh          → full bootstrap script
 ```
