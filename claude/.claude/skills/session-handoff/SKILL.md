@@ -126,7 +126,7 @@ No `### Incomplete / Next Steps` in the block — open work lives in `TODOS.md` 
    update-triage 2>/dev/null || echo "(update-triage failed — run manually to refresh TRIAGE-BLOCK.md)"
    ```
 
-**8.** Changelog: follow the rule in `~/.claude/CLAUDE.md` — if this session modified files under `~/dev/dotfiles/`, prepend a changelog entry to `~/dev/dotfiles/CHANGELOG.md` under `## [Unreleased]`. If machine-only changes, skip. Do not prompt the user.
+**8.** Changelog: use `/changelog` manually if this session produced changelog-worthy changes. Do not auto-update inline — CLAUDE.md delegates this to `/changelog`.
 
 **9.** Print the **Re-Entry Prompt** to the terminal. Two variants:
 
