@@ -12,7 +12,7 @@ External (not auto-surfaced): `/ce-code-review` `/ce-security-audit` `/discover`
 ## Session Rules
 - Track session start time. Warn me at 45 minutes to run /handoff.
 - Always read task_plan.md, findings.md, and progress.md if they exist in the project root.
-- When I paste a re-entry prompt, treat it as ground truth for project state.
+- When I paste a re-entry prompt: treat decisions, background context, and architectural choices as authoritative. Reconcile task state (completed/open/in-progress) against current files (task_plan.md, progress.md, `git log --oneline -5`) before acting — file state wins on conflicts.
 - CHANGELOG on [machine] sessions, route by what changed: if the session modified files under `~/dev/dotfiles/`, prepend a changelog entry to `~/dev/dotfiles/CHANGELOG.md` under `## [Unreleased]`; if the changes were machine-only (no dotfiles impact), skip — don't ask.
 
 ## TODO Tags
