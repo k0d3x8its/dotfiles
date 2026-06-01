@@ -95,10 +95,6 @@ def strip_priority_tags(text: str) -> str:
     return re.sub(r"\s+", " ", text).strip()
 
 
-def truncate(text: str, n: int = 80) -> str:
-    return text if len(text) <= n else text[:n] + "…"
-
-
 def parse_cache(path: Path) -> dict:
     projects = {}
     current = None
