@@ -1,5 +1,5 @@
 ---
-name: session-checkpoint
+name: checkpoint
 description: Durable end-of-work-session checkpoint. Writes a narrative block to SESSION-LOG.md, syncs TODOS.md, rotates the log, refreshes the triage pipeline, and prints a re-entry prompt. Triggers on /checkpoint. Use at end of day or end of a multi-hour work session — not for quick mid-session forks (use /handoff for those).
 ---
 
