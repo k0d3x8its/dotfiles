@@ -16,17 +16,24 @@ CACHE_HEADER = (
 )
 
 
+def _canonical(project: str) -> str:
+    """Normalize to [UPPER-CASE] form regardless of input casing or brackets."""
+    return f"[{project.strip('[]').upper()}]"
+
+
 def remove_project_block(lines: list, project: str) -> list:
+    target = _canonical(project)
     out, skip = [], False
     for line in lines:
         if line.startswith("## "):
-            skip = line.strip() == f"## {project}"
+            skip = _canonical(line.strip()[3:]) == target
         if not skip:
             out.append(line)
     return out
 
 
 def update_cache(project: str, todos_path: Path) -> None:
+    project = _canonical(project)
     mtime = int(todos_path.stat().st_mtime)
 
     if CACHE.exists():
