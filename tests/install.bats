@@ -24,7 +24,7 @@ make_fixture() {
     touch "$dir/claude/.claude/hooks/hook.sh"
     touch "$dir/claude/.claude/references/anti-patterns.md"
 
-    for skill in dev-setup release-notes session-handoff sync-trello trello-agent; do
+    for skill in changelog dev-brief dev-setup diagnose prototype release-notes session-checkpoint session-handoff session-handoff-return sync-trello tdd trello-agent; do
         mkdir -p "$dir/claude/.claude/skills/$skill"
         touch "$dir/claude/.claude/skills/$skill/SKILL.md"
     done
