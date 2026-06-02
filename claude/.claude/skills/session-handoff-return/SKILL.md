@@ -1,12 +1,12 @@
 ---
 name: session-handoff-return
-description: Pop a tangent back into the main session. Summarizes what the forked /handoff tangent found, auto-syncs new findings into TODOS.md, refreshes triage, and prints a tight paste-back block for the still-alive main session. Triggers on /handoff-return. The counterpart to /handoff (push). For durable end-of-day close, use /checkpoint.
+description: Pop a tangent back into the main session. Summarizes what the forked /handoff tangent found, auto-syncs new findings into TODOS.md, refreshes triage, and prints a tight paste-back block for the still-alive main session. Triggers on /handoff-return. The counterpart to /handoff (push). For durable end-of-day wrap-up, use /checkpoint.
 ---
 
 # Session Handoff Return Skill (pop / merge)
 
 **Trigger:** `/handoff-return`
-**Purpose:** Close a tangent opened by `/handoff` and merge its findings upward. Auto-sync new findings to `TODOS.md`, then print a paste-back block to drop into the main session so it continues enriched.
+**Purpose:** Finish a tangent opened by `/handoff` and merge its findings upward. Auto-sync new findings to `TODOS.md`, then print a paste-back block to drop into the main session so it continues enriched.
 
 **Mental model — push/pop:** `/handoff` pushed this tangent; `/handoff-return` pops it. The main session usually stayed alive — this skill produces the *return value* (findings) to paste back into it. Not durable memory; for end-of-work-session narrative use `/checkpoint`.
 
@@ -63,4 +63,4 @@ description: Pop a tangent back into the main session. Summarizes what the forke
 ## Related
 
 - `/handoff` — push: fork a tangent off the main session
-- `/checkpoint` — durable end-of-work-session close with full narrative
+- `/checkpoint` — durable end-of-work-session wrap-up with full narrative
