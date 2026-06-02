@@ -51,6 +51,7 @@ No priority tag = Medium (default). `[TEST]` overrides all other priority tags.
 | `[SECURITY]` | Security-sensitive (auth, secrets, perms, input handling) | Drop caveman, write careful, flag blast radius, suggest `/ce-security-audit` |
 | `[DOCS]` | Documentation-only (README, CHANGELOG, release notes, comments) | Prose mode, no code logic; batches with release work |
 | `[PERFORMANCE]` | Performance / token-cost work | Measure + deliver projection BEFORE changing anything |
+| `[UX]` | Requires manual user verification of a flow or experience — can't be automated | Write a checklist of steps + success criteria, then hand off. Don't try to automate or simulate. |
 
 ## My Conventions
 - Commit messages: conventional commits format (feat:, fix:, docs:, chore:)
