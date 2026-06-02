@@ -22,8 +22,10 @@ description: Generate and insert a dated sub-block under ## [Unreleased] in the 
 1. **Detect `CHANGELOG.md`** in the current project root (`pwd`). If missing, ask: "No CHANGELOG.md found — create one? (yes / no)". If yes, copy the template from `~/.claude/skills/dev-setup/templates/CHANGELOG.md`. If no, stop.
 2. **Find the last versioned entry** — scan for the first `## [vX.Y.Z]` or `## [X.Y.Z]` header (not `[Unreleased]`). Extract the version string.
 3. **Get commits since last version:**
-   - If a matching git tag exists: `git log {tag}..HEAD --oneline --no-merges`
-   - If no matching tag: `git log --oneline --no-merges -20` (last 20, capped)
+   - Run `git remote get-url origin` once; normalize to HTTPS base URL (strip `.git`; convert SSH `git@github.com:user/repo` → `https://github.com/user/repo`). Store as `{base_url}`. If this fails, set `{base_url}` to empty (plain hash fallback).
+   - If a matching git tag exists: `git log {tag}..HEAD --no-merges --format="%h %H %s"`
+   - If no matching tag: `git log --no-merges -20 --format="%h %H %s"` (last 20, capped)
+   - Each line yields: short hash (7 chars), full hash (40 chars), subject. No separate `git rev-parse` calls needed.
    - Filter out any commit whose subject already appears verbatim anywhere in the current `[Unreleased]` block (dedup).
 4. **If no new commits** after dedup → print "Nothing new since last entry — CHANGELOG.md unchanged." and stop.
 5. **Group commits by conventional-commit prefix** → sections with emoji prefix per entry:
@@ -42,7 +44,10 @@ description: Generate and insert a dated sub-block under ## [Unreleased] in the 
    | `deprecate:` | `#### Deprecated` | ⚠️ |
    | no prefix / other | `#### Changed` | ♻️ |
 
-   Strip the prefix from each entry body. Capitalise first letter. No trailing period. Append the short commit hash in brackets at end of line: `[abc1234]`. The hash comes from the leading 7-char token of each `git log --oneline` line — capture it before stripping the conventional-commit prefix.
+   Strip the prefix from each entry body. Capitalise first letter. No trailing period. Append the commit hash as a linked markdown reference at end of line using the short hash as display text and full hash in the URL:
+   - With remote: `[[abc1234]({base_url}/commit/{full_40_char_hash})]`
+   - Without remote (fallback): `[abc1234]`
+   - Both the short and full hash come directly from the `--format="%h %H %s"` log line — no extra calls needed.
 
 6. **Write a dated sub-block into `CHANGELOG.md`:**
    - Use today's date (`YYYY-MM-DD`) as the sub-block header: `### YYYY-MM-DD`
@@ -63,14 +68,14 @@ description: Generate and insert a dated sub-block under ## [Unreleased] in the 
 
 ### 2026-06-01
 #### Added
-- ➕ Changelog skill [a1b2c3d]
+- ➕ Changelog skill [[a1b2c3d](https://github.com/user/repo/commit/a1b2c3d...full)]
 
 #### Changed
-- ♻️ CLAUDE.md rule replaced with /changelog pointer [e4f5a6b]
+- ♻️ CLAUDE.md rule replaced with /changelog pointer [[e4f5a6b](https://github.com/user/repo/commit/e4f5a6b...full)]
 
 ### 2026-05-28
 #### Fixed
-- 🛠️ CI badge stuck on stale run [c7d8e9f]
+- 🛠️ CI badge stuck on stale run [[c7d8e9f](https://github.com/user/repo/commit/c7d8e9f...full)]
 
 ---
 
