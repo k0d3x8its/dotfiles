@@ -13,6 +13,7 @@
 - ➕ `scripts/rotate-log` — Python log rotation. Keeps newest N session blocks live in SESSION-LOG.md, moves older blocks to ARCHIVE-LOG.md. Replaces inline bash in `/handoff` step 7c
 - ➕ `TODOS.md` per-project canonical TODO source — separates open work from session narrative. SESSION-LOG.md is now narrative-only; TODOS.md is the single source of truth for open items
 - ➕ `tests/test_rotate_log.py` — `TestCheckpointBlocks` regression class (4 tests): checkpoint block parsed, handoff+checkpoint counted separately, checkpoint not swallowed into handoff, checkpoint date → epoch. Suite now 24 tests
+- ➕ `claude/.claude/hooks/refresh_triage.py` — `PostToolUse` hook: when a `TODOS.md` under `~/dev` is edited, derives the project and runs `update-cache` + `update-triage` to refresh `TRIAGE-BLOCK.md` automatically. Path-guarded (silent no-op on any other edit), runs in harness → zero model tokens. Registered in `settings.json` with an `Edit|Write` matcher
 
 #### Changed
 - ♻️ `claude/.claude/CLAUDE.md` — replaced inline dotfiles-only changelog rule with pointer to `/changelog` skill; added `/changelog` to skills list
@@ -32,6 +33,8 @@
 - ♻️ `git/.gitignore_global` — added `TODOS.md`; anchored all filename-only patterns to repo root with leading `/`
 - ♻️ `git/.gitconfig` and `git/.gitignore_global` — stowed (were real files; now symlinks managed by install.sh)
 - ♻️ `.gitignore` — removed redundant `TODOS.md` entry (now covered by global excludes)
+
+- ♻️ `claude/.claude/settings.json` — reconciled to live machine state and re-symlinked (`install.sh` already links it; the link had been replaced by a real file). Added `"model": "opus"`; removed stale manual caveman hooks (`caveman-activate.js` SessionStart + `caveman-mode-tracker.js` UserPromptSubmit) — the caveman plugin provides these, so they were the duplicate-hook burn already removed from live but never synced here
 
 #### Fixed
 - 🛠️ `scripts/rotate-log` — `BLOCK_RE` now matches `## Session Checkpoint` as well as `## Session Handoff` (`^## Session (?:Handoff|Checkpoint)`). Old regex undercounted blocks and swallowed checkpoint blocks into the preceding handoff block on rotation
