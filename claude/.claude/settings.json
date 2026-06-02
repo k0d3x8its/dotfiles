@@ -5,16 +5,6 @@
         "hooks": [
           {
             "type": "command",
-            "command": "node \"/home/k0d3x/.claude/hooks/caveman-activate.js\"",
-            "timeout": 5,
-            "statusMessage": "Loading caveman mode..."
-          }
-        ]
-      },
-      {
-        "hooks": [
-          {
-            "type": "command",
             "command": "python3 \"$HOME/.claude/hooks/session_timer.py\" session_start 2>/dev/null || true"
           }
         ]
@@ -30,14 +20,13 @@
         ]
       }
     ],
-    "UserPromptSubmit": [
+    "PostToolUse": [
       {
+        "matcher": "Edit|Write",
         "hooks": [
           {
             "type": "command",
-            "command": "node \"/home/k0d3x/.claude/hooks/caveman-mode-tracker.js\"",
-            "timeout": 5,
-            "statusMessage": "Tracking caveman mode..."
+            "command": "python3 \"$HOME/.claude/hooks/refresh_triage.py\" 2>/dev/null || true"
           }
         ]
       }
@@ -90,5 +79,6 @@
       }
     }
   },
-  "theme": "dark"
+  "theme": "dark",
+  "model": "opus"
 }
