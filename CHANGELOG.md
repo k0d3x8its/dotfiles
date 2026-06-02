@@ -4,29 +4,29 @@
 
 ### 2026-06-02
 #### Added
-- ➕ Append short commit hash to changelog entries [e4210ad](https://github.com/k0d3x8its/dotfiles/commit/e4210ad7460c279894afcdaa7e330951dffb8677)
-- ➕ Add /tmp save, argument-hint, suggested skills [33f4f7f](https://github.com/k0d3x8its/dotfiles/commit/33f4f7fdb8c0e7378ab8f7b8725e0f0d9c52ad96)
-- ➕ Auto-refresh TRIAGE-BLOCK on TODOS.md edit [843e3b3](https://github.com/k0d3x8its/dotfiles/commit/843e3b3bbc1f2501d770f75a1bd5d8f97e974a7b)
-- ➕ Pop tool to merge tangent findings [7d2906e](https://github.com/k0d3x8its/dotfiles/commit/7d2906ef87c303af0db4079fb68295144b63deba)
-- ➕ Durable end-of-work-session skill [9f0cd82](https://github.com/k0d3x8its/dotfiles/commit/9f0cd8266c527ce63ad578c74b2125e6d0f00bf3)
+- ➕ Append short commit hash to changelog entries [[e4210ad](https://github.com/k0d3x8its/dotfiles/commit/e4210ad7460c279894afcdaa7e330951dffb8677)]
+- ➕ Add /tmp save, argument-hint, suggested skills [[33f4f7f](https://github.com/k0d3x8its/dotfiles/commit/33f4f7fdb8c0e7378ab8f7b8725e0f0d9c52ad96)]
+- ➕ Auto-refresh TRIAGE-BLOCK on TODOS.md edit [[843e3b3](https://github.com/k0d3x8its/dotfiles/commit/843e3b3bbc1f2501d770f75a1bd5d8f97e974a7b)]
+- ➕ Pop tool to merge tangent findings [[7d2906e](https://github.com/k0d3x8its/dotfiles/commit/7d2906ef87c303af0db4079fb68295144b63deba)]
+- ➕ Durable end-of-work-session skill [[9f0cd82](https://github.com/k0d3x8its/dotfiles/commit/9f0cd8266c527ce63ad578c74b2125e6d0f00bf3)]
 
 #### Changed
-- ♻️ `/changelog` SKILL.md — switched hash links from double-bracket ref format to standard markdown links; entries now prose descriptions, not raw commit subjects [8fe6fb8](https://github.com/k0d3x8its/dotfiles/commit/8fe6fb838a122ef92911d82359355c74cbb4c5bf)
-- ♻️ Add [UX] annotation tag to TODO tag table [06af40c](https://github.com/k0d3x8its/dotfiles/commit/06af40ce3ceafa1cc9b6c3f13972ce0e5b671a1d)
-- ♻️ Remove model override — revert to default (sonnet) [20109ef](https://github.com/k0d3x8its/dotfiles/commit/20109effaa172d20102f123e7a2655ed6fda0223)
-- ♻️ Delete dead format-triage.md [5176d0a](https://github.com/k0d3x8its/dotfiles/commit/5176d0a547fde0d390288f48b81c4597d87c017b)
-- ♻️ Trim SKILL.md 60% — remove duplication and compress verbosity [60fed30](https://github.com/k0d3x8its/dotfiles/commit/60fed309ab7a101df2b3832fc7a2f80fccc50c25)
-- ♻️ Register refresh_triage hook; reconcile to live [00eb39e](https://github.com/k0d3x8its/dotfiles/commit/00eb39e885cc6d30ca8eb2af97129b5b6bb17660)
-- ♻️ Ignore Python __pycache__ and *.pyc [05d8b36](https://github.com/k0d3x8its/dotfiles/commit/05d8b363c4aa064182d226191e11f15e453d1f7f)
-- ♻️ Document three-tool session model [f0335fc](https://github.com/k0d3x8its/dotfiles/commit/f0335fcb4ffd22b8f7ce7e9fdb399e424fddfb94)
-- ♻️ Make lean mid-session fork tool [2259e45](https://github.com/k0d3x8its/dotfiles/commit/2259e4554479e23f36dcb68a9b6147437f2e76c5)
-- ♻️ Remove unused truncate function [8ccb78d](https://github.com/k0d3x8its/dotfiles/commit/8ccb78d54bd1dbb7a16ea3ab041b919d3b8e5b01)
-- ♻️ Replace dead inline changelog step with /changelog pointer [4e0dc9d](https://github.com/k0d3x8its/dotfiles/commit/4e0dc9d0f307670d7ea1fbdcae3e3d89facc0f54)
-- ♻️ Add TestCheckpointBlocks regression class [2bda548](https://github.com/k0d3x8its/dotfiles/commit/2bda548ca51eafb29594c17158392ddaa09dd26b)
+- ♻️ `/changelog` SKILL.md — switched hash links from double-bracket ref format to standard markdown links; entries now prose descriptions, not raw commit subjects [[8fe6fb8](https://github.com/k0d3x8its/dotfiles/commit/8fe6fb838a122ef92911d82359355c74cbb4c5bf)]
+- ♻️ Add [UX] annotation tag to TODO tag table [[06af40c](https://github.com/k0d3x8its/dotfiles/commit/06af40ce3ceafa1cc9b6c3f13972ce0e5b671a1d)]
+- ♻️ Remove model override — revert to default (sonnet) [[20109ef](https://github.com/k0d3x8its/dotfiles/commit/20109effaa172d20102f123e7a2655ed6fda0223)]
+- ♻️ Delete dead format-triage.md [[5176d0a](https://github.com/k0d3x8its/dotfiles/commit/5176d0a547fde0d390288f48b81c4597d87c017b)]
+- ♻️ Trim SKILL.md 60% — remove duplication and compress verbosity [[60fed30](https://github.com/k0d3x8its/dotfiles/commit/60fed309ab7a101df2b3832fc7a2f80fccc50c25)]
+- ♻️ Register refresh_triage hook; reconcile to live [[00eb39e](https://github.com/k0d3x8its/dotfiles/commit/00eb39e885cc6d30ca8eb2af97129b5b6bb17660)]
+- ♻️ Ignore Python __pycache__ and *.pyc [[05d8b36](https://github.com/k0d3x8its/dotfiles/commit/05d8b363c4aa064182d226191e11f15e453d1f7f)]
+- ♻️ Document three-tool session model [[f0335fc](https://github.com/k0d3x8its/dotfiles/commit/f0335fcb4ffd22b8f7ce7e9fdb399e424fddfb94)]
+- ♻️ Make lean mid-session fork tool [[2259e45](https://github.com/k0d3x8its/dotfiles/commit/2259e4554479e23f36dcb68a9b6147437f2e76c5)]
+- ♻️ Remove unused truncate function [[8ccb78d](https://github.com/k0d3x8its/dotfiles/commit/8ccb78d54bd1dbb7a16ea3ab041b919d3b8e5b01)]
+- ♻️ Replace dead inline changelog step with /changelog pointer [[4e0dc9d](https://github.com/k0d3x8its/dotfiles/commit/4e0dc9d0f307670d7ea1fbdcae3e3d89facc0f54)]
+- ♻️ Add TestCheckpointBlocks regression class [[2bda548](https://github.com/k0d3x8its/dotfiles/commit/2bda548ca51eafb29594c17158392ddaa09dd26b)]
 
 #### Fixed
-- 🛠️ Match Session Checkpoint headings in BLOCK_RE [343eaf6](https://github.com/k0d3x8its/dotfiles/commit/343eaf695738668443092baf6bc4dd8b5d7be54b)
-- 🛠️ Anchor planning-file patterns to repo root [95949c6](https://github.com/k0d3x8its/dotfiles/commit/95949c6aa49989da67d3c89032056b69bbed8b31)
+- 🛠️ Match Session Checkpoint headings in BLOCK_RE [[343eaf6](https://github.com/k0d3x8its/dotfiles/commit/343eaf695738668443092baf6bc4dd8b5d7be54b)]
+- 🛠️ Anchor planning-file patterns to repo root [[95949c6](https://github.com/k0d3x8its/dotfiles/commit/95949c6aa49989da67d3c89032056b69bbed8b31)]
 
 ### 2026-06-01
 #### Added
