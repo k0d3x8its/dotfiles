@@ -1,6 +1,6 @@
 ---
 name: session-handoff
-description: Lean mid-session fork. Spins off a focused tangent from the main session — emits a reason-first re-entry prompt (why it forked + scope + first action) so you can open a fresh, clean-context session to chase a side-issue. Does NOT write SESSION-LOG narrative. Triggers on /handoff [focus]. When the tangent is done, use /handoff-return to merge findings back. For durable end-of-day close, use /checkpoint.
+description: Lean mid-session fork. Spins off a focused tangent from the main session — emits a reason-first re-entry prompt (why it forked + scope + first action) so you can open a fresh, clean-context session to chase a side-issue. Does NOT write SESSION-LOG narrative. Triggers on /handoff [focus]. When the tangent is done, use /handoff-return to merge findings back. For durable end-of-day wrap-up, use /checkpoint.
 argument-hint: "What will the tangent session focus on? (optional — Claude will infer from conversation if omitted)"
 ---
 
@@ -19,7 +19,7 @@ argument-hint: "What will the tangent session focus on? (optional — Claude wil
 - You want clean context for the tangent without losing the main thread
 - The main session usually **stays open** — you'll paste findings back into it via `/handoff-return`
 
-**Crash-safety:** re-entry prompt is saved to `/tmp/handoff-{timestamp}.md` — survives terminal crash or accidental tab close. File is not project-specific and will be cleaned up by OS on reboot.
+**Crash-safety:** re-entry prompt is saved to `/tmp/handoff-{timestamp}.md` — survives terminal crash or accidental tab exit. File is not project-specific and will be cleaned up by OS on reboot.
 
 ---
 
@@ -80,4 +80,4 @@ argument-hint: "What will the tangent session focus on? (optional — Claude wil
 ## Related
 
 - `/handoff-return` — pop: summarize the tangent's findings and sync them to `TODOS.md`
-- `/checkpoint` — durable end-of-work-session close with full narrative
+- `/checkpoint` — durable end-of-work-session wrap-up with full narrative
