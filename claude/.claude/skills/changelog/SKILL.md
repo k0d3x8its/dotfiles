@@ -45,7 +45,7 @@ description: Generate and insert a dated sub-block under ## [Unreleased] in the 
    | no prefix / other | `#### Changed` | ♻️ |
 
    Write each entry as a meaningful prose description of what changed and why — not a raw dump of the commit subject. The commit subject is a seed; expand it into a reader-friendly explanation. Capitalise first letter. No trailing period. Append the commit hash as a linked markdown reference at end of line using the short hash as display text and full hash in the URL:
-   - With remote: `[[abc1234]({base_url}/commit/{full_40_char_hash})]`
+   - With remote: `[\[abc1234\]]({base_url}/commit/{full_40_char_hash})`
    - Without remote (fallback): `[abc1234]` (plain, no link)
    - Both hashes come directly from the `--format="%h %H %s"` log line — no extra calls needed.
 
@@ -68,14 +68,14 @@ description: Generate and insert a dated sub-block under ## [Unreleased] in the 
 
 ### 2026-06-01
 #### Added
-- ➕ Changelog skill — generates dated sub-blocks under `[Unreleased]`, groups by conventional-commit prefix, emoji per entry [[a1b2c3d](https://github.com/user/repo/commit/a1b2c3d...full)]
+- ➕ Changelog skill — generates dated sub-blocks under `[Unreleased]`, groups by conventional-commit prefix, emoji per entry [\[a1b2c3d\]](https://github.com/user/repo/commit/a1b2c3d...full)
 
 #### Changed
-- ♻️ CLAUDE.md — replaced inline changelog rule with pointer to `/changelog` skill [[e4f5a6b](https://github.com/user/repo/commit/e4f5a6b...full)]
+- ♻️ CLAUDE.md — replaced inline changelog rule with pointer to `/changelog` skill [\[e4f5a6b\]](https://github.com/user/repo/commit/e4f5a6b...full)
 
 ### 2026-05-28
 #### Fixed
-- 🛠️ CI badge — was stuck on stale run due to missing cache-bust key [[c7d8e9f](https://github.com/user/repo/commit/c7d8e9f...full)]
+- 🛠️ CI badge — was stuck on stale run due to missing cache-bust key [\[c7d8e9f\]](https://github.com/user/repo/commit/c7d8e9f...full)
 
 ---
 
