@@ -42,7 +42,7 @@ description: Generate and insert a dated sub-block under ## [Unreleased] in the 
    | `deprecate:` | `#### Deprecated` | ⚠️ |
    | no prefix / other | `#### Changed` | ♻️ |
 
-   Strip the prefix from each entry body. Capitalise first letter. No trailing period.
+   Strip the prefix from each entry body. Capitalise first letter. No trailing period. Append the short commit hash in brackets at end of line: `[abc1234]`. The hash comes from the leading 7-char token of each `git log --oneline` line — capture it before stripping the conventional-commit prefix.
 
 6. **Write a dated sub-block into `CHANGELOG.md`:**
    - Use today's date (`YYYY-MM-DD`) as the sub-block header: `### YYYY-MM-DD`
@@ -63,14 +63,14 @@ description: Generate and insert a dated sub-block under ## [Unreleased] in the 
 
 ### 2026-06-01
 #### Added
-- ➕ Changelog skill
+- ➕ Changelog skill [a1b2c3d]
 
 #### Changed
-- ♻️ CLAUDE.md rule replaced with /changelog pointer
+- ♻️ CLAUDE.md rule replaced with /changelog pointer [e4f5a6b]
 
 ### 2026-05-28
 #### Fixed
-- 🛠️ CI badge stuck on stale run
+- 🛠️ CI badge stuck on stale run [c7d8e9f]
 
 ---
 
