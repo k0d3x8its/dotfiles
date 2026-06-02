@@ -224,7 +224,7 @@ class TestUpdateCacheMtime(unittest.TestCase):
 
             cache_text = cache_file.read_text()
             self.assertIn(f"path: {todos}", cache_text)
-            self.assertIn("## myproject", cache_text)
+            self.assertIn("## [MYPROJECT]", cache_text)
 
     def test_update_replaces_existing_block(self):
         """Running update-cache twice replaces the block, not appends."""
@@ -239,9 +239,9 @@ class TestUpdateCacheMtime(unittest.TestCase):
                 cache.update_cache("proj", todos)
                 cache.update_cache("proj", todos)
 
-            # Should have exactly one ## proj block
+            # Should have exactly one ## [PROJ] block
             text = cache_file.read_text()
-            count = text.count("## proj")
+            count = text.count("## [PROJ]")
             self.assertEqual(count, 1, f"Expected 1 block, found {count}")
 
 
@@ -403,6 +403,50 @@ class TestRemoveProjectBlock(unittest.TestCase):
         result = cache.remove_project_block(lines, "proj")
         self.assertNotIn("## proj\n", result)
         self.assertIn("## proj-extended\n", result)
+
+    def test_bracketed_block_removed_by_bare_name(self):
+        lines = ["## [MACHINE]\n", "mtime: 1\n", "path: /dev/TODOS.md\n"]
+        result = cache.remove_project_block(lines, "machine")
+        self.assertNotIn("## [MACHINE]\n", result)
+
+    def test_bare_block_removed_by_bracketed_name(self):
+        lines = ["## machine\n", "mtime: 1\n", "path: /dev/TODOS.md\n"]
+        result = cache.remove_project_block(lines, "[machine]")
+        self.assertNotIn("## machine\n", result)
+
+    def test_both_forms_removed_when_duplicate_exists(self):
+        lines = [
+            "## [machine]\n", "mtime: 1\n", "path: /dev/TODOS.md\n",
+            "## machine\n", "mtime: 2\n", "path: /dev/TODOS.md\n",
+        ]
+        result = cache.remove_project_block(lines, "machine")
+        self.assertNotIn("## [machine]\n", result)
+        self.assertNotIn("## machine\n", result)
+
+
+class TestCanonical(unittest.TestCase):
+    def test_bare_name_gets_brackets_and_uppercased(self):
+        self.assertEqual(cache._canonical("machine"), "[MACHINE]")
+
+    def test_bracketed_name_stays_bracketed_uppercased(self):
+        self.assertEqual(cache._canonical("[machine]"), "[MACHINE]")
+
+    def test_already_upper_unchanged(self):
+        self.assertEqual(cache._canonical("[MACHINE]"), "[MACHINE]")
+
+    def test_hyphenated_name(self):
+        self.assertEqual(cache._canonical("kos-capture"), "[KOS-CAPTURE]")
+
+    def test_update_cache_writes_canonical_header(self):
+        import tempfile
+        with tempfile.TemporaryDirectory() as tmp:
+            tmp = Path(tmp)
+            todos = tmp / "TODOS.md"
+            todos.write_text("- [ ] item\n")
+            cache_file = tmp / ".triage-cache"
+            with patch.object(cache, "CACHE", cache_file):
+                cache.update_cache("[machine]", todos)
+            self.assertIn("## [MACHINE]", cache_file.read_text())
 
 
 if __name__ == "__main__":
