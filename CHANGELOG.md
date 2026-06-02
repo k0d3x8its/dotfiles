@@ -9,9 +9,12 @@
 - ➕ Auto-refresh TRIAGE-BLOCK on TODOS.md edit [\[843e3b3\]](https://github.com/k0d3x8its/dotfiles/commit/843e3b3bbc1f2501d770f75a1bd5d8f97e974a7b)
 - ➕ Pop tool to merge tangent findings [\[7d2906e\]](https://github.com/k0d3x8its/dotfiles/commit/7d2906ef87c303af0db4079fb68295144b63deba)
 - ➕ Durable end-of-work-session skill [\[9f0cd82\]](https://github.com/k0d3x8its/dotfiles/commit/9f0cd8266c527ce63ad578c74b2125e6d0f00bf3)
+- ➕ `grill-me` skill — stress-tests a plan from idea to foundation, resolving decisions one branch at a time before building starts; appends resolved decisions to `findings.md` [\[c438355\]](https://github.com/k0d3x8its/dotfiles/commit/c43835571ffa7301f55115bd44a66d04a4f851c5)
+- ➕ `zoom-out` and `write-a-skill` skills — `zoom-out` maps unfamiliar codebase modules and callers on demand; `write-a-skill` provides structured authoring process for new skills with progressive disclosure [\[5c6bb45\]](https://github.com/k0d3x8its/dotfiles/commit/5c6bb4515c614f61150e28b356796c98e09f14a0)
 
 #### Changed
 - ♻️ `/changelog` SKILL.md — switched hash links from double-bracket ref format to standard markdown links; entries now prose descriptions, not raw commit subjects [\[8fe6fb8\]](https://github.com/k0d3x8its/dotfiles/commit/8fe6fb838a122ef92911d82359355c74cbb4c5bf)
+- ♻️ `CLAUDE.md` session tools — added `/close` to the four-tool session model, documented its role as lightweight close+resume distinct from `/checkpoint` [\[dc4747d\]](https://github.com/k0d3x8its/dotfiles/commit/dc4747d6aba4982a9dc28d563635d3045c023d51)
 - ♻️ Add [UX] annotation tag to TODO tag table [\[06af40c\]](https://github.com/k0d3x8its/dotfiles/commit/06af40ce3ceafa1cc9b6c3f13972ce0e5b671a1d)
 - ♻️ Remove model override — revert to default (sonnet) [\[20109ef\]](https://github.com/k0d3x8its/dotfiles/commit/20109effaa172d20102f123e7a2655ed6fda0223)
 - ♻️ Delete dead format-triage.md [\[5176d0a\]](https://github.com/k0d3x8its/dotfiles/commit/5176d0a547fde0d390288f48b81c4597d87c017b)
@@ -27,6 +30,8 @@
 #### Fixed
 - 🛠️ Match Session Checkpoint headings in BLOCK_RE [\[343eaf6\]](https://github.com/k0d3x8its/dotfiles/commit/343eaf695738668443092baf6bc4dd8b5d7be54b)
 - 🛠️ Anchor planning-file patterns to repo root [\[95949c6\]](https://github.com/k0d3x8its/dotfiles/commit/95949c6aa49989da67d3c89032056b69bbed8b31)
+- 🛠️ `session-handoff` and `session-handoff-return` — removed `close` from skill `name:` field; it was polluting `/close` autocomplete with irrelevant matches [\[463c3ef\]](https://github.com/k0d3x8its/dotfiles/commit/463c3ef134553e438b24b99f31db88ed7bb59282) [\[31099ea\]](https://github.com/k0d3x8its/dotfiles/commit/31099ead37f99e4413d4dbd9dce1c8822281a215)
+- 🛠️ `session-checkpoint` frontmatter `name:` — changed from `session-checkpoint` to `checkpoint` so `/checkpoint` resolves as exact match in autocomplete, beating the built-in `rewind-checkpoint` [\[d8377a8\]](https://github.com/k0d3x8its/dotfiles/commit/d8377a88430bc50cf8a5be8ed934b2b49ecf1bd3)
 
 ### 2026-06-01
 #### Added
