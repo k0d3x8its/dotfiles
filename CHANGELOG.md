@@ -12,6 +12,7 @@
 - ➕ `scripts/update-cache` — pointer-only triage cache updater. Stats TODOS.md, writes 3-line pointer block to `.triage-cache`. Replaces inline awk in `/handoff` step 7b. Zero Claude tokens
 - ➕ `scripts/rotate-log` — Python log rotation. Keeps newest N session blocks live in SESSION-LOG.md, moves older blocks to ARCHIVE-LOG.md. Replaces inline bash in `/handoff` step 7c
 - ➕ `TODOS.md` per-project canonical TODO source — separates open work from session narrative. SESSION-LOG.md is now narrative-only; TODOS.md is the single source of truth for open items
+- ➕ `tests/test_rotate_log.py` — `TestCheckpointBlocks` regression class (4 tests): checkpoint block parsed, handoff+checkpoint counted separately, checkpoint not swallowed into handoff, checkpoint date → epoch. Suite now 24 tests
 
 #### Changed
 - ♻️ `claude/.claude/CLAUDE.md` — replaced inline dotfiles-only changelog rule with pointer to `/changelog` skill; added `/changelog` to skills list
@@ -27,6 +28,13 @@
 - ♻️ `scripts/update-triage` — handles pointer-format cache entries; find_orphans checks SESSION-LOG.md and TODOS.md alongside session-log.md
 - ♻️ `CLAUDE.md` — TODO tag reference updated from session-log.md to TODOS.md; re-entry prompt rule softened to trust-but-verify (decisions/context authoritative; task state reconciles against file state)
 - ♻️ `session-log.md` renamed to `SESSION-LOG.md`
+- ♻️ `claude/.claude/CLAUDE.md` — `[INVESTIGATE]` row expanded: covers audits and open sweeps, no hypothesis required; output findings list, spawn new tasks
+- ♻️ `git/.gitignore_global` — added `TODOS.md`; anchored all filename-only patterns to repo root with leading `/`
+- ♻️ `git/.gitconfig` and `git/.gitignore_global` — stowed (were real files; now symlinks managed by install.sh)
+- ♻️ `.gitignore` — removed redundant `TODOS.md` entry (now covered by global excludes)
+
+#### Fixed
+- 🛠️ `scripts/rotate-log` — `BLOCK_RE` now matches `## Session Checkpoint` as well as `## Session Handoff` (`^## Session (?:Handoff|Checkpoint)`). Old regex undercounted blocks and swallowed checkpoint blocks into the preceding handoff block on rotation
 
 ### 2026-05-31
 #### Added
