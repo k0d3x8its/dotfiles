@@ -2,6 +2,31 @@
 
 ## [Unreleased]
 
+### 2026-06-02
+#### Added
+- ➕ Append short commit hash to changelog entries [e4210ad]
+- ➕ Add /tmp save, argument-hint, suggested skills [33f4f7f]
+- ➕ Auto-refresh TRIAGE-BLOCK on TODOS.md edit [843e3b3]
+- ➕ Pop tool to merge tangent findings [7d2906e]
+- ➕ Durable end-of-work-session skill [9f0cd82]
+
+#### Changed
+- ♻️ Add [UX] annotation tag to TODO tag table [06af40c]
+- ♻️ Remove model override — revert to default (sonnet) [20109ef]
+- ♻️ Delete dead format-triage.md [5176d0a]
+- ♻️ Trim SKILL.md 60% — remove duplication and compress verbosity [60fed30]
+- ♻️ Register refresh_triage hook; reconcile to live [00eb39e]
+- ♻️ Ignore Python __pycache__ and *.pyc [05d8b36]
+- ♻️ Document three-tool session model [f0335fc]
+- ♻️ Make lean mid-session fork tool [2259e45]
+- ♻️ Remove unused truncate function [8ccb78d]
+- ♻️ Replace dead inline changelog step with /changelog pointer [4e0dc9d]
+- ♻️ Add TestCheckpointBlocks regression class [2bda548]
+
+#### Fixed
+- 🛠️ Match Session Checkpoint headings in BLOCK_RE [343eaf6]
+- 🛠️ Anchor planning-file patterns to repo root [95949c6]
+
 ### 2026-06-01
 #### Added
 - ➕ `claude/.claude/skills/changelog/` — new `/changelog` skill: generates dated sub-blocks under `[Unreleased]`, groups commits by conventional-commit prefix, emoji per entry, deduplicates against existing content
