@@ -27,6 +27,9 @@ BLOCK_A = "## Session Handoff — 2026-01-01 10:00 AM\noldest content\n"
 BLOCK_B = "## Session Handoff — 2026-01-02 10:00 AM\nmiddle content\n"
 BLOCK_C = "## Session Handoff — 2026-01-03 10:00 AM\nnewest content\n"
 BLOCK_D = "## Session Handoff — 2026-01-04 10:00 AM\nextra content\n"
+# Checkpoint blocks use a different heading than handoff blocks. rotate-log
+# must treat them as first-class block boundaries (regression fixture).
+BLOCK_CHECK = "## Session Checkpoint — 2026-01-05 10:00 AM\ncheckpoint content\n"
 
 
 class TestParseBlocks(unittest.TestCase):
@@ -67,6 +70,36 @@ class TestParseBlocks(unittest.TestCase):
         _, s1, e1 = blocks[1]
         self.assertEqual(e0, s1)
         self.assertEqual(e1, len(lines))
+
+
+class TestCheckpointBlocks(unittest.TestCase):
+    """Regression: BLOCK_RE must match Checkpoint headings too.
+
+    With the old regex (^## Session Handoff) a checkpoint block was not a
+    boundary, so its content got swallowed into the preceding handoff block
+    and the block count was undercounted.
+    """
+
+    def test_checkpoint_block_parsed(self):
+        _, blocks = rl.parse_blocks(BLOCK_CHECK.splitlines(keepends=True))
+        self.assertEqual(len(blocks), 1)
+
+    def test_handoff_then_checkpoint_are_separate_blocks(self):
+        text = BLOCK_A + BLOCK_CHECK
+        _, blocks = rl.parse_blocks(text.splitlines(keepends=True))
+        self.assertEqual(len(blocks), 2)
+
+    def test_checkpoint_not_swallowed_into_handoff(self):
+        text = BLOCK_A + BLOCK_CHECK
+        _, blocks = rl.parse_blocks(text.splitlines(keepends=True))
+        _, s0, e0 = blocks[0]
+        # handoff block ends before the checkpoint heading begins
+        self.assertEqual(e0, s0 + len(BLOCK_A.splitlines()))
+
+    def test_checkpoint_date_parsed_to_epoch(self):
+        _, blocks = rl.parse_blocks(BLOCK_CHECK.splitlines(keepends=True))
+        epoch, _, _ = blocks[0]
+        self.assertGreater(epoch, 0)
 
 
 class TestRotateReturnValue(unittest.TestCase):
