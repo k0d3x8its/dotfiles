@@ -25,7 +25,7 @@ description: Pop a tangent back into the main session. Summarizes what the forke
 **1.** Execute immediately. No clarifying questions. The tangent's findings are in the current conversation — extract them.
 
 **2.** Auto-sync findings to `TODOS.md` (this is the point of the skill):
-   - Completed in the tangent → check off (`[x]`) or remove the matching `- [ ]` item.
+   - Completed in the tangent → **remove** the matching `- [ ]` item entirely. Do not leave `[x]` lines — completed items belong in git history, not TODOS.md.
    - New open items discovered → append with tags from `~/.claude/CLAUDE.md` (`- [ ]` + tags; untagged = Medium).
    - Update the `Last updated:` date.
    - Do **not** write a SESSION-LOG narrative block. That is `/checkpoint`'s job.
