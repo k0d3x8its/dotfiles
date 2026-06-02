@@ -1,6 +1,7 @@
 ---
 name: session-handoff
-description: Lean mid-session fork. Spins off a focused tangent from the main session — emits a reason-first re-entry prompt (why it forked + scope + first action) so you can open a fresh, clean-context session to chase a side-issue. Does NOT write SESSION-LOG narrative. Triggers on /handoff. When the tangent is done, use /handoff-return to merge findings back. For durable end-of-day close, use /checkpoint.
+description: Lean mid-session fork. Spins off a focused tangent from the main session — emits a reason-first re-entry prompt (why it forked + scope + first action) so you can open a fresh, clean-context session to chase a side-issue. Does NOT write SESSION-LOG narrative. Triggers on /handoff [focus]. When the tangent is done, use /handoff-return to merge findings back. For durable end-of-day close, use /checkpoint.
+argument-hint: "What will the tangent session focus on? (optional — Claude will infer from conversation if omitted)"
 ---
 
 # Session Handoff Skill (push / fork)
@@ -18,13 +19,15 @@ description: Lean mid-session fork. Spins off a focused tangent from the main se
 - You want clean context for the tangent without losing the main thread
 - The main session usually **stays open** — you'll paste findings back into it via `/handoff-return`
 
-**Crash-safety caveat:** this does NOT persist the *why* to disk. If the tangent involves real decisions you must not lose, use `/checkpoint` instead — a dropped session loses anything only in conversation.
+**Crash-safety:** re-entry prompt is saved to `/tmp/handoff-{timestamp}.md` — survives terminal crash or accidental tab close. File is not project-specific and will be cleaned up by OS on reboot.
 
 ---
 
 ## Claude Instructions (Read Before Executing)
 
-**1.** Execute immediately. No clarifying questions. The *reason for the fork* is already in the current conversation — extract it; do not ask.
+**1.** Execute immediately. No clarifying questions. Determine the tangent's focus:
+   - If arguments were passed to `/handoff`, use them as the declared focus.
+   - Otherwise, extract the reason from the current conversation — do not ask.
 
 **2.** Light TODOS touch only:
    - If the tangent corresponds to an existing `TODOS.md` item, note it.
@@ -36,13 +39,15 @@ description: Lean mid-session fork. Spins off a focused tangent from the main se
    update-triage 2>/dev/null || echo "(update-triage failed — run manually)"
    ```
 
-**4.** Print the **Tangent Re-Entry Prompt** to the terminal:
+**4.** Build the **Tangent Re-Entry Prompt**:
 
    ```
    ── Tangent fork ──────────────────────────────
    Reason: {why this forked off the main session — the trigger}
    Scope:  {what the tangent should accomplish, bounded}
    First action: {single concrete step}
+
+   Suggested skills: {1-3 skills relevant to this tangent, e.g. /diagnose for bugs, /tdd for tests, /investigate for audits}
 
    At session start: read TODOS.md. For what's next across projects, read TRIAGE-BLOCK.md.
    When done, run /handoff-return to merge findings back into the main session.
@@ -51,15 +56,24 @@ description: Lean mid-session fork. Spins off a focused tangent from the main se
 
    - **Reason-first** — the reason is the parameter passed down; lead with it.
    - Keep it tight. No top-5, no narrative, no decisions log.
+   - Suggested skills: pick from skills relevant to the tangent's type (bug → `/diagnose`, test gap → `/tdd`, open sweep → tag `[INVESTIGATE]`, etc.). 1-3 max.
 
-**5.** Print closing message:
+**5.** Save re-entry prompt to `/tmp`:
+   ```bash
+   HANDOFF_FILE="/tmp/handoff-$(date +%Y-%m-%dT%H-%M).md"
+   # write the prompt block to $HANDOFF_FILE
+   echo "Saved to $HANDOFF_FILE"
    ```
-   ✓ Tangent prompt ready (no SESSION-LOG written — this is a fork, not a checkpoint)
+   - Do not save anything else to `/tmp` — no narrative, no TODOS.
+
+**6.** Print the re-entry prompt to terminal (paste convenience), then print closing message:
+   ```
+   ✓ Tangent prompt ready — saved to /tmp/handoff-{timestamp}.md (no SESSION-LOG written — this is a fork, not a checkpoint)
    → Open a new session and paste the Tangent Re-Entry Prompt above
    → Main session can stay open; /handoff-return merges findings back when you're done
    ```
 
-**6.** Do not run `/clear` automatically.
+**7.** Do not run `/clear` automatically.
 
 ---
 
