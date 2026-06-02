@@ -11,7 +11,11 @@ import sys
 from datetime import datetime
 from pathlib import Path
 
-BLOCK_RE = re.compile(r"^## Session Handoff")
+# Match both block types: /checkpoint writes "## Session Checkpoint",
+# /handoff (legacy + durable narrative) writes "## Session Handoff".
+# Missing "Checkpoint" here makes rotate-log undercount and swallow
+# checkpoint blocks into the preceding handoff block on rotation.
+BLOCK_RE = re.compile(r"^## Session (?:Handoff|Checkpoint)")
 DATE_RE = re.compile(r"(\d{4}-\d{2}-\d{2} \d{1,2}:\d{2} [AP]M)")
 ARCHIVE_HEADER = (
     "# Session Log — Archive\n"
