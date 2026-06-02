@@ -338,6 +338,15 @@ class TestColorizeTags(unittest.TestCase):
         result = triage.colorize_tags("[TEST] verify")
         self.assertIn("#74c0fc", result)
 
+    def test_ux_tag_gets_color_span(self):
+        result = triage.colorize_tags("[UX] manual verification needed")
+        self.assertIn('<span style="color:', result)
+        self.assertIn("[UX]", result)
+
+    def test_ux_correct_color_applied(self):
+        result = triage.colorize_tags("[UX] check the flow")
+        self.assertIn("#f783ac", result)
+
 
 class TestFmtLine(unittest.TestCase):
     def test_project_without_brackets_gets_brackets(self):
