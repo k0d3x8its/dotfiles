@@ -126,14 +126,37 @@ Required before declaring done:
 - [ ] All `[DEBUG-...]` instrumentation removed (`grep` the prefix)
 - [ ] Throwaway prototypes deleted
 
-**Then ask: what would have prevented this bug?**
+**Then write `POST-MORTEM.md` in the project root.**
 
-If the answer involves architectural change (no good test seam, tangled callers, hidden
-coupling), log it as `[DECISION][INVESTIGATE]` in `session-log.md` with the specific
-question. For architectural vocabulary when writing the post-mortem, read
-`~/.claude/references/kos-code-reference.md`.
+```markdown
+# Post-Mortem: <short title>
+
+**Date:** <today>
+**Severity:** Critical | High | Medium | Low
+**Component:** <file(s) and function(s) involved>
+
+## What happened
+<3–5 sentences. What did the user observe? Be specific — name the symptom.>
+
+## Root cause
+<The hypothesis that turned out correct. Reference the specific lines and functions.>
+
+## Fix applied
+<What changed. Link the commit: [\[<short-hash>\]](<remote-url>/commit/<full-hash>) — get remote with `git remote get-url origin`.>
+
+## What would have prevented this
+<Concrete answer. If architectural: name the coupling, the missing seam, the hidden assumption.>
+
+## Follow-up
+<List TODOs written to TODOS.md from this incident, with their tags.>
+```
 
 Make the recommendation **after** the fix is in — you have more information now.
+
+If the answer to "what would have prevented this?" involves architectural change (no good
+test seam, tangled callers, hidden coupling), write a `[DECISION][INVESTIGATE]` TODO to
+`TODOS.md` with the specific question. For architectural vocabulary, read
+`~/.claude/references/kos-code-reference.md`.
 
 State the hypothesis that turned out correct in the commit message so the next
 debugger learns.
