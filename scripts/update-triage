@@ -4,6 +4,7 @@ update-triage: reads ~/dev/.triage-cache, writes ~/dev/TRIAGE-BLOCK.md
 Zero Claude tokens. Called by /handoff step 7d; also run manually.
 """
 
+import json
 import re
 import sys
 from datetime import datetime
@@ -12,6 +13,11 @@ from pathlib import Path
 CACHE = Path.home() / "dev" / ".triage-cache"
 OUTPUT = Path.home() / "dev" / "TRIAGE-BLOCK.md"
 DEV = Path.home() / "dev"
+DATES_FILE = DEV / ".triage-dates"
+
+STALE_DAYS = 7
+STALE_LABEL = "stale since"
+STALE_COLOR = "#ff6600"
 
 TIER_COLORS = {
     "CRITICAL": "#ff1a1a",
@@ -38,7 +44,7 @@ ANNOTATION_COLORS = {
     "DECISION":    "#ffa94d",
     "INVESTIGATE": "#a855f7",
     "SYNC":        "#a9e34b",
-    "WAITING":     "#adb5bd",
+    "WAITING":     "#fcc419",
     "SECURITY":    "#2563eb",
     "DOCS":        "#63e6be",
     "PERFORMANCE": "#fd7e14",
@@ -52,11 +58,25 @@ PRIORITY_MAP = {
     "BACKLOG": "BACKLOG",
 }
 
+SINCE_STRIP_RE = re.compile(r"\[since:[^\]]*\]\s*", re.IGNORECASE)
+
 URGENT_KEYWORDS = [
     "failing", "broken", "not yet", "do not", "warning", "stale", "never",
     "never committed", "bug", "unresolved", "critical", "missing",
     "haven't", "has not", "hasn't", "error",
 ]
+
+
+def extract_since(raw: str) -> str | None:
+    """Return YYYY-MM-DD from [since: DATE] tag, or None. Ignores malformed dates."""
+    m = re.search(r"\[since:\s*(\d{4}-\d{2}-\d{2})\]", raw, re.IGNORECASE)
+    if not m:
+        return None
+    try:
+        datetime.fromisoformat(m.group(1))
+        return m.group(1)
+    except ValueError:
+        return None
 
 
 def parse_tags(line: str) -> list:
@@ -92,8 +112,33 @@ def colorize_tags(text: str) -> str:
 
 
 def strip_priority_tags(text: str) -> str:
-    text = re.sub(r"\[(BROKEN|BLOCKER|LOW|BACKLOG)\]", "", text)
+    return re.sub(r"\s+", " ", re.sub(r"\[(BROKEN|BLOCKER|LOW|BACKLOG)\]", "", text)).strip()
+
+
+def item_key(raw: str) -> str:
+    """Stable lookup key: strip '- [ ] ' prefix + priority tags + [since:] + normalize whitespace."""
+    text = re.sub(r"\[(BROKEN|BLOCKER|LOW|BACKLOG)\]", "", raw[6:])
+    text = SINCE_STRIP_RE.sub("", text)
     return re.sub(r"\s+", " ", text).strip()
+
+
+def update_item_dates(projects: dict) -> dict:
+    """Register new items; [since:] tag always wins over cached date; prune gone items; return dates dict."""
+    dates = json.loads(DATES_FILE.read_text()) if DATES_FILE.exists() else {}
+    today = datetime.now().strftime("%Y-%m-%d")
+    current = {item_key(line): (extract_since(line) or mtime_str or today)
+               for todos in projects.values() for line, mtime_str in todos}
+    for k, default in current.items():
+        dates.setdefault(k, default)
+    # [since:] always overrides — enables retroactive date correction
+    for todos in projects.values():
+        for line, _ in todos:
+            since = extract_since(line)
+            if since:
+                dates[item_key(line)] = since
+    dates = {k: v for k, v in dates.items() if k in current}
+    DATES_FILE.write_text(json.dumps(dates, indent=2))
+    return dates
 
 
 def parse_cache(path: Path) -> dict:
@@ -104,69 +149,64 @@ def parse_cache(path: Path) -> dict:
             current = line[3:].strip()
             projects[current] = []
         elif current and line.startswith("path: "):
-            # pointer format: read TODOS.md directly
             todos_path = Path(line[6:].strip()).expanduser()
             if todos_path.exists():
-                for tline in todos_path.read_text().splitlines():
-                    if tline.startswith("- [ ]"):
-                        projects[current].append(tline)
+                mtime_str = datetime.fromtimestamp(todos_path.stat().st_mtime).strftime("%Y-%m-%d")
+                projects[current] += [
+                    (tline, mtime_str) for tline in todos_path.read_text().splitlines()
+                    if tline.startswith("- [ ]")
+                ]
         elif current and line.startswith("- [ ]"):
             # legacy content format: backward compat for unmigrated projects
-            projects[current].append(line)
+            projects[current].append((line, None))
     return projects
 
 
 def release_pending(projects: dict) -> list:
-    pending = []
-    for proj in projects:
-        if proj == "[machine]":
-            continue
-        rn = DEV / proj / "RELEASE-NOTES.md"
-        if rn.exists() and rn.stat().st_size > 0:
-            pending.append(proj)
-    return sorted(pending)
+    return sorted(
+        p for p in projects
+        if p != "[machine]"
+        and (rn := DEV / p / "RELEASE-NOTES.md").exists()
+        and rn.stat().st_size > 0
+    )
 
 
 def find_orphans(projects: dict) -> list:
-    tracked = set()
-    for p in projects:
-        tracked.add(p.strip("[]"))
-    result = []
-    for d in sorted(DEV.iterdir()):
-        if not d.is_dir() or d.name.startswith("."):
-            continue
-        has_log = any((d / f).exists() for f in ("SESSION-LOG.md", "session-log.md", "TODOS.md"))
-        if not has_log and d.name not in tracked:
-            result.append(d.name)
-    return result
+    tracked = {p.strip("[]") for p in projects}
+    log_files = ("SESSION-LOG.md", "session-log.md", "TODOS.md")
+    return [
+        d.name for d in sorted(DEV.iterdir())
+        if d.is_dir() and not d.name.startswith(".")
+        and not any((d / f).exists() for f in log_files)
+        and d.name not in tracked
+    ]
 
 
-def build_triage(projects: dict) -> dict:
+def build_triage(projects: dict, item_dates: dict) -> dict:
     tiers = {t: [] for t in TIER_COLORS}
     for proj, todos in projects.items():
-        for line in todos:
+        for line, _ in todos:
             tags = parse_tags(line)
-            tier = get_tier(tags, line)
-            urgent = is_urgent(line)
-            tiers[tier].append((proj, line, urgent))
+            date_str = item_dates.get(item_key(line))
+            first_seen = datetime.fromisoformat(date_str) if date_str else None
+            tiers[get_tier(tags, line)].append((proj, line, is_urgent(line), first_seen))
     for tier in tiers:
         tiers[tier].sort(key=lambda x: (0 if x[2] else 1, x[0]))
     return tiers
 
 
-def fmt_line(project: str, raw: str, urgent: bool) -> str:
-    text = raw[6:].strip()
-    text = strip_priority_tags(text)
-    text = colorize_tags(text)
-    prefix = "⚠ " if urgent else ""
-    proj_display = project if project.startswith("[") else f"[{project}]"
-    return f"- {prefix}**{proj_display}** {text}"
+def fmt_line(project: str, raw: str, urgent: bool, first_seen) -> str:
+    text = colorize_tags(strip_priority_tags(SINCE_STRIP_RE.sub("", raw[6:].strip())))
+    if first_seen and (datetime.now() - first_seen).days > STALE_DAYS:
+        text += f' <span style="color:{STALE_COLOR};font-weight:bold;">[{STALE_LABEL} {first_seen:%Y-%m-%d}]</span>'
+    proj = project if project.startswith("[") else f"[{project}]"
+    return f"- {'⚠ ' if urgent else ''}**{proj}** {text}"
 
 
 def write_output(tiers: dict, projects: dict, path: Path) -> None:
     now = datetime.now().strftime("%Y-%m-%d %I:%M %p")
     total = sum(len(v) for v in tiers.values())
-    n_proj = len([p for p, todos in projects.items() if todos])
+    n_proj = sum(1 for todos in projects.values() if todos)
 
     lines = [
         "# Triage Block",
@@ -185,24 +225,16 @@ def write_output(tiers: dict, projects: dict, path: Path) -> None:
         items = tiers[tier]
         if not items:
             continue
-        color = TIER_COLORS[tier]
-        label = TIER_LABELS[tier]
         lines += [
-            f'## <span style="color:{color};font-weight:bold;">{label}</span>',
+            f'## <span style="color:{TIER_COLORS[tier]};font-weight:bold;">{TIER_LABELS[tier]}</span>',
+            "",
+            *[fmt_line(proj, raw, urgent, first_seen) for proj, raw, urgent, first_seen in items],
             "",
         ]
-        for proj, raw, urgent in items:
-            lines.append(fmt_line(proj, raw, urgent))
-        lines.append("")
 
     orphan_list = find_orphans(projects)
     if orphan_list:
-        lines += [
-            "---",
-            "",
-            f"**Orphans (no session-log):** {' · '.join(orphan_list)}",
-            "",
-        ]
+        lines += ["---", "", f"**Orphans (no session-log):** {' · '.join(orphan_list)}", ""]
 
     lines += [
         "---",
@@ -232,5 +264,6 @@ if __name__ == "__main__":
         print(f"Cache empty: {CACHE}", file=sys.stderr)
         sys.exit(1)
 
-    tiers = build_triage(projects)
+    item_dates = update_item_dates(projects)
+    tiers = build_triage(projects, item_dates)
     write_output(tiers, projects, OUTPUT)
