@@ -80,7 +80,9 @@ def extract_since(raw: str) -> str | None:
 
 
 def parse_tags(line: str) -> list:
-    return re.findall(r"\[([A-Z][A-Z0-9_-]*)\]", line)
+    # Only scan the tag prefix — body text like "[TEST] tag" would poison tier assignment
+    m = re.match(r"^- \[ \] ((?:\[[A-Z][A-Z0-9_-]*\])*)", line)
+    return re.findall(r"\[([A-Z][A-Z0-9_-]*)\]", m.group(1)) if m else []
 
 
 def is_urgent(line: str) -> bool:
