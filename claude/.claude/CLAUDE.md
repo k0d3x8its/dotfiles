@@ -1,7 +1,7 @@
 # K0d3x Global Claude Config
 
 ## Who I Am
-Solo developer. Builder. Ubuntu 24.04 (Noble). Tools: Neovim, Nala, Git.
+Solo developer. Maker. Ubuntu 24.04 (Noble). Tools: Neovim, Nala, Git.
 KOS (Kodex OS) is my personal knowledge management system.
 
 ## Skills Available
