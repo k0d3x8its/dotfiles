@@ -40,6 +40,8 @@ make_fixture() {
     mkdir -p "$dir/scripts"
     touch "$dir/scripts/trueline.sh"
     printf '#!/bin/bash\n' > "$dir/scripts/update-triage"
+    printf '#!/bin/bash\n' > "$dir/scripts/update-cache"
+    printf '#!/bin/bash\n' > "$dir/scripts/rotate-log"
 
     mkdir -p "$dir/fonts"
     touch "$dir/fonts/test.ttf"
