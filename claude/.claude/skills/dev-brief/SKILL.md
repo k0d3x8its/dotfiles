@@ -73,6 +73,8 @@ Not a git repo → `not a git repo`. No upstream → `no upstream`.
 
 **task_plan.md:** if present, merge `- [ ]` items into TODOs labeled `[plan]`.
 
+**KNOWLEDGE.md (deep-dive only):** if `KNOWLEDGE.md` exists in the project root, read it. Surface entries under a `### Knowledge` section in the deep-dive output, before the TODOs tiers.
+
 ### Step 3 — Reconcile TODOs against git
 
 Git always live (never cached). Compare open TODOs (from cache on HIT, from log on READ).
@@ -149,3 +151,4 @@ Strip priority tags from displayed text (tier already shows it). Sort within tie
 8. Dev dir = `~/dev/`. Never prompt for path.
 9. Triage mode: after terminal output, run `update-triage` via Bash — script writes HTML to `TRIAGE-BLOCK.md`. Do not generate HTML directly.
 10. `[BUG]` Triage item → append `→ /diagnose`. `[TEST]` → append `→ /tdd`.
+11. Deep-dive: if `KNOWLEDGE.md` exists in project root, read and show it. Section header: `### Knowledge`. Place before TODOs tiers.
