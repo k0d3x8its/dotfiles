@@ -135,3 +135,6 @@ alias kos='source ~/dev/kos-capture/.venv/bin/activate && cd ~/dev/kos-capture'
 export PATH="/home/k0d3x/.local/bin:$PATH"
 export PATH="$HOME/go/bin:$PATH"
 eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"
+
+# opencode
+export PATH=$HOME/.opencode/bin:$PATH
