@@ -53,7 +53,7 @@ Appended to `SESSION-LOG.md`:
 ### Re-Entry Prompt
 
 > "{Compact summary: project, what was built, where you left off, first action next session.
-> Read SESSION-LOG.md and TODOS.md. For what's next across projects, read TRIAGE-BLOCK.md.
+> Read SESSION-LOG.md, TODOS.md, and KNOWLEDGE.md (local + global). For what's next across projects, read TRIAGE-BLOCK.md.
 > First action: {step}}"
 
 ---
@@ -70,6 +70,8 @@ No `### Incomplete / Next Steps` block — open work lives in `TODOS.md` only.
 **2.** Read:
    - `TODOS.md` in the project root (canonical open work)
    - The **most recent block only** of `SESSION-LOG.md` (for Goal/Decisions context). Do not read the whole file.
+   - `KNOWLEDGE.md` in the project root (if it exists) — needed for dedup in Step 7
+   - `~/.claude/KNOWLEDGE.md` (global knowledge) — same reason
    - If `TODOS.md` does not exist: create it with this header, then scan all prior `### Incomplete / Next Steps` blocks in `SESSION-LOG.md` and migrate every unchecked `- [ ]` item into it (one-time, deduplicated):
      ```markdown
      # {project} TODOS
@@ -99,7 +101,25 @@ No `### Incomplete / Next Steps` block — open work lives in `TODOS.md` only.
      ---
      ```
 
-**7.** Refresh the triage pipeline (only for logs under `~/dev/`):
+**7.** KNOWLEDGE.md promotion gate — scan `### Decisions Made` and `### Gotchas / Notes` from the block just written for facts eligible for KNOWLEDGE.md.
+
+   First, read `~/.claude/references/memory-standard.md` — authoritative source for the promotion bar, entry format, routing, and dedup rules.
+
+   For each candidate, run all 4 bar tests (SETTLED · NON-OBVIOUS · NOT A RULE · DURABLE). Discard failures. For passing candidates, check against the KNOWLEDGE.md files read in Step 2 for semantic duplicates — skip already-known entries.
+
+   If candidates remain:
+   - Present them numbered in one block, each pre-routed LOCAL or GLOBAL per routing rule in memory-standard.md:
+     ```
+     KNOWLEDGE.md candidates:
+     1. [LOCAL] "- {proposed entry}"  ← {which tests it passed}
+     2. [GLOBAL] "- {proposed entry}" ← {why escalated to global}
+     ```
+   - Accept: `a` (approve all) · `d` (deny all) · `1 2 …` (approve by number) · `r1 global` (re-route item 1) · `e1 new text` (edit item 1)
+   - On approval: write entries to target KNOWLEDGE.md, following distill-on-write (update existing entry on overlap, no blind-append)
+   - On denial: skip silently
+   - No candidates pass bar: skip this step silently
+
+**8.** Refresh the triage pipeline (only for logs under `~/dev/`):
    - Project name = `[machine]` if log is `~/dev/SESSION-LOG.md`; else `basename` of the log's parent dir
    - TODOS path = `{log_dir}/TODOS.md`
    ```bash
@@ -110,14 +130,14 @@ No `### Incomplete / Next Steps` block — open work lives in `TODOS.md` only.
    ```
    All calls idempotent. If any fails, note it but don't block the checkpoint.
 
-**8.** Changelog: use `/changelog` manually if this session produced changelog-worthy changes. Do not auto-update inline — CLAUDE.md delegates this to `/changelog`.
+**9.** Changelog: use `/changelog` manually if this session produced changelog-worthy changes. Do not auto-update inline — CLAUDE.md delegates this to `/changelog`.
 
-**9.** Print the **Re-Entry Prompt** to the terminal (same text written into the log block). It must include:
-   - Directive for next session to read `SESSION-LOG.md` and `TODOS.md` at start
+**10.** Print the **Re-Entry Prompt** to the terminal (same text written into the log block). It must include:
+   - Directive for next session to read `SESSION-LOG.md`, `TODOS.md`, and `KNOWLEDGE.md` (local + global) at start
    - Pointer: "for what's next across projects, read `TRIAGE-BLOCK.md`" (do **not** embed a top-5 — TRIAGE-BLOCK is the single source for what's next)
    - A single "first action" line
 
-**10.** Print closing message:
+**11.** Print closing message:
    ```
    ✓ Checkpoint written to SESSION-LOG.md
    ✓ TODOS.md + TRIAGE-BLOCK.md updated
@@ -125,7 +145,7 @@ No `### Incomplete / Next Steps` block — open work lives in `TODOS.md` only.
    → Paste the Re-Entry Prompt above as your first message in the new session
    ```
 
-**11.** Do not run `/clear` automatically — the user does this manually.
+**12.** Do not run `/clear` automatically — the user does this manually.
 
 ---
 
