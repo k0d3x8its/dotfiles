@@ -82,6 +82,7 @@ main() {
 
     log "stowing ghostty sidebar"
     mkdir -p "$HOME/.config/ghostty" "$HOME/.config/autostart" "$HOME/.local/bin"
+    safeguard "$HOME/.config/ghostty/config"
     safeguard "$HOME/.config/ghostty/sidebar.conf"
     safeguard "$HOME/.config/autostart/ghostty-sidebar.desktop"
     safeguard "$HOME/.local/bin/ghostty-sidebar"
