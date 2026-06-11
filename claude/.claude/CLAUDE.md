@@ -1,12 +1,8 @@
 # K0d3x Global Claude Config
 
-## Who I Am
-Solo developer. Maker. Ubuntu 24.04 (Noble). Tools: Neovim, Nala, Git.
-KOS (Kodex OS) is my personal knowledge management system.
-
 ## Skills Available
 The harness auto-lists every custom skill + its description each session — names below are the slash aliases, not re-described here. Tag routing lives in the TODO Tags table.
-`/handoff` `/handoff-return` `/close` `/checkpoint` `/changelog` `/dev-brief` `/planning-with-files` `/release-notes` `/find-skills` `/diagnose` `/tdd` `/prototype` `/sync-trello`
+`/handoff` `/handoff-return` `/close` `/checkpoint` `/changelog` `/dev-brief` `/planning-with-files` `/release-notes` `/find-skills` `/diagnose` `/tdd` `/prototype` `/sync-trello` `/remember`
 External (not auto-surfaced): `/ce-code-review` `/ce-security-audit` `/discover` `/write-prd`
 
 ## Session Rules
@@ -17,6 +13,7 @@ External (not auto-surfaced): `/ce-code-review` `/ce-security-audit` `/discover`
   - `/close` (close+resume): lightweight session close. Emits resume-focused re-entry prompt (working on + left off). NO SESSION-LOG. ~400 tok. Use when wrapping up but no major decisions were made.
   - `/checkpoint` (durable): end-of-work-session close. Writes SESSION-LOG narrative + rotate-log + triage. ~2K tok. Use when real decisions were made — /close and /handoff do NOT persist the why.
 - Always read task_plan.md, findings.md, and progress.md if they exist in the project root.
+- Always read KNOWLEDGE.md in the project root (if it exists) and `~/.claude/KNOWLEDGE.md` at session start.
 - When I paste a re-entry prompt: treat decisions, background context, and architectural choices as authoritative. Reconcile task state (completed/open/in-progress) against current files (task_plan.md, progress.md, `git log --oneline -5`) before acting — file state wins on conflicts.
 - CHANGELOG: use `/changelog` manually when a session produces changelog-worthy changes. Works for any project (including dotfiles). Do not auto-update changelogs inline.
 
@@ -71,3 +68,17 @@ When syncing task_plan.md to Trello, always map as follows:
 Always create in order: card first, checklist second, items third.
 Before creating, check if a [trello:ID] tag exists on the Goal — if so, skip it.
 After creating a card, annotate the Goal in task_plan.md with [trello:CARD_ID].
+
+## File Taxonomy (What Goes Where)
+
+| Fact type | Destination |
+|---|---|
+| Open work, next steps | `TODOS.md` |
+| Structured implementation plan (Goals/Micro-Goals/Tasks + Trello IDs) | `task_plan.md` |
+| Normative rules, standing instructions | `CLAUDE.md` |
+| Empirical facts, env truths, codebase gotchas | `KNOWLEDGE.md` (local or global) |
+| Architectural decisions (cost meaningful + future reader wonders why + alternatives considered) | `docs/adr/ADR-NNNN-*.md` (CLI/SDK projects) |
+| Session narrative, decisions + why | `SESSION-LOG.md` |
+| Changelog-worthy changes (features, fixes) | `CHANGELOG.md` (via `/changelog`) |
+| Per-task scratch, investigation notes | `findings.md` |
+| Claude's working scratchpad (preferences, corrections — auto-written, not committed) | `~/.claude/projects/<hash>/memory/` |
