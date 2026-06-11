@@ -45,6 +45,9 @@ main() {
     safeguard "$HOME/.claude/CLAUDE.md"
     ln -sf "$DOTFILES/claude/.claude/CLAUDE.md" "$HOME/.claude/CLAUDE.md"
 
+    safeguard "$HOME/.claude/KNOWLEDGE.md"
+    ln -sf "$DOTFILES/claude/.claude/KNOWLEDGE.md" "$HOME/.claude/KNOWLEDGE.md"
+
     safeguard "$HOME/.claude/settings.json"
     ln -sf "$DOTFILES/claude/.claude/settings.json" "$HOME/.claude/settings.json"
 
