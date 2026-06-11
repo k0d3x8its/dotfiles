@@ -25,11 +25,12 @@ allowed-tools:
 6. Scaffolds `.claude/settings.json` with baseline permissions
 7. Configures `.claude/trello-board` for `/sync-trello`
 8. Initializes planning files: `task_plan.md`, `findings.md`, `progress.md`, `session-log.md`, `CHANGELOG.md`
-9. Creates `.gitignore`, or append-if-missing merges into an existing one
-10. Checks git / offers `git init`
-11. Offers GitHub repo creation via `gh`
-12. Reminds about `/ce-setup`
-13. Prints completion summary
+9. Creates `KNOWLEDGE.md` — curated facts, committed with the repo
+10. Creates `.gitignore`, or append-if-missing merges into an existing one
+11. Checks git / offers `git init`
+12. Offers GitHub repo creation via `gh`
+13. Reminds about `/ce-setup`
+14. Prints completion summary
 
 ---
 
@@ -177,7 +178,17 @@ Print which files were created (skip already-existing ones silently).
 
 ---
 
-### Step 12: Create / merge .gitignore
+### Step 12: Create KNOWLEDGE.md
+
+Check if `KNOWLEDGE.md` exists in the project root — if not, write `templates/KNOWLEDGE.md` (substitute `{{PROJECT_NAME}}`) to `KNOWLEDGE.md`.
+
+`KNOWLEDGE.md` is **committed with the repo** — not a session artifact. Do **not** add it to `.gitignore`.
+
+Print `✓ KNOWLEDGE.md created` if written, skip silently if it already exists.
+
+---
+
+### Step 13: Create / merge .gitignore
 
 The required entry set = `templates/gitignore.core` (static) **plus** the type-specific block below:
 
@@ -205,9 +216,11 @@ The required entry set = `templates/gitignore.core` (static) **plus** the type-s
 
 **Why a marked append-merge:** an existing repo's `.gitignore` is user-authored and must survive; but the Step-11 planning files (`task_plan.md`, `findings.md`, `progress.md`, `session-log.md`, `RELEASE-NOTES.md`) and `.claude/trello-board` MUST be ignored or they leak. Merging the missing lines under a clear marker satisfies both and stays idempotent across re-runs.
 
+**`KNOWLEDGE.md` must NOT be in `.gitignore`** — it is committed source, not a session artifact. If it appears in any existing `.gitignore`, warn the user and do not add it.
+
 ---
 
-### Step 13: Git check
+### Step 14: Git check
 
 Run `git status`.
 
@@ -219,7 +232,7 @@ Run `git status`.
 
 ---
 
-### Step 14: GitHub repo setup
+### Step 15: GitHub repo setup
 
 Ask:
 > "Create a GitHub repo for this project? Requires `gh` CLI."
@@ -242,7 +255,7 @@ If skipped: note in summary.
 
 ---
 
-### Step 15: Remind about /ce-setup
+### Step 16: Remind about /ce-setup
 
 Always print — regardless of other choices:
 ```
@@ -257,7 +270,7 @@ Always print — regardless of other choices:
 
 ---
 
-### Step 16: Completion summary
+### Step 17: Completion summary
 
 ```
 ✓ [Project Name] is ready.
@@ -269,6 +282,7 @@ Created:
   .claude/settings.json
   .claude/trello-board → "[board]"  (or: not configured)
   task_plan.md, findings.md, progress.md, session-log.md, CHANGELOG.md
+  KNOWLEDGE.md
   .gitignore
   Git: [initialized / already existed]
   GitHub: [repo URL / skipped]
