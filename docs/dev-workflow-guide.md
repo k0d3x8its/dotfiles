@@ -307,6 +307,20 @@ When to use: ad-hoc board operations outside the `/sync-trello` flow — moving 
 
 ### Utility Skills
 
+#### `/remember` — Ad-hoc fact capture
+
+Captures a single fact into `KNOWLEDGE.md` (local or global) without running a full `/checkpoint`. Runs the 4-test promotion bar (SETTLED · NON-OBVIOUS · NOT A RULE · DURABLE), deduplicates semantically, and confirms on write. If a fact fails the bar, explains why and suggests the correct destination.
+
+| Flag | Effect |
+|---|---|
+| `/remember <fact>` | Auto-route + bar check |
+| `/remember --global <fact>` | Force global `~/.claude/KNOWLEDGE.md` |
+| `/remember --force <fact>` | Bypass bar, write regardless |
+
+When to use: mid-session fact worth preserving that doesn't need a full `/checkpoint`.
+
+---
+
 #### `/zoom-out` — Codebase orientation
 
 Maps an unfamiliar section of code — identifies modules, entry points, and how a given file or function fits into the broader system. Returns a module map and caller graph.
@@ -580,6 +594,7 @@ New session opens. Paste the re-entry prompt. Claude reads `SESSION-LOG.md`, `TO
 ```
 ~/.claude/                        (symlinked from dotfiles)
   CLAUDE.md                       ← global standing orders
+  KNOWLEDGE.md                    ← global curated facts (committed via dotfiles)
   settings.json                   ← hooks, statusLine, plugins
   hooks/
     session_timer.py              ← tracks session start time
@@ -589,6 +604,7 @@ New session opens. Paste the re-entry prompt. Claude reads `SESSION-LOG.md`, `TO
   references/
     kos-code-reference.md         ← KOS-Code vocabulary (read by skills at runtime)
     anti-patterns.md              ← anti-pattern catalogue
+    memory-standard.md            ← KNOWLEDGE.md promotion bar, routing rules, entry format
   skills/
     session-handoff/              ← /handoff  (lean fork)
     session-handoff-return/       ← /handoff-return  (merge tangent)
@@ -637,6 +653,7 @@ your-project/
   findings.md                     ← research and decisions (gitignored)
   progress.md                     ← session progress log (gitignored)
   CHANGELOG.md                    ← committed changelog (updated via /changelog)
+  KNOWLEDGE.md                    ← committed curated facts about this codebase
   RELEASE-NOTES.md                ← scratch pad for /release-notes (gitignored)
   .gitignore                      ← covers all Claude artifacts, secrets, OS noise
 ```
