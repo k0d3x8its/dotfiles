@@ -2,6 +2,18 @@
 
 ## [Unreleased]
 
+### 2026-06-12
+#### Added
+- ➕ `brainstorm` skill — generative design dialogue (Superpowers-derived): explores context, clarifies one question at a time, proposes 2-3 approaches with tradeoffs + recommendation, writes `docs/brainstorm/<topic>-YYYY-MM-DD.md`, hands off to `/grill-me` [\[4bb5fe9\]](https://github.com/k0d3x8its/dotfiles/commit/4bb5fe93dd909f0cbacb45e32a6eef0236a4f974) [\[53bbc65\]](https://github.com/k0d3x8its/dotfiles/commit/53bbc65c43fa19d92716b46121dcf38f1f063160)
+- ➕ `write-plan` skill — converts a grilled design doc + findings.md into Goal/Micro-Goal/Task task_plan.md; every Task carries a `verify:` sub-bullet invisible to `/sync-trello`; offers (never forces) Trello sync [\[23e3c1b\]](https://github.com/k0d3x8its/dotfiles/commit/23e3c1b0ea31512cddc9c006075d64c839ddb961)
+- ➕ `trust-but-verify` skill — evidence gate: fresh verify-command run + exit code before any done/push/PR/handoff claim (not commits); unproven claims become `[VERIFY]` TODOs, unverifiable ones become `[UX]` checklists; `detect.md` resolves the verify command project-agnostically (declaration → build runner → CI workflows minus install steps → tool presence) [\[f03cabf\]](https://github.com/k0d3x8its/dotfiles/commit/f03cabfc3497886daf5271d0b75688230c2f7e48) [\[2e06b0d\]](https://github.com/k0d3x8its/dotfiles/commit/2e06b0dc3d3fd4530ddeb0e979fab7ed9a749025)
+- ➕ `review-response` skill — rail for incoming review/CI feedback: read fully → restate → verify against code → judge fit → fix or reasoned pushback, one item at a time through the trust-but-verify gate [\[2f5549c\]](https://github.com/k0d3x8its/dotfiles/commit/2f5549cb122a1ba9b2b5969989730d7de2abd989)
+- ➕ Revised adaptation spec for the four Superpowers-derived skills (gap analysis fixes folded in) [\[4ad5156\]](https://github.com/k0d3x8its/dotfiles/commit/4ad5156ed5c19b8861fb5fffe38d5cbf34e9ca5a)
+
+#### Changed
+- ♻️ `CLAUDE.md` — added `[VERIFY]` to priority (always Critical, like `[TEST]`) and annotation tag tables, trust-but-verify session rule, design-doc row in File Taxonomy, and the five pipeline skills to the Skills Available list [\[ec23814\]](https://github.com/k0d3x8its/dotfiles/commit/ec23814bb7727d2922d900f4e8bc85143514a2da)
+- ♻️ Repo `KNOWLEDGE.md` — declared the explicit verify command so trust-but-verify detection resolves at priority 1 [\[f2767c8\]](https://github.com/k0d3x8its/dotfiles/commit/f2767c8ba6b7609b0c94c1fe71575dfc06d4d9b4)
+
 ### 2026-06-02
 #### Added
 - ➕ Append short commit hash to changelog entries [\[e4210ad\]](https://github.com/k0d3x8its/dotfiles/commit/e4210ad7460c279894afcdaa7e330951dffb8677)
