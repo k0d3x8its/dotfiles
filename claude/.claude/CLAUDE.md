@@ -2,7 +2,7 @@
 
 ## Skills Available
 The harness auto-lists every custom skill + its description each session — names below are the slash aliases, not re-described here. Tag routing lives in the TODO Tags table.
-`/handoff` `/handoff-return` `/close` `/checkpoint` `/changelog` `/dev-brief` `/planning-with-files` `/release-notes` `/find-skills` `/diagnose` `/tdd` `/prototype` `/sync-trello` `/remember`
+`/handoff` `/handoff-return` `/close` `/checkpoint` `/changelog` `/dev-brief` `/planning-with-files` `/release-notes` `/find-skills` `/diagnose` `/tdd` `/prototype` `/sync-trello` `/remember` `/brainstorm` `/grill-me` `/write-plan` `/trust-but-verify` `/review-response`
 External (not auto-surfaced): `/ce-code-review` `/ce-security-audit` `/discover` `/write-prd`
 
 ## Session Rules
@@ -17,6 +17,7 @@ External (not auto-surfaced): `/ce-code-review` `/ce-security-audit` `/discover`
 - KNOWLEDGE.md writes: if I ask to add/append a fact to KNOWLEDGE.md directly (without /remember), recommend `/remember <fact>` and route through it instead of appending raw — the promotion bar and dedup must run. Raw write only if I explicitly insist (treat as `/remember --force`). Whenever the knowledge system presents options (destination, bar-failure rerouting, overlap handling), lead with a recommendation + one-line why — never a neutral list. Details: `~/.claude/references/memory-standard.md` § Direct-Write Requests / § Recommendations.
 - When I paste a re-entry prompt: treat decisions, background context, and architectural choices as authoritative. Reconcile task state (completed/open/in-progress) against current files (task_plan.md, progress.md, `git log --oneline -5`) before acting — file state wins on conflicts.
 - CHANGELOG: use `/changelog` manually when a session produces changelog-worthy changes. Works for any project (including dotfiles). Do not auto-update changelogs inline.
+- Trust-but-verify reflex: before any done/works/fixed claim, `git push`, PR, or handoff (/close, /checkpoint, /handoff, /handoff-return, subagent) — run the project's verify command FRESH (resolve via `~/.claude/skills/trust-but-verify/detect.md`) and read its exit code. Not before commits. Unproven claim → `[VERIFY]` TODO; machine-unverifiable → `[UX]` checklist.
 
 ## TODO Tags
 
@@ -29,10 +30,11 @@ When writing TODOs to TODOS.md (via /handoff, /handoff-return, /checkpoint, or i
 | `[BROKEN]` | Something is broken right now — tool down, build failing, can't work | Critical |
 | `[BLOCKER]` | Must happen before other work can start | High |
 | `[TEST]` | Unverified test — always critical; use `/tdd` to close | Critical |
+| `[VERIFY]` | Claimed-but-unverified work — always critical; use `/trust-but-verify` to close | Critical |
 | `[LOW]` | Not urgent — do soon but not this week | Low |
 | `[BACKLOG]` | Captured, deferred, no timeline | Backlog |
 
-No priority tag = Medium (default). `[TEST]` overrides all other priority tags.
+No priority tag = Medium (default). `[TEST]` and `[VERIFY]` override all other priority tags.
 
 **Annotation tags** — describe the type of work so Claude enters the right mode:
 
@@ -42,6 +44,7 @@ No priority tag = Medium (default). `[TEST]` overrides all other priority tags.
 | `[FEAT]` | New feature or capability | Design/build mode |
 | `[CHORE]` | Cleanup, refactor, maintenance | Low-energy batching candidate |
 | `[TEST]` | Write or fix tests | Use `/tdd` — red-green-refactor vertical slices |
+| `[VERIFY]` | Claimed-but-unverified work — needs fresh evidence before closing | Use `/trust-but-verify` — run detected verify command fresh, read exit code, then close or keep open |
 | `[RELEASE]` | Publish/ship related | Release workflow mode |
 | `[DECISION]` | Needs a choice before action can start | Present options + tradeoffs, don't implement |
 | `[INVESTIGATE]` | Needs research, audit, or open sweep before action — no hypothesis required | Read code/logs first, don't jump to solutions. Output findings list; spawn new tasks from it. |
@@ -76,6 +79,7 @@ After creating a card, annotate the Goal in task_plan.md with [trello:CARD_ID].
 |---|---|
 | Open work, next steps | `TODOS.md` |
 | Structured implementation plan (Goals/Micro-Goals/Tasks + Trello IDs) | `task_plan.md` |
+| Design docs (approaches + tradeoffs + recommendation, pre-plan) | `docs/brainstorm/<topic>-YYYY-MM-DD.md` (via `/brainstorm`) |
 | Normative rules, standing instructions | `CLAUDE.md` |
 | Empirical facts, env truths, codebase gotchas | `KNOWLEDGE.md` (local or global) |
 | Architectural decisions (cost meaningful + future reader wonders why + alternatives considered) | `docs/adr/ADR-NNNN-*.md` (CLI/SDK projects) |
