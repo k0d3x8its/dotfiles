@@ -10,6 +10,9 @@
 - ➕ `review-response` skill — rail for incoming review/CI feedback: read fully → restate → verify against code → judge fit → fix or reasoned pushback, one item at a time through the trust-but-verify gate [\[2f5549c\]](https://github.com/k0d3x8its/dotfiles/commit/2f5549cb122a1ba9b2b5969989730d7de2abd989)
 - ➕ Revised adaptation spec for the four Superpowers-derived skills (gap analysis fixes folded in) [\[4ad5156\]](https://github.com/k0d3x8its/dotfiles/commit/4ad5156ed5c19b8861fb5fffe38d5cbf34e9ca5a)
 
+#### Fixed
+- 🛠️ `install.sh` — plugin registry files (`installed_plugins.json`, `known_marketplaces.json`) are now seed-copied instead of symlinked; the Claude runtime mutates them, and the symlink let it write into the repo. New `seed_copy` helper migrates pre-fix symlinks to real files; covered by three new bats tests [\[1bf69f4\]](https://github.com/k0d3x8its/dotfiles/commit/1bf69f42199a647df08e395bbf80ffcd74caf3ee) [\[bdb19cf\]](https://github.com/k0d3x8its/dotfiles/commit/bdb19cf4a599f0d25a5623db2e927f113a9ae1cd)
+
 #### Changed
 - ♻️ `CLAUDE.md` — added `[VERIFY]` to priority (always Critical, like `[TEST]`) and annotation tag tables, trust-but-verify session rule, design-doc row in File Taxonomy, and the five pipeline skills to the Skills Available list [\[ec23814\]](https://github.com/k0d3x8its/dotfiles/commit/ec23814bb7727d2922d900f4e8bc85143514a2da)
 - ♻️ Repo `KNOWLEDGE.md` — declared the explicit verify command so trust-but-verify detection resolves at priority 1 [\[f2767c8\]](https://github.com/k0d3x8its/dotfiles/commit/f2767c8ba6b7609b0c94c1fe71575dfc06d4d9b4)
