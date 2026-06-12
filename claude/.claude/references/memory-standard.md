@@ -15,6 +15,25 @@ Both committed to git (global via dotfiles, local with the repo). Never gitignor
 
 ---
 
+## Direct-Write Requests
+
+When the user asks to write to KNOWLEDGE.md directly ("add X to KNOWLEDGE.md", "append this to knowledge", "put that in KNOWLEDGE.md") without invoking `/remember`, do not append raw. Recommend `/remember <fact>` and run it — that path enforces the promotion bar, routing, and deduplication below. A direct append silently bypasses all three.
+
+If the user declines and insists on a raw write, treat it as `/remember --force`: write it, but still run dedup and note that the bar was bypassed.
+
+---
+
+## Recommendations (always lead with one)
+
+Whenever the knowledge system puts a choice in front of the user — destination (local vs global), bar failure rerouting (TODOS.md vs CLAUDE.md vs drop), overlap handling (merge vs keep separate vs replace) — state a recommendation first, with a one-line why, then list the alternatives. Never present a neutral option list and wait for the user to ask "which would you pick?"
+
+```
+Recommend: GLOBAL — toolchain fact, true outside this repo.
+Alternatives: local (if you expect it to stay project-specific).
+```
+
+---
+
 ## Entry Format
 
 Flat prose bullet. No slugs, no frontmatter, no tags.
