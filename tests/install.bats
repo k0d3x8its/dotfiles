@@ -19,8 +19,8 @@ make_fixture() {
     mkdir -p "$dir/claude/.claude/references"
     touch "$dir/claude/.claude/CLAUDE.md"
     touch "$dir/claude/.claude/settings.json"
-    touch "$dir/claude/.claude/plugins/installed_plugins.json"
-    touch "$dir/claude/.claude/plugins/known_marketplaces.json"
+    echo '{"seed":"installed"}' > "$dir/claude/.claude/plugins/installed_plugins.json"
+    echo '{"seed":"marketplaces"}' > "$dir/claude/.claude/plugins/known_marketplaces.json"
     touch "$dir/claude/.claude/hooks/hook.sh"
     touch "$dir/claude/.claude/references/anti-patterns.md"
 
@@ -252,6 +252,40 @@ EOF
 
     [[ -L "$FAKE_HOME/.claude/references" ]]
     [[ "$(readlink "$FAKE_HOME/.claude/references")" == "$FAKE_DOTFILES/claude/.claude/references" ]]
+}
+
+@test "claude: plugin registry files are seed-copied, not symlinked" {
+    run_install
+
+    # runtime mutates these files — a symlink would let it write into the repo
+    [[ -f "$FAKE_HOME/.claude/plugins/installed_plugins.json" ]]
+    [[ ! -L "$FAKE_HOME/.claude/plugins/installed_plugins.json" ]]
+    [[ -f "$FAKE_HOME/.claude/plugins/known_marketplaces.json" ]]
+    [[ ! -L "$FAKE_HOME/.claude/plugins/known_marketplaces.json" ]]
+    [[ "$(cat "$FAKE_HOME/.claude/plugins/known_marketplaces.json")" == '{"seed":"marketplaces"}' ]]
+}
+
+@test "claude: existing plugin registry files are never overwritten" {
+    mkdir -p "$FAKE_HOME/.claude/plugins"
+    echo '{"live":"runtime-state"}' > "$FAKE_HOME/.claude/plugins/installed_plugins.json"
+    echo '{"live":"runtime-state"}' > "$FAKE_HOME/.claude/plugins/known_marketplaces.json"
+
+    run_install
+
+    [[ "$(cat "$FAKE_HOME/.claude/plugins/installed_plugins.json")" == '{"live":"runtime-state"}' ]]
+    [[ "$(cat "$FAKE_HOME/.claude/plugins/known_marketplaces.json")" == '{"live":"runtime-state"}' ]]
+}
+
+@test "claude: live plugin registry symlink is converted to a real seeded file" {
+    # migration path: pre-fix installs left these as symlinks into the repo
+    mkdir -p "$FAKE_HOME/.claude/plugins"
+    ln -s "$FAKE_DOTFILES/claude/.claude/plugins/known_marketplaces.json" \
+        "$FAKE_HOME/.claude/plugins/known_marketplaces.json"
+
+    run_install
+
+    [[ ! -L "$FAKE_HOME/.claude/plugins/known_marketplaces.json" ]]
+    [[ "$(cat "$FAKE_HOME/.claude/plugins/known_marketplaces.json")" == '{"seed":"marketplaces"}' ]]
 }
 
 @test "claude: every tracked skill is symlinked, no extras" {
