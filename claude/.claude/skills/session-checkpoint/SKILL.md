@@ -114,7 +114,8 @@ No `### Incomplete / Next Steps` block — open work lives in `TODOS.md` only.
      1. [LOCAL] "- {proposed entry}"  ← {which tests it passed}
      2. [GLOBAL] "- {proposed entry}" ← {why escalated to global}
      ```
-   - Accept: `a` (approve all) · `d` (deny all) · `1 2 …` (approve by number) · `r1 global` (re-route item 1) · `e1 new text` (edit item 1)
+   - Accept: `a`/`approve` (approve all) · `d`/`deny` (deny all) · `1 2 …` (approve by number) · `r1 global` (re-route item 1) · `e1 new text` (edit item 1)
+   - When printing the options line to the user, always include the parenthesized labels — never bare shortcuts like "Reply `a` / `d`"
    - On approval: write entries to target KNOWLEDGE.md, following distill-on-write (update existing entry on overlap, no blind-append)
    - On denial: skip silently
    - No candidates pass bar: skip this step silently
