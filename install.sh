@@ -20,6 +20,19 @@ safeguard() {
     fi
 }
 
+# Copy a seed file only if the target doesn't exist as a real file.
+# For runtime-mutated files: a symlink would let the program write into the
+# repo, so the repo copy only bootstraps fresh machines — runtime owns it after.
+seed_copy() {
+    local src="$1" target="$2"
+    if [[ -L "$target" ]]; then
+        rm "$target"    # migrate pre-fix symlink to a real file
+    fi
+    if [[ ! -e "$target" ]]; then
+        cp "$src" "$target"
+    fi
+}
+
 # ── main ──────────────────────────────────────────────────────────────────────
 
 main() {
@@ -51,12 +64,10 @@ main() {
     safeguard "$HOME/.claude/settings.json"
     ln -sf "$DOTFILES/claude/.claude/settings.json" "$HOME/.claude/settings.json"
 
-    safeguard "$HOME/.claude/plugins/installed_plugins.json"
-    ln -sf "$DOTFILES/claude/.claude/plugins/installed_plugins.json" \
+    # plugin registries: Claude runtime rewrites these — seed once, never link
+    seed_copy "$DOTFILES/claude/.claude/plugins/installed_plugins.json" \
         "$HOME/.claude/plugins/installed_plugins.json"
-
-    safeguard "$HOME/.claude/plugins/known_marketplaces.json"
-    ln -sf "$DOTFILES/claude/.claude/plugins/known_marketplaces.json" \
+    seed_copy "$DOTFILES/claude/.claude/plugins/known_marketplaces.json" \
         "$HOME/.claude/plugins/known_marketplaces.json"
 
     # hooks dir
