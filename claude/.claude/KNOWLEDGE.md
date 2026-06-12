@@ -20,3 +20,4 @@
 - `kos` bash alias activates the kos-capture venv and cds into `~/dev/kos-capture`.
 - claude-monitor installed via `uv tool` (aliases ccm/ccmonitor/cmonitor); whisper and yt-dlp are system-python pip installs in `~/.local/bin`.
 - OpenCode lives at `~/.opencode/bin`, added to PATH in bashrc.
+- Claude Code's Edit/Write tools refuse to write through symlinks — edit the real target under dotfiles/claude/.claude/ (CLAUDE.md, settings.json, KNOWLEDGE.md, skills), not the ~/.claude/ symlink.
