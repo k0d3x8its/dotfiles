@@ -14,6 +14,7 @@ External (not auto-surfaced): `/ce-code-review` `/ce-security-audit` `/discover`
   - `/checkpoint` (durable): end-of-work-session close. Writes SESSION-LOG narrative + rotate-log + triage. ~2K tok. Use when real decisions were made — /close and /handoff do NOT persist the why.
 - Always read task_plan.md, findings.md, and progress.md if they exist in the project root.
 - Always read KNOWLEDGE.md in the project root (if it exists) and `~/.claude/KNOWLEDGE.md` at session start.
+- KNOWLEDGE.md writes: if I ask to add/append a fact to KNOWLEDGE.md directly (without /remember), recommend `/remember <fact>` and route through it instead of appending raw — the promotion bar and dedup must run. Raw write only if I explicitly insist (treat as `/remember --force`). Whenever the knowledge system presents options (destination, bar-failure rerouting, overlap handling), lead with a recommendation + one-line why — never a neutral list. Details: `~/.claude/references/memory-standard.md` § Direct-Write Requests / § Recommendations.
 - When I paste a re-entry prompt: treat decisions, background context, and architectural choices as authoritative. Reconcile task state (completed/open/in-progress) against current files (task_plan.md, progress.md, `git log --oneline -5`) before acting — file state wins on conflicts.
 - CHANGELOG: use `/changelog` manually when a session produces changelog-worthy changes. Works for any project (including dotfiles). Do not auto-update changelogs inline.
 
