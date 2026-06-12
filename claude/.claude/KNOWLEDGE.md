@@ -20,4 +20,8 @@
 - `kos` bash alias activates the kos-capture venv and cds into `~/dev/kos-capture`.
 - claude-monitor installed via `uv tool` (aliases ccm/ccmonitor/cmonitor); whisper and yt-dlp are system-python pip installs in `~/.local/bin`.
 - OpenCode lives at `~/.opencode/bin`, added to PATH in bashrc.
+- Neovim `FileChangedShell` never fires for edits made by a child process inside `:terminal` — no FocusGained happens (same process). Must trigger `:checktime` manually (TermLeave/WinEnter/CursorHold autocmds).
+- opencode TUI accepts `--prompt "<text>"` at launch to seed the first message (also `-c`/`-s` to continue sessions); `opencode run` is one-shot non-interactive, never starts the TUI (verified v1.16.2).
 - Claude Code's Edit/Write tools refuse to write through symlinks — edit the real target under dotfiles/claude/.claude/ (CLAUDE.md, settings.json, KNOWLEDGE.md, skills), not the ~/.claude/ symlink.
+- ~/.claude is deliberately NOT stow-managed (runtime state coexists with config) — install.sh wires absolute `ln -sf` links and globs the skills dir. After adding/removing a skill, re-run `bash install.sh` (idempotent); `stow --restow claude` is the wrong tool and aborts on the absolute links.
+- ~/.claude/plugins/{installed_plugins,known_marketplaces}.json are runtime-mutated — install.sh seed-copies them (cp once if absent, never symlinks, since 2026-06-12); repo copies are fresh-machine bootstrap seeds, updated deliberately when adding a marketplace.
