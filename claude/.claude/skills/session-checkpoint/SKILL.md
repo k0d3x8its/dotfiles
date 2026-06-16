@@ -125,7 +125,7 @@ No `### Incomplete / Next Steps` block — open work lives in `TODOS.md` only.
    - TODOS path = `{log_dir}/TODOS.md`
    ```bash
    update-cache '{project}' '{todos_path}'
-   rotate-log '{log_path}' 3
+   rotate-log '{log_path}' 6
    update-cache '{project}' '{todos_path}'
    update-triage 2>/dev/null || echo "(update-triage failed — run manually to refresh TRIAGE-BLOCK.md)"
    ```
