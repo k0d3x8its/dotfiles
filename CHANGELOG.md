@@ -2,6 +2,11 @@
 
 ## [Unreleased]
 
+### 2026-06-16
+#### Fixed
+- 🛠️ `scripts/rotate-log` — default block-retention bumped 3 → 6. dev-brief reads only the newest SESSION-LOG block and rotated blocks stay grep-able in `ARCHIVE-LOG.md`, so a larger N only buys inline-without-grep convenience; 6 gives ~2-week lookback at current checkpoint cadence with a bounded ~5-6K-token full-Read cost (12/16 rejected as inflating every read for lookback that's already free) [\[8a4c406\]](https://github.com/k0d3x8its/dotfiles/commit/8a4c4069d681c6e4e9688b6108b9416f9d5c3fa3)
+- 🛠️ `session-checkpoint` skill — calls `rotate-log` with explicit `N=6` so checkpoint rotation matches the new script default [\[e1e52fc\]](https://github.com/k0d3x8its/dotfiles/commit/e1e52fc0cea43a1d74a292b51111ab49b3583552)
+
 ### 2026-06-12
 #### Added
 - ➕ `brainstorm` skill — generative design dialogue (Superpowers-derived): explores context, clarifies one question at a time, proposes 2-3 approaches with tradeoffs + recommendation, writes `docs/brainstorm/<topic>-YYYY-MM-DD.md`, hands off to `/grill-me` [\[4bb5fe9\]](https://github.com/k0d3x8its/dotfiles/commit/4bb5fe93dd909f0cbacb45e32a6eef0236a4f974) [\[53bbc65\]](https://github.com/k0d3x8its/dotfiles/commit/53bbc65c43fa19d92716b46121dcf38f1f063160)
