@@ -1,4 +1,18 @@
 {
+  "model": "opus",
+  "permissions": {
+    "deny": [
+      "Read(~/.ssh/**)",
+      "Read(~/.aws/**)",
+      "Read(**/.env*)",
+      "Write(~/.ssh/**)",
+      "Write(~/.aws/**)",
+      "Bash(curl * | bash)",
+      "Bash(ssh *)",
+      "Bash(scp *)",
+      "Bash(nc *)"
+    ]
+  },
   "hooks": {
     "SessionStart": [
       {
@@ -79,6 +93,5 @@
       }
     }
   },
-  "theme": "dark",
-  "model": "claude-fable-5[1m]"
+  "theme": "dark"
 }
