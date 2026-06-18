@@ -1,0 +1,280 @@
+# git-crypt Encryption — Implementation Guide
+
+> Brief for a future Claude Code session. Read this top-to-bottom, then execute.
+> Scope was confirmed with the user: **both** the dotfiles repo's own sensitive files
+> **and** the per-project planning-files pattern. Key sharing: **symmetric key file**.
+
+---
+
+## 1. Context & goal
+
+The dotfiles repo is public (the README links to it publicly). Today it protects
+sensitive data two ways:
+
+- **`.gitignore`** for runtime credentials (`.credentials.json`, Particle token, etc.).
+- **Global gitignore** (`git/.gitignore_global` → `~/.gitignore_global` via
+  `core.excludesfile`) for planning files — `TODOS.md`, `findings.md`, `progress.md`,
+  `task_plan.md`, `SESSION-LOG.md`, `RELEASE-NOTES.md`, `ARCHIVE-LOG.md`. These are
+  "machine-local by design" and are **never committed**.
+
+Two problems this guide solves:
+
+1. **`KNOWLEDGE.md` leaks in plaintext.** It is deliberately *not* ignored and commits
+   normally. The global `claude/.claude/KNOWLEDGE.md` contains a personal email, Proton
+   VPN usage, and detailed system/toolchain facts — all readable by anyone on a public
+   repo.
+2. **Planning files are lost across machines.** Because they're globally ignored, work
+   notes (`TODOS.md`, `findings.md`, `progress.md`, …) never sync. The user wants them
+   committed so they travel — but they can't go into a public repo as plaintext.
+
+**git-crypt** solves both: it transparently encrypts chosen files on commit and decrypts
+them on checkout (for anyone holding the key). Plaintext locally, ciphertext in the repo.
+
+**Success looks like:** `KNOWLEDGE.md` and the chosen planning files are committed as
+ciphertext, render as garbage on GitHub, and appear as normal plaintext in any local
+checkout that has been unlocked with the symmetric key.
+
+---
+
+## 2. How git-crypt works — 5 constraints you must respect
+
+1. **git-crypt is per-repo.** `git-crypt init` runs once *inside each repository*. The
+   dotfiles repo is one setup (Scope A below). Every `~/dev/<project>` repo is its own
+   setup — so the per-project case (Scope B) is a **workflow pattern wired into
+   `/dev-setup`**, not a one-time action.
+
+2. **A file cannot be both gitignored and git-crypt-encrypted.** git-crypt only encrypts
+   *tracked* files; git never stages an ignored file, so the encryption filter never
+   runs on it. The planning files are globally ignored, so they must be **un-ignored
+   first**. Do this with **per-repo `.gitignore` negations** (`!TODOS.md`, …), *not* by
+   deleting lines from `git/.gitignore_global`. Repo-level `.gitignore` patterns override
+   the global excludesfile, so "machine-local by default" stays intact for every repo
+   that does **not** opt into encryption — only repos with git-crypt set up un-ignore and
+   encrypt those files.
+
+3. **Stow/symlink + unlock ordering.** `~/.claude/KNOWLEDGE.md` is a symlink into the
+   dotfiles working tree (`install.sh` line ~49). On a freshly cloned, **not-yet-unlocked**
+   machine the working-tree file is ciphertext, so Claude would read garbage through the
+   symlink. **`git-crypt unlock` must run during bootstrap before the symlinks are
+   relied on.** Wire this into `install.sh`.
+
+4. **Do NOT encrypt `git/.gitconfig` (recommended).** Two reasons: (a) the email is
+   already exposed in every commit's author metadata, so encrypting the config file gains
+   nothing; (b) a ciphertext `~/.gitconfig` on a not-yet-unlocked machine breaks git
+   itself. If the user still insists, document it as opt-in with these caveats — but the
+   default is **encrypt `KNOWLEDGE.md` only** for the dotfiles repo.
+
+5. **Filenames are not encrypted.** `.gitattributes` itself is committed in plaintext, so
+   the *names* of encrypted files stay visible — only contents are protected. Don't put
+   secrets in filenames.
+
+---
+
+## 3. Prerequisite — install git-crypt
+
+```bash
+sudo nala install git-crypt   # or: sudo apt-get install -y git-crypt
+git-crypt --version           # confirm it's on PATH
+```
+
+Add `git-crypt` to `packages.txt` so `./install.sh --packages` provisions it on new
+machines (it's consumed at `install.sh` line ~138: `xargs sudo apt-get install -y < packages.txt`).
+
+---
+
+## 4. What to encrypt — decision table
+
+### Per-project planning files (Scope B)
+
+| File | Action | Why |
+|---|---|---|
+| `TODOS.md` | **Encrypt + commit** | Open work / next steps; may name internal targets. Worth syncing. |
+| `findings.md` | **Encrypt + commit** | Investigation notes; can hold sensitive detail. |
+| `progress.md` | **Encrypt + commit** | Progress log; worth syncing. |
+| `task_plan.md` | **Encrypt + commit** | Structured plan; may hold sensitive detail. |
+| `SESSION-LOG.md` | **Encrypt + commit** | Session narrative + decisions; the durable record. |
+| `KNOWLEDGE.md` | **Encrypt + commit** | Already committed today — switch it to encrypted. |
+| `RELEASE-NOTES.md` | **Keep local** | Generated by `/release-notes`; regenerated, not source. |
+| `ARCHIVE-LOG.md` | **Keep local** (opt-in encrypt) | Rotated archive of `SESSION-LOG.md`; large, low value to sync. |
+| `TRIAGE-BLOCK.md` | **Keep local** (opt-in encrypt) | Derived from `TODOS.md` by the triage script; regenerated, so committing it is redundant. |
+| `.claude/trello-board` | **Keep local** | Just a board name; low value. |
+
+### Dotfiles repo's own files (Scope A)
+
+| File | Action | Why |
+|---|---|---|
+| `claude/.claude/KNOWLEDGE.md` | **Encrypt** | Email, Proton VPN usage, system/toolchain facts on a public repo. |
+| `git/.gitconfig` | **Skip (not recommended)** | Email already in commit metadata; ciphertext config breaks git pre-unlock. See constraint #4. |
+
+---
+
+## 5. Scope A — set up the dotfiles repo
+
+Run from the dotfiles repo root.
+
+```bash
+# 1. Initialise git-crypt in this repo (creates .git-crypt/, generates the key)
+git-crypt init
+
+# 2. Tell git which files to encrypt
+cat >> .gitattributes <<'EOF'
+claude/.claude/KNOWLEDGE.md filter=git-crypt diff=git-crypt
+EOF
+
+# 3. Re-stage KNOWLEDGE.md so it gets re-written through the encryption filter
+git rm --cached claude/.claude/KNOWLEDGE.md
+git add .gitattributes claude/.claude/KNOWLEDGE.md
+
+# 4. Verify BEFORE committing — it must list KNOWLEDGE.md as "encrypted"
+git-crypt status -e
+```
+
+Then:
+
+- **`install.sh`** — add a bootstrap step that unlocks the repo right after the stow/symlink
+  block and before the symlinks are relied on. Guard it so it's a no-op when already
+  unlocked or when no key is present:
+  ```bash
+  if command -v git-crypt >/dev/null && [ -f "$HOME/git-crypt-key" ] && \
+     ! git -C "$DOTFILES" config --local --get-regexp '^git-crypt' >/dev/null 2>&1; then
+      log "unlocking git-crypt"
+      git -C "$DOTFILES" git-crypt unlock "$HOME/git-crypt-key"
+  fi
+  ```
+  (Adjust the "already unlocked" check to whatever is cleanest; the intent is: unlock if a
+  key file exists and the repo is currently locked.)
+- **`docs/dev-workflow-guide.md`** — in Part 1 ("Install Everything"), add a note that a
+  fresh machine must place the symmetric key at `~/git-crypt-key` (or run
+  `git-crypt unlock`) before `KNOWLEDGE.md` and other encrypted files are readable.
+
+---
+
+## 6. Scope B — per-project pattern + `/dev-setup` integration
+
+Make encryption an **optional, opt-in** step so existing behaviour is unchanged unless
+the user asks for it. Files to edit:
+
+**A. New template — `claude/.claude/skills/dev-setup/templates/gitattributes`** (static):
+```
+TODOS.md        filter=git-crypt diff=git-crypt
+findings.md     filter=git-crypt diff=git-crypt
+progress.md     filter=git-crypt diff=git-crypt
+task_plan.md    filter=git-crypt diff=git-crypt
+SESSION-LOG.md  filter=git-crypt diff=git-crypt
+KNOWLEDGE.md    filter=git-crypt diff=git-crypt
+```
+
+**B. `templates/gitignore.core`** — add commented negation lines that the new step
+un-comments (or the step appends them) when encryption is enabled, so the encrypted
+planning files override the global ignore:
+```
+# Uncomment when git-crypt is enabled for this repo (see /dev-setup encryption step):
+# !TODOS.md
+# !findings.md
+# !progress.md
+# !task_plan.md
+# !SESSION-LOG.md
+```
+(`KNOWLEDGE.md` is already not ignored, so it needs no negation.)
+
+**C. `claude/.claude/skills/dev-setup/SKILL.md`** — add a new optional step (place it
+**after** Step 14 "Git check", since `git-crypt init` needs a git repo). Step logic:
+
+> **Step: Enable encrypted planning files? (optional)**
+> Ask: *"Encrypt this project's planning files (TODOS.md, findings.md, progress.md,
+> task_plan.md, SESSION-LOG.md, KNOWLEDGE.md) with git-crypt so they commit safely? (yes / skip)"*
+> If **yes**:
+> 1. Verify `git-crypt` is installed and a git repo exists (Step 14 ran). If not, print
+>    the install command and skip gracefully.
+> 2. `git-crypt init`.
+> 3. Write `templates/gitattributes` → `.gitattributes` (append-if-missing, same merge
+>    discipline as the `.gitignore` step).
+> 4. Add the `!`-negation lines for the planning files to `.gitignore` (under the
+>    `# --- added by /dev-setup ---` marker), so they're no longer globally ignored.
+> 5. `git-crypt unlock ~/git-crypt-key` (reuse the shared symmetric key — see §7). If the
+>    key isn't present, tell the user where to put it and that the repo stays locked until
+>    then.
+> 6. Remind: the key lives outside every repo and must be backed up; losing it loses the data.
+> Update Step 17 (completion summary) to report whether encryption was enabled.
+
+Keep it idempotent and safe to re-run, like the rest of the wizard.
+
+---
+
+## 7. Symmetric key management
+
+One key is shared across all machines and all repos that opt in.
+
+```bash
+# On the machine where you first ran `git-crypt init` (dotfiles repo):
+git-crypt export-key ~/git-crypt-key
+```
+
+- **Back it up** in a password manager or a secure offline store. **Never commit it** to
+  any repo (it's the master key — anyone with it decrypts everything).
+- **On a new machine**, after cloning a repo:
+  ```bash
+  git clone <repo>
+  cd <repo>
+  git-crypt unlock ~/git-crypt-key   # place the key file there first
+  ```
+- **Key loss = permanent data loss.** There is no recovery; encrypted history cannot be
+  decrypted without it.
+- The *same* exported key unlocks the dotfiles repo and every per-project repo, because
+  each was `init`'d and then `unlock`'d from this one key.
+
+---
+
+## 8. Docs to update for consistency
+
+After the mechanics work, fix the now-stale "model truth" so future sessions aren't
+misled:
+
+- **`claude/.claude/KNOWLEDGE.md`** — the line stating planning files are "machine-local
+  by design" and "KNOWLEDGE.md is deliberately not ignored and commits normally" needs a
+  follow-up fact: planning files and `KNOWLEDGE.md` are now **git-crypt-encrypted** in
+  repos that opt in, committed as ciphertext, unlocked via `~/git-crypt-key`. Route real
+  edits through `/remember` per the existing direct-write rule.
+- **`claude/.claude/CLAUDE.md`** — the `KNOWLEDGE.md` / "Always read KNOWLEDGE.md" notes
+  should mention that on a locked checkout the file is ciphertext and must be unlocked first.
+- **`claude/.claude/skills/dev-setup/SKILL.md`** Step 12 / Notes — note that `KNOWLEDGE.md`
+  is committed and, when the encryption step is enabled, committed *encrypted*.
+
+---
+
+## 9. Verification
+
+```bash
+# In the dotfiles repo, after committing:
+git-crypt status -e            # KNOWLEDGE.md listed as encrypted
+git show HEAD:claude/.claude/KNOWLEDGE.md | head   # ciphertext (GITCRYPT… binary)
+cat claude/.claude/KNOWLEDGE.md | head             # plaintext locally (unlocked)
+
+# Round-trip:
+git-crypt lock                 # working tree now ciphertext
+cat claude/.claude/KNOWLEDGE.md   # garbage
+git-crypt unlock ~/git-crypt-key
+cat claude/.claude/KNOWLEDGE.md   # plaintext again
+
+# Fresh-clone simulation (no key): file is ciphertext, symlink reads garbage —
+# confirms install.sh must unlock during bootstrap.
+```
+
+For a project repo (Scope B), after `/dev-setup` enables encryption: `git-crypt status -e`
+lists the planning files, `git check-ignore TODOS.md` reports it is **no longer ignored**,
+and a locked checkout shows ciphertext.
+
+---
+
+## 10. Rollback & gotchas
+
+- **Unlock before use.** Until `git-crypt unlock` runs, encrypted files (and the symlinks
+  pointing at them) are ciphertext. Bootstrap order matters.
+- **GitHub web.** Encrypted files don't render or diff in the GitHub UI — expected.
+- **Merge conflicts on a locked machine** can't be resolved (you'd be editing ciphertext).
+  Always unlock first.
+- **Filenames stay visible** (constraint #5) — don't encode secrets in names.
+- **To stop encrypting a file:** remove its line from `.gitattributes`, then
+  `git rm --cached <file> && git add <file>` to re-commit it in plaintext. Note the
+  ciphertext remains in history.
+- **`.gitconfig`:** left in plaintext on purpose (constraint #4).
