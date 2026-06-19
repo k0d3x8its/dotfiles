@@ -54,6 +54,33 @@ main() {
     log "wiring claude config"
     mkdir -p "$HOME/.claude/plugins" "$HOME/.claude/skills"
 
+    # ── git-crypt unlock ──────────────────────────────────────────────────────
+    # KNOWLEDGE.md (symlinked just below) is git-crypt ciphertext in the working
+    # tree until unlocked. This MUST run before the symlink is relied on, else
+    # Claude reads garbage through it with no error. Key is pulled from Proton
+    # Pass (stored base64 because git-crypt keys are binary) and never persisted
+    # bare in $HOME; a plain ~/git-crypt-key is the offline fallback.
+    if [ -f "$DOTFILES/.git/git-crypt/keys/default" ]; then
+        : # already unlocked — no-op
+    elif command -v git-crypt >/dev/null 2>&1; then
+        keyfile="$(mktemp)"; chmod 600 "$keyfile"
+        if command -v pass-cli >/dev/null 2>&1 \
+           && echo '{{ pass://Personal/git-crypt/key }}' \
+                | pass-cli inject 2>/dev/null | base64 -d > "$keyfile" 2>/dev/null \
+                && [ -s "$keyfile" ]; then
+            log "unlocking git-crypt (Proton Pass)"
+            ( cd "$DOTFILES" && git-crypt unlock "$keyfile" )
+        elif [ -f "$HOME/git-crypt-key" ]; then
+            log "unlocking git-crypt (keyfile fallback)"
+            ( cd "$DOTFILES" && git-crypt unlock "$HOME/git-crypt-key" )
+        else
+            log "WARN: git-crypt key unavailable — run \`pass-cli login\` then re-run ./install.sh (or place ~/git-crypt-key); until then KNOWLEDGE.md stays ciphertext"
+        fi
+        command -v shred >/dev/null 2>&1 && shred -u "$keyfile" || rm -f "$keyfile"
+    else
+        log "WARN: git-crypt not installed — encrypted files unreadable (./install.sh --packages)"
+    fi
+
     # individual files
     safeguard "$HOME/.claude/CLAUDE.md"
     ln -sf "$DOTFILES/claude/.claude/CLAUDE.md" "$HOME/.claude/CLAUDE.md"

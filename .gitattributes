@@ -1,0 +1,8 @@
+claude/.claude/KNOWLEDGE.md filter=git-crypt diff=git-crypt
+# Leading-slash anchors to repo root only — must NOT match like-named files
+# elsewhere (e.g. dev-setup/templates/findings.md stays plaintext scaffolding).
+/TODOS.md filter=git-crypt diff=git-crypt
+/findings.md filter=git-crypt diff=git-crypt
+/progress.md filter=git-crypt diff=git-crypt
+/task_plan.md filter=git-crypt diff=git-crypt
+/SESSION-LOG.md filter=git-crypt diff=git-crypt

@@ -42,7 +42,7 @@ description: Lightweight session close. Emits a resume-focused re-entry prompt (
    Left off: {last concrete action or current state — specific enough to orient a cold session}
    Open items this session: {new TODOs added, or "none — check TRIAGE-BLOCK.md"}
 
-   At session start: read TODOS.md and KNOWLEDGE.md (local + global). For what's next, read TRIAGE-BLOCK.md.
+   At session start: read TODOS.md and KNOWLEDGE.md (local + global) — if either is git-crypt ciphertext, unlock first per `~/.claude/references/git-crypt-lock-check.md`. For what's next, read TRIAGE-BLOCK.md.
    ──────────────────────────────────────────────
    ```
 
