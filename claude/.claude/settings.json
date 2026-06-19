@@ -1,4 +1,5 @@
 {
+  "model": "opus",
   "hooks": {
     "SessionStart": [
       {
@@ -79,6 +80,5 @@
       }
     }
   },
-  "theme": "dark",
-  "model": "claude-fable-5[1m]"
+  "theme": "dark"
 }
