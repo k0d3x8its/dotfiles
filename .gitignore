@@ -26,6 +26,15 @@ claude/.claude/plugins/plugin-catalog-cache.json
 # Claude session artifacts — generated, not config
 session-log.md
 RELEASE-NOTES.md
+# ARCHIVE-LOG.md stays machine-local (large, low sync value); backed up out-of-repo
+
+# git-crypt: un-ignore this repo's planning files so they encrypt + commit
+# (override the global ~/.gitignore_global anchors; contents protected by .gitattributes)
+!/TODOS.md
+!/findings.md
+!/progress.md
+!/task_plan.md
+!/SESSION-LOG.md
 
 # General
 .DS_Store
