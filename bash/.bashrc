@@ -138,3 +138,6 @@ eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"
 
 # opencode
 export PATH=$HOME/.opencode/bin:$PATH
+
+# local secrets (API keys — not in dotfiles)
+[ -f ~/.secrets.env ] && source ~/.secrets.env
