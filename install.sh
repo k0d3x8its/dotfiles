@@ -163,7 +163,7 @@ main() {
         ln -sf "$HOME/.config/nvim/.opencode/agent" "$HOME/.config/opencode/agent"
     fi
 
-    # ── neovim ────────────────────────────────────────────────────────────────
+    # ── neovim / kodex-ide ────────────────────────────────────────────────────
 
     log "setting up neovim config"
     if [[ -d "$HOME/.config/nvim/.git" ]]; then
@@ -172,6 +172,34 @@ main() {
         mkdir -p "$HOME/.config"
         safeguard "$HOME/.config/nvim"
         git clone git@github.com:k0d3x8its/kodex-ide.git "$HOME/.config/nvim"
+    fi
+
+    # ── kodex-ide git-crypt unlock ────────────────────────────────────────────
+
+    KODEX="$HOME/.config/nvim"
+    if [ -f "$KODEX/.git/git-crypt/keys/default" ]; then
+        : # already unlocked — no-op
+    elif command -v git-crypt >/dev/null 2>&1; then
+        keyfile="$(mktemp)"; chmod 600 "$keyfile"
+        if command -v pass-cli >/dev/null 2>&1 \
+           && echo '{{ pass://Personal/kodex-ide-gitcrypt/key }}' \
+                | pass-cli inject 2>/dev/null | base64 -d > "$keyfile" 2>/dev/null \
+                && [ -s "$keyfile" ]; then
+            log "unlocking kodex-ide git-crypt (Proton Pass)"
+            ( cd "$KODEX" && git-crypt unlock "$keyfile" )
+        elif [ -f "$HOME/kodex-ide-gcrypt-key" ]; then
+            log "unlocking kodex-ide git-crypt (keyfile fallback)"
+            ( cd "$KODEX" && git-crypt unlock "$HOME/kodex-ide-gcrypt-key" )
+        else
+            log "WARN: kodex-ide git-crypt key unavailable — run \`pass-cli login\` then re-run ./install.sh (or place ~/kodex-ide-gcrypt-key)"
+        fi
+        if command -v shred >/dev/null 2>&1; then
+            shred -u "$keyfile"
+        else
+            rm -f "$keyfile"
+        fi
+    else
+        log "WARN: git-crypt not installed — kodex-ide planning files unreadable (./install.sh --packages)"
     fi
 
     # ── fonts ─────────────────────────────────────────────────────────────────
