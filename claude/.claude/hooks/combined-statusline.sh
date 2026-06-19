@@ -3,11 +3,11 @@
 INPUT=$(cat)
 echo "$INPUT" | ccusage statusline 2>/dev/null || true
 
-# 5hr + weekly burn bars. Captured (not printed inline) so they can sit to the RIGHT of the
+# 5hr + weekly usage bars. Captured (not printed inline) so they can sit to the RIGHT of the
 # caveman badge + session timer on a single bottom row instead of taking their own line.
-# The hook reads a cache and returns instantly; a detached ccusage refresh fires only when
-# the cache is stale, so it never blocks the statusline (D3).
-BARS=$(bash "$HOME/.claude/hooks/statusline-bars.sh" 2>/dev/null)
+# The bars read the server-authoritative .rate_limits.* percentages out of the SAME stdin
+# JSON we already captured in $INPUT, so we forward it in. Pure jq read → instant, exact.
+BARS=$(printf '%s' "$INPUT" | bash "$HOME/.claude/hooks/statusline-bars.sh" 2>/dev/null)
 
 # Bottom row, left to right: caveman badge, session timer, burn bars.
 # caveman-statusline.sh prints no trailing newline (and nothing when inactive), so the
