@@ -235,7 +235,7 @@ planning files override the global ignore:
 > 5. Unlock with the shared key fetched from Proton Pass (see §7):
 >    ```bash
 >    k="$(mktemp)"; chmod 600 "$k"
->    echo '{{ pass://Private/git-crypt/key }}' | pass-cli inject | base64 -d > "$k"
+>    echo '{{ pass://Personal/git-crypt/key }}' | pass-cli inject | base64 -d > "$k"
 >    git-crypt unlock "$k"; shred -u "$k"
 >    ```
 >    If `pass-cli` isn't logged in / available, fall back to `git-crypt unlock ~/git-crypt-key`;
@@ -260,7 +260,7 @@ while adding onboarding ceremony and a passphrase prompt that fights the unatten
 binary, so base64-encode it for a text vault field:
 ```bash
 git-crypt export-key /dev/stdout | base64 -w0
-# → paste into Proton Pass: vault "Private", item "git-crypt", field "key"
+# → paste into Proton Pass: vault "Personal", item "git-crypt", field "key"
 ```
 
 **On a new machine**, after cloning a repo:
@@ -268,7 +268,7 @@ git-crypt export-key /dev/stdout | base64 -w0
 pass-cli login                       # authenticate the CLI once
 cd <repo>
 k="$(mktemp)"; chmod 600 "$k"
-echo '{{ pass://Private/git-crypt/key }}' | pass-cli inject | base64 -d > "$k"
+echo '{{ pass://Personal/git-crypt/key }}' | pass-cli inject | base64 -d > "$k"
 git-crypt unlock "$k"; shred -u "$k"
 ```
 For the dotfiles repo specifically, `./install.sh` does this automatically at bootstrap.
@@ -320,7 +320,7 @@ cat claude/.claude/KNOWLEDGE.md | head             # plaintext locally (unlocked
 git-crypt lock                 # working tree now ciphertext
 cat claude/.claude/KNOWLEDGE.md   # garbage
 # unlock from Proton Pass (or: git-crypt unlock ~/git-crypt-key)
-k="$(mktemp)"; chmod 600 "$k"; echo '{{ pass://Private/git-crypt/key }}' \
+k="$(mktemp)"; chmod 600 "$k"; echo '{{ pass://Personal/git-crypt/key }}' \
   | pass-cli inject | base64 -d > "$k"; git-crypt unlock "$k"; shred -u "$k"
 cat claude/.claude/KNOWLEDGE.md   # plaintext again
 
