@@ -1,4 +1,17 @@
 {
+  "permissions": {
+    "deny": [
+      "Read(~/.ssh/**)",
+      "Read(~/.aws/**)",
+      "Read(**/.env*)",
+      "Write(~/.ssh/**)",
+      "Write(~/.aws/**)",
+      "Bash(curl * | bash)",
+      "Bash(ssh *)",
+      "Bash(scp *)",
+      "Bash(nc *)"
+    ]
+  },
   "model": "opus",
   "hooks": {
     "SessionStart": [
@@ -80,5 +93,6 @@
       }
     }
   },
-  "theme": "dark"
+  "theme": "dark",
+  "agentPushNotifEnabled": true
 }
