@@ -52,7 +52,7 @@ main() {
     elif command -v git-crypt >/dev/null 2>&1; then
         keyfile="$(mktemp)"; chmod 600 "$keyfile"
         if command -v pass-cli >/dev/null 2>&1 \
-           && echo '{{ pass://Private/git-crypt/key }}' \
+           && echo '{{ pass://Personal/git-crypt/key }}' \
                 | pass-cli inject 2>/dev/null | base64 -d > "$keyfile" 2>/dev/null \
                 && [ -s "$keyfile" ]; then
             log "unlocking git-crypt (Proton Pass)"
