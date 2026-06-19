@@ -9,6 +9,7 @@ fd-find
 ffmpeg
 flatpak
 ghostty
+git-crypt
 gnome-control-center
 gnome-shell-extension-appindicator
 gnome-shell-extension-prefs
