@@ -2,7 +2,8 @@
 
 > Brief for a future Claude Code session. Read this top-to-bottom, then execute.
 > Scope was confirmed with the user: **both** the dotfiles repo's own sensitive files
-> **and** the per-project planning-files pattern. Key sharing: **symmetric key file**.
+> **and** the per-project planning-files pattern. Key sharing: **symmetric key, stored in
+> Proton Pass** (bare `~/git-crypt-key` as offline fallback) — see §7.
 
 ---
 
@@ -32,7 +33,40 @@ them on checkout (for anyone holding the key). Plaintext locally, ciphertext in 
 
 **Success looks like:** `KNOWLEDGE.md` and the chosen planning files are committed as
 ciphertext, render as garbage on GitHub, and appear as normal plaintext in any local
-checkout that has been unlocked with the symmetric key.
+checkout that has been unlocked with the symmetric key (fetched from Proton Pass; see §7).
+
+---
+
+## 1.5 First: the plaintext is already public — purge history (REQUIRED)
+
+Encrypting `KNOWLEDGE.md` going forward protects only *new* commits. It is already
+committed in plaintext across many past commits (`git log -p -- claude/.claude/KNOWLEDGE.md`)
+on a **public** repo. Switching to git-crypt does **not** remove that exposure.
+
+Two distinct actions, do both:
+
+1. **Remediate (the data is compromised).** Rewriting history does not un-leak —
+   forks, the GitHub API cache, and archive sites may already hold copies. So treat
+   anything sensitive that was in plaintext as exposed:
+   - The author **email** is also in every commit's author metadata → consider it
+     permanently public; do not rely on encryption to hide it.
+   - **Rotate** anything that is an actual credential (any token/account detail that
+     appeared in `KNOWLEDGE.md`). Encryption protects the *future*, rotation handles
+     the *past*.
+
+2. **Rewrite history (hygiene — stops further casual scraping).** After git-crypt is
+   set up (§5), strip the plaintext blobs and re-add the file encrypted:
+   ```bash
+   pipx install git-filter-repo        # or: sudo nala install git-filter-repo
+   # back up the repo first — filter-repo rewrites ALL history
+   git filter-repo --path claude/.claude/KNOWLEDGE.md --invert-paths --force
+   # re-add encrypted as a fresh commit (git-crypt init + .gitattributes done, §5)
+   git add claude/.claude/KNOWLEDGE.md
+   git commit -m "chore(claude): re-add KNOWLEDGE.md under git-crypt"
+   git push --force-with-lease origin main
+   ```
+   The file's old history dies — but that history *is* the leak, so this is
+   acceptable. Every existing clone must re-clone after the force-push (solo user → fine).
 
 ---
 
@@ -70,7 +104,7 @@ checkout that has been unlocked with the symmetric key.
 
 ---
 
-## 3. Prerequisite — install git-crypt
+## 3. Prerequisites — install git-crypt, pass-cli, git-filter-repo
 
 ```bash
 sudo nala install git-crypt   # or: sudo apt-get install -y git-crypt
@@ -79,6 +113,14 @@ git-crypt --version           # confirm it's on PATH
 
 Add `git-crypt` to `packages.txt` so `./install.sh --packages` provisions it on new
 machines (it's consumed at `install.sh` line ~138: `xargs sudo apt-get install -y < packages.txt`).
+
+Also needed:
+- **`pass-cli`** (official Proton Pass CLI) — holds the symmetric key; `install.sh`
+  fetches it at unlock time. Requires Pass Plus / Family / Pro or any Proton bundle
+  (the CLI is gated; free plans must use the bare-keyfile fallback). On a new machine
+  run `pass-cli login` before the first unlock. See §7.
+- **`git-filter-repo`** — only for the one-time history purge (§1.5), not on the hot
+  path: `pipx install git-filter-repo` or `sudo nala install git-filter-repo`.
 
 ---
 
@@ -131,21 +173,20 @@ git-crypt status -e
 
 Then:
 
-- **`install.sh`** — add a bootstrap step that unlocks the repo right after the stow/symlink
-  block and before the symlinks are relied on. Guard it so it's a no-op when already
-  unlocked or when no key is present:
-  ```bash
-  if command -v git-crypt >/dev/null && [ -f "$HOME/git-crypt-key" ] && \
-     ! git -C "$DOTFILES" config --local --get-regexp '^git-crypt' >/dev/null 2>&1; then
-      log "unlocking git-crypt"
-      git -C "$DOTFILES" git-crypt unlock "$HOME/git-crypt-key"
-  fi
-  ```
-  (Adjust the "already unlocked" check to whatever is cleanest; the intent is: unlock if a
-  key file exists and the repo is currently locked.)
+- **`install.sh`** — a bootstrap unlock block is already wired in (right after
+  `mkdir -p "$HOME/.claude/..."`, before the KNOWLEDGE.md symlink). It:
+  - treats `[ -f "$DOTFILES/.git/git-crypt/keys/default" ]` as "already unlocked" (reliable
+    idempotency — *not* the `git config --get-regexp '^git-crypt'` guess, which git-crypt
+    doesn't reliably set);
+  - fetches the key from Proton Pass (`pass-cli inject | base64 -d` into a `chmod 600`
+    tempfile), falls back to a bare `~/git-crypt-key`, then `( cd "$DOTFILES" && git-crypt
+    unlock "$keyfile" )` — note `git -C "$DOTFILES" git-crypt unlock` is **wrong** (git
+    resolves subcommand `git-crypt` → `git-git-crypt`, not found; the subcommand is `crypt`);
+  - shreds the tempfile and prints a **loud WARN** (not a silent no-op) when no key is
+    available, so a locked machine fails visibly instead of feeding Claude ciphertext.
 - **`docs/dev-workflow-guide.md`** — in Part 1 ("Install Everything"), add a note that a
-  fresh machine must place the symmetric key at `~/git-crypt-key` (or run
-  `git-crypt unlock`) before `KNOWLEDGE.md` and other encrypted files are readable.
+  fresh machine must run `pass-cli login` (or place `~/git-crypt-key`) before
+  `KNOWLEDGE.md` and other encrypted files are readable; see §7.
 
 ---
 
@@ -191,37 +232,61 @@ planning files override the global ignore:
 >    discipline as the `.gitignore` step).
 > 4. Add the `!`-negation lines for the planning files to `.gitignore` (under the
 >    `# --- added by /dev-setup ---` marker), so they're no longer globally ignored.
-> 5. `git-crypt unlock ~/git-crypt-key` (reuse the shared symmetric key — see §7). If the
->    key isn't present, tell the user where to put it and that the repo stays locked until
->    then.
-> 6. Remind: the key lives outside every repo and must be backed up; losing it loses the data.
+> 5. Unlock with the shared key fetched from Proton Pass (see §7):
+>    ```bash
+>    k="$(mktemp)"; chmod 600 "$k"
+>    echo '{{ pass://Private/git-crypt/key }}' | pass-cli inject | base64 -d > "$k"
+>    git-crypt unlock "$k"; shred -u "$k"
+>    ```
+>    If `pass-cli` isn't logged in / available, fall back to `git-crypt unlock ~/git-crypt-key`;
+>    if neither key source is present, tell the user and leave the repo locked.
+> 6. Remind: the key lives in Proton Pass (and nowhere committed); losing it loses the data.
 > Update Step 17 (completion summary) to report whether encryption was enabled.
 
 Keep it idempotent and safe to re-run, like the rest of the wizard.
 
 ---
 
-## 7. Symmetric key management
+## 7. Symmetric key management (Proton Pass)
 
-One key is shared across all machines and all repos that opt in.
+One symmetric key is shared across all machines and all repos that opt in. It lives in
+**Proton Pass**, not as a bare file in `$HOME` — `install.sh` and `/dev-setup` fetch it
+at unlock time and shred the temp copy. (Symmetric over GPG on purpose: this is a
+single user across their own machines, so GPG's multi-user access control buys nothing
+while adding onboarding ceremony and a passphrase prompt that fights the unattended
+`install.sh` unlock. GPG would only pay off with collaborators.)
 
+**Store the key once** (from the machine that ran `git-crypt init`). git-crypt keys are
+binary, so base64-encode it for a text vault field:
 ```bash
-# On the machine where you first ran `git-crypt init` (dotfiles repo):
-git-crypt export-key ~/git-crypt-key
+git-crypt export-key /dev/stdout | base64 -w0
+# → paste into Proton Pass: vault "Private", item "git-crypt", field "key"
 ```
 
-- **Back it up** in a password manager or a secure offline store. **Never commit it** to
-  any repo (it's the master key — anyone with it decrypts everything).
-- **On a new machine**, after cloning a repo:
-  ```bash
-  git clone <repo>
-  cd <repo>
-  git-crypt unlock ~/git-crypt-key   # place the key file there first
-  ```
-- **Key loss = permanent data loss.** There is no recovery; encrypted history cannot be
-  decrypted without it.
-- The *same* exported key unlocks the dotfiles repo and every per-project repo, because
-  each was `init`'d and then `unlock`'d from this one key.
+**On a new machine**, after cloning a repo:
+```bash
+pass-cli login                       # authenticate the CLI once
+cd <repo>
+k="$(mktemp)"; chmod 600 "$k"
+echo '{{ pass://Private/git-crypt/key }}' | pass-cli inject | base64 -d > "$k"
+git-crypt unlock "$k"; shred -u "$k"
+```
+For the dotfiles repo specifically, `./install.sh` does this automatically at bootstrap.
+
+- **Never commit the key** to any repo — it's the master key; anyone with it decrypts
+  everything (and all history).
+- **Offline fallback:** a bare `~/git-crypt-key` (`git-crypt export-key ~/git-crypt-key`)
+  still works if `pass-cli` is unavailable. `chmod 600` it and keep it out of any synced
+  or backed-up dir — otherwise the key travels next to the decrypted working trees and
+  the encryption buys nothing.
+- **Key loss = permanent data loss.** No recovery; encrypted history can't be decrypted
+  without it. Proton Pass *is* the backup — don't also delete it from the vault.
+- The *same* key unlocks the dotfiles repo and every per-project repo, because each was
+  `init`'d and then `unlock`'d from this one key.
+- **No cheap revocation.** git-crypt can't rotate the master key in place; if the key
+  leaks, the only real fix is re-`init` + re-encrypt every repo (old key still decrypts
+  all existing history). Storing it in Proton Pass improves transport/at-rest, not
+  revocation.
 
 ---
 
@@ -233,10 +298,11 @@ misled:
 - **`claude/.claude/KNOWLEDGE.md`** — the line stating planning files are "machine-local
   by design" and "KNOWLEDGE.md is deliberately not ignored and commits normally" needs a
   follow-up fact: planning files and `KNOWLEDGE.md` are now **git-crypt-encrypted** in
-  repos that opt in, committed as ciphertext, unlocked via `~/git-crypt-key`. Route real
-  edits through `/remember` per the existing direct-write rule.
+  repos that opt in, committed as ciphertext, unlocked via the Proton Pass key (§7).
+  Route real edits through `/remember` per the existing direct-write rule.
 - **`claude/.claude/CLAUDE.md`** — the `KNOWLEDGE.md` / "Always read KNOWLEDGE.md" notes
-  should mention that on a locked checkout the file is ciphertext and must be unlocked first.
+  should mention that on a locked checkout the file is ciphertext and must be unlocked
+  first (pointer to `references/git-crypt-lock-check.md`).
 - **`claude/.claude/skills/dev-setup/SKILL.md`** Step 12 / Notes — note that `KNOWLEDGE.md`
   is committed and, when the encryption step is enabled, committed *encrypted*.
 
@@ -253,7 +319,9 @@ cat claude/.claude/KNOWLEDGE.md | head             # plaintext locally (unlocked
 # Round-trip:
 git-crypt lock                 # working tree now ciphertext
 cat claude/.claude/KNOWLEDGE.md   # garbage
-git-crypt unlock ~/git-crypt-key
+# unlock from Proton Pass (or: git-crypt unlock ~/git-crypt-key)
+k="$(mktemp)"; chmod 600 "$k"; echo '{{ pass://Private/git-crypt/key }}' \
+  | pass-cli inject | base64 -d > "$k"; git-crypt unlock "$k"; shred -u "$k"
 cat claude/.claude/KNOWLEDGE.md   # plaintext again
 
 # Fresh-clone simulation (no key): file is ciphertext, symlink reads garbage —
