@@ -49,7 +49,7 @@ argument-hint: "What will the tangent session focus on? (optional — Claude wil
 
    Suggested skills: {1-3 skills relevant to this tangent, e.g. /diagnose for bugs, /tdd for tests, /investigate for audits}
 
-   At session start: read TODOS.md and KNOWLEDGE.md (local + global). For what's next across projects, read TRIAGE-BLOCK.md.
+   At session start: read TODOS.md and KNOWLEDGE.md (local + global) — if either is git-crypt ciphertext, unlock first per `~/.claude/references/git-crypt-lock-check.md`. For what's next across projects, read TRIAGE-BLOCK.md.
    When done, run /handoff-return to merge findings back into the main session.
    ──────────────────────────────────────────────
    ```
