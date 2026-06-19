@@ -1,108 +1,108 @@
 #!/usr/bin/env bats
 #
-# Tests for claude/.claude/hooks/statusline-bars.sh — the 5hr + weekly burn bars.
+# Tests for claude/.claude/hooks/statusline-bars.sh — the 5hr + weekly usage bars.
 # Sources the hook (its dispatch is guarded by BASH_SOURCE) and exercises the
-# functions directly. ccusage is never called: the JSON extractors are fed fixtures.
+# functions directly. No ccusage, no caps, no cache: the bars read the
+# server-authoritative .rate_limits.* percentages straight out of the statusline
+# stdin JSON, so the extractor is fed fixture JSON.
 
 setup() {
     HOOK="$(cd "$(dirname "$BATS_TEST_FILENAME")/.." && pwd)/claude/.claude/hooks/statusline-bars.sh"
-    export STATUSLINE_BARS_CACHE="$BATS_TEST_TMPDIR/cache"
     # shellcheck source=/dev/null
     source "$HOOK"
 }
 
-# ── bars_pct (D4 clamp + na) ─────────────────────────────────────────────────
+# ── bars_round (CC sends floats; round to whole percent; junk -> na) ──────────
 
-@test "bars_pct: normal ratio" {
-    [ "$(bars_pct 50 100)" -eq 50 ]
+@test "bars_round: float rounds half-up to int" {
+    [ "$(bars_round 28.999999)" -eq 29 ]
 }
 
-@test "bars_pct: clamps over 100" {
-    [ "$(bars_pct 250 100)" -eq 100 ]
+@test "bars_round: integer passes through" {
+    [ "$(bars_round 26)" -eq 26 ]
 }
 
-@test "bars_pct: na denominator -> na (never fabricate)" {
-    [ "$(bars_pct 5 na)" = "na" ]
+@test "bars_round: empty -> na (never fabricate)" {
+    [ "$(bars_round '')" = "na" ]
 }
 
-@test "bars_pct: zero denominator -> na" {
-    [ "$(bars_pct 5 0)" = "na" ]
+@test "bars_round: null -> na" {
+    [ "$(bars_round null)" = "na" ]
 }
 
-# ── config readers (D7) ──────────────────────────────────────────────────────
-
-@test "bars_5h_cap: set value passes through" {
-    STATUSLINE_5H_CAP=12345 run bars_5h_cap
-    [ "$output" = "12345" ]
+@test "bars_round: non-numeric -> na" {
+    [ "$(bars_round abc)" = "na" ]
 }
 
-@test "bars_5h_cap: unset -> na" {
-    unset STATUSLINE_5H_CAP
-    [ "$(bars_5h_cap)" = "na" ]
+# ── bars_clamp (0-100; na passes through) ────────────────────────────────────
+
+@test "bars_clamp: in-range passes through" {
+    [ "$(bars_clamp 50)" -eq 50 ]
 }
 
-@test "bars_weekly_cap: unset -> na" {
-    unset STATUSLINE_WEEKLY_CAP
-    [ "$(bars_weekly_cap)" = "na" ]
+@test "bars_clamp: over 100 clamps to 100" {
+    [ "$(bars_clamp 250)" -eq 100 ]
 }
 
-# ── weekly reset anchor (D2) ─────────────────────────────────────────────────
-
-@test "bars_weekly_reset_epoch: lands on the configured day + time, at/before now" {
-    local epoch
-    epoch="$(bars_weekly_reset_epoch)"
-    [ "$epoch" -le "$(date +%s)" ]
-    [ "$(TZ=America/New_York date -d "@$epoch" +%u)" -eq 6 ]      # Saturday
-    [ "$(TZ=America/New_York date -d "@$epoch" +%H:%M)" = "17:59" ]
+@test "bars_clamp: negative clamps to 0" {
+    [ "$(bars_clamp -5)" -eq 0 ]
 }
 
-# ── ccusage JSON extraction (D5 metric, D6 json) ─────────────────────────────
-
-FIXTURE='{"blocks":[
-  {"startTime":"2026-06-16T17:00:00.000Z","isActive":true,"isGap":false,"tokenCounts":{"inputTokens":100,"outputTokens":50,"cacheCreationInputTokens":25,"cacheReadInputTokens":99999}},
-  {"startTime":"2026-06-14T00:00:00.000Z","isActive":false,"isGap":false,"tokenCounts":{"inputTokens":1000,"outputTokens":500,"cacheCreationInputTokens":250,"cacheReadInputTokens":0}},
-  {"startTime":"2026-06-10T00:00:00.000Z","isActive":false,"isGap":false,"tokenCounts":{"inputTokens":9999,"outputTokens":0,"cacheCreationInputTokens":0,"cacheReadInputTokens":0}}
-]}'
-
-@test "bars_active_from_json: sums input+output+cacheCreation, EXCLUDES cache-read (D5)" {
-    # 100 + 50 + 25 = 175; the 99999 cacheRead must not appear
-    [ "$(printf '%s' "$FIXTURE" | bars_active_from_json)" -eq 175 ]
+@test "bars_clamp: na passes through" {
+    [ "$(bars_clamp na)" = "na" ]
 }
 
-@test "bars_weekly_from_json: sums only non-gap blocks at/after the reset (D2)" {
-    # reset = Sat 2026-06-13 17:59 EDT = 2026-06-13T21:59:00Z
-    local reset; reset=$(date -d '2026-06-13T21:59:00Z' +%s)
-    # in-window: active (175) + 06-14 (1750) = 1925; 06-10 excluded
-    [ "$(printf '%s' "$FIXTURE" | bars_weekly_from_json "$reset")" -eq 1925 ]
+# ── bars_extract (the real data path: read .rate_limits.<window>.used_percentage) ─
+
+FIXTURE='{"rate_limits":{"five_hour":{"used_percentage":26,"resets_at":1781840400},"seven_day":{"used_percentage":28.999999999999996,"resets_at":1781992800}}}'
+
+@test "bars_extract: five_hour pulls the server percent" {
+    [ "$(bars_extract "$FIXTURE" five_hour)" -eq 26 ]
 }
 
-# ── render (V6 + D4 placeholders) ────────────────────────────────────────────
+@test "bars_extract: seven_day rounds the float" {
+    [ "$(bars_extract "$FIXTURE" seven_day)" -eq 29 ]
+}
 
-@test "bars_render: absent cache -> dimmed placeholders, no fabricated number" {
-    rm -f "$STATUSLINE_BARS_CACHE"
-    run bars_render
+@test "bars_extract: missing rate_limits -> na (older CC / no published limits)" {
+    [ "$(bars_extract '{"cost":{"total_cost_usd":1.23}}' five_hour)" = "na" ]
+}
+
+@test "bars_extract: malformed json -> na" {
+    [ "$(bars_extract 'not json' five_hour)" = "na" ]
+}
+
+# ── render (V6 + na placeholders) ─────────────────────────────────────────────
+
+@test "bars_render: na values render as dimmed placeholders, no fabricated number" {
+    run bars_render na na
+    [[ "$output" == *"5h"* ]]
+    [[ "$output" == *"wk"* ]]
     [[ "$output" == *"--%"* ]]
     [[ "$output" != *"0%"* ]]
 }
 
-@test "bars_render: na values render as placeholders" {
-    printf 'na na\n' > "$STATUSLINE_BARS_CACHE"
+@test "bars_render: missing args default to placeholders" {
     run bars_render
-    [[ "$output" == *"5h"* ]]
-    [[ "$output" == *"wk"* ]]
     [[ "$output" == *"--%"* ]]
 }
 
 @test "bars_render: numeric values show % and the warn glyph at >=80" {
-    printf '45 85\n' > "$STATUSLINE_BARS_CACHE"
-    run bars_render
+    run bars_render 45 85
     [[ "$output" == *"45%"* ]]
     [[ "$output" == *"85%"* ]]
     [[ "$output" == *"⚠"* ]]      # 85 >= 80 triggers the warning glyph
 }
 
 @test "bars_render: below 80 shows no warn glyph" {
-    printf '10 20\n' > "$STATUSLINE_BARS_CACHE"
-    run bars_render
+    run bars_render 10 20
     [[ "$output" != *"⚠"* ]]
+}
+
+# ── end-to-end: stdin JSON -> rendered bars ───────────────────────────────────
+
+@test "end-to-end: piping statusline JSON renders both percents" {
+    run bash "$HOOK" <<< "$FIXTURE"
+    [[ "$output" == *"26%"* ]]
+    [[ "$output" == *"29%"* ]]
 }
