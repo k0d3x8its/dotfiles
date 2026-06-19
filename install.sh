@@ -155,6 +155,14 @@ main() {
     ln -sf "$DOTFILES/scripts/rotate-log" "$HOME/.local/bin/rotate-log"
     chmod +x "$DOTFILES/scripts/rotate-log"
 
+    # ── opencode ──────────────────────────────────────────────────────────────
+
+    log "wiring opencode agents"
+    mkdir -p "$HOME/.config/opencode"
+    if [[ ! -e "$HOME/.config/opencode/agent" ]]; then
+        ln -sf "$HOME/.config/nvim/.opencode/agent" "$HOME/.config/opencode/agent"
+    fi
+
     # ── neovim ────────────────────────────────────────────────────────────────
 
     log "setting up neovim config"
