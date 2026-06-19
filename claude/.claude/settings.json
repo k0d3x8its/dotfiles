@@ -1,5 +1,4 @@
 {
-  "model": "opus",
   "permissions": {
     "deny": [
       "Read(~/.ssh/**)",
@@ -13,6 +12,7 @@
       "Bash(nc *)"
     ]
   },
+  "model": "opus",
   "hooks": {
     "SessionStart": [
       {
@@ -93,5 +93,6 @@
       }
     }
   },
-  "theme": "dark"
+  "theme": "dark",
+  "agentPushNotifEnabled": true
 }
