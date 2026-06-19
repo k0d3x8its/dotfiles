@@ -53,7 +53,7 @@ Appended to `SESSION-LOG.md`:
 ### Re-Entry Prompt
 
 > "{Compact summary: project, what was built, where you left off, first action next session.
-> Read SESSION-LOG.md, TODOS.md, and KNOWLEDGE.md (local + global). For what's next across projects, read TRIAGE-BLOCK.md.
+> Read SESSION-LOG.md, TODOS.md, and KNOWLEDGE.md (local + global) — if any reads as git-crypt ciphertext, unlock first per `~/.claude/references/git-crypt-lock-check.md` (the manual fetch→unlock pipe, run from inside the repo). For what's next across projects, read TRIAGE-BLOCK.md.
 > First action: {step}}"
 
 ---
