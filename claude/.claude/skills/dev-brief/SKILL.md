@@ -51,6 +51,7 @@ mtime: 1780189650
 ```
 
 **On READ:**
+- **First, per file: apply `~/.claude/references/git-crypt-lock-check.md`.** A git-crypt-locked planning file is ciphertext — skip + flag it, never parse it as content. One locked repo skips only its own files; the rest of the sweep proceeds.
 - `TODOS.md` exists: read `- [ ]` lines for TODOs; read session-log latest block for date, Gotchas, Decisions, Re-Entry Prompt.
 - No `TODOS.md`: parse session-log latest block for all of the above.
 - Latest block = highest date in `## Session Handoff/Checkpoint — {date}` headers — never assume position (machine log newest-at-top; kos newest-at-bottom).
