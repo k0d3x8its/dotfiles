@@ -36,7 +36,7 @@ it fails. You must supply the key.
 repo. Key is stored base64 in Proton Pass because git-crypt keys are binary:
 ```bash
 k="$(mktemp)"; chmod 600 "$k"
-echo '{{ pass://Private/git-crypt/key }}' | pass-cli inject | base64 -d > "$k"
+echo '{{ pass://Personal/git-crypt/key }}' | pass-cli inject | base64 -d > "$k"
 git-crypt unlock "$k"
 shred -u "$k"
 ```
