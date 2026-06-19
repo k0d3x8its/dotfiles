@@ -76,7 +76,11 @@ main() {
         else
             log "WARN: git-crypt key unavailable — run \`pass-cli login\` then re-run ./install.sh (or place ~/git-crypt-key); until then KNOWLEDGE.md stays ciphertext"
         fi
-        command -v shred >/dev/null 2>&1 && shred -u "$keyfile" || rm -f "$keyfile"
+        if command -v shred >/dev/null 2>&1; then
+            shred -u "$keyfile"
+        else
+            rm -f "$keyfile"
+        fi
     else
         log "WARN: git-crypt not installed — encrypted files unreadable (./install.sh --packages)"
     fi
