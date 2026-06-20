@@ -604,7 +604,7 @@ New session opens. Paste the re-entry prompt. Claude reads `SESSION-LOG.md`, `TO
   references/
     kos-code-reference.md         ← KOS-Code vocabulary (read by skills at runtime)
     anti-patterns.md              ← anti-pattern catalogue
-    memory-standard.md            ← KNOWLEDGE.md promotion bar, routing rules, entry format
+    MEMORY-STANDARD.md            ← KNOWLEDGE.md promotion bar, routing rules, entry format
   skills/
     session-handoff/              ← /handoff  (lean fork)
     session-handoff-return/       ← /handoff-return  (merge tangent)
