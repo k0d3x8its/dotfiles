@@ -16,6 +16,13 @@ progress.md
 session-log.md
 RELEASE-NOTES.md
 
+# Episodic memory — high-churn runtime artifacts, not source
+EPISODIC-INDEX.md
+EPISODIC-ARCHIVE.md
+.episodic-baseline
+.episodic.lock
+CONSOLIDATION-INBOX.md
+
 # OS
 .DS_Store
 Thumbs.db
