@@ -15,9 +15,12 @@ OUTPUT = Path.home() / "dev" / "TRIAGE-BLOCK.md"
 DEV = Path.home() / "dev"
 DATES_FILE = DEV / ".triage-dates"
 
-STALE_DAYS = 7
-STALE_LABEL = "stale since"
-STALE_COLOR = "#ff6600"
+# (threshold_days, color) — checked in descending order; first match wins
+STALE_AGE_BANDS = [
+    (31, "#ff1a1a"),   # red   ≥31 days
+    (14, "#ff6600"),   # orange 14–30 days
+    (7,  "#ffd700"),   # yellow 7–13 days
+]
 
 TIER_COLORS = {
     "CRITICAL": "#ff1a1a",
@@ -197,10 +200,20 @@ def build_triage(projects: dict, item_dates: dict) -> dict:
     return tiers
 
 
+def stale_color(age_days: int) -> str | None:
+    for threshold, color in STALE_AGE_BANDS:
+        if age_days >= threshold:
+            return color
+    return None
+
+
 def fmt_line(project: str, raw: str, urgent: bool, first_seen) -> str:
     text = colorize_tags(strip_priority_tags(SINCE_STRIP_RE.sub("", raw[6:].strip())))
-    if first_seen and (datetime.now() - first_seen).days > STALE_DAYS:
-        text += f' <span style="color:{STALE_COLOR};font-weight:bold;">[{STALE_LABEL} {first_seen:%Y-%m-%d}]</span>'
+    if first_seen:
+        age = (datetime.now() - first_seen).days
+        color = stale_color(age)
+        if color:
+            text += f' <span style="color:{color};font-weight:bold;">[stale since {first_seen:%Y-%m-%d}]</span>'
     proj = project if project.startswith("[") else f"[{project}]"
     return f"- {'⚠ ' if urgent else ''}**{proj}** {text}"
 
