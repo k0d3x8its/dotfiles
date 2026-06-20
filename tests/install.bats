@@ -42,6 +42,7 @@ make_fixture() {
     printf '#!/bin/bash\n' > "$dir/scripts/update-triage"
     printf '#!/bin/bash\n' > "$dir/scripts/update-cache"
     printf '#!/bin/bash\n' > "$dir/scripts/rotate-log"
+    printf '#!/bin/bash\n' > "$dir/scripts/update-episodic"
 
     mkdir -p "$dir/fonts"
     touch "$dir/fonts/test.ttf"
