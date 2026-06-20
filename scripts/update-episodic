@@ -1,0 +1,167 @@
+#!/usr/bin/env python3
+"""update-episodic: append one episodic-index line per session. Zero Claude tokens.
+
+Called by the SessionEnd hook (episodic_index.py) with the session cwd as argv[1];
+also runnable manually. Writes:
+  - per-project  <project-root>/EPISODIC-INDEX.md
+  - global       ~/dev/EPISODIC-INDEX.md   (roll-up across all projects)
+
+Why a SessionStart git baseline (not a bare end-of-session diff): per-file commits
+are the house convention, so by session end the working tree is usually clean and a
+plain `git diff` would report nothing. We diff <baseline>..HEAD (the commits made this
+session) UNIONed with the live working-tree + staged diffs, so committed-mid-session
+work is still captured. The baseline is written at SessionStart to <root>/.episodic-baseline.
+
+The ~/dev root itself is the "machine" project and is NOT a git repo — every git call
+is guarded and it gets a line with empty git fields rather than an error.
+
+Concurrency: two sessions can end at once and race-append the global roll-up, so the
+append+rotate is wrapped in an flock. Rotation (decay) keeps the index thin: past
+MAX_LINES, the oldest half moves to EPISODIC-ARCHIVE.md (also a runtime artifact).
+"""
+import os
+import subprocess
+import sys
+from datetime import datetime, timezone
+from pathlib import Path
+
+try:
+    import fcntl  # POSIX-only; this only ever runs on the dev machine
+except ImportError:
+    fcntl = None
+
+DEV = Path(os.path.expanduser("~/dev")).resolve()
+MAX_LINES = 500          # rotate when an index passes this
+INDEX_NAME = "EPISODIC-INDEX.md"
+ARCHIVE_NAME = "EPISODIC-ARCHIVE.md"
+
+
+def git(root: Path, *args: str) -> str:
+    """Run a git command in `root`, returning stripped stdout or '' on any failure."""
+    try:
+        out = subprocess.run(
+            ["git", "-C", str(root), *args],
+            stdout=subprocess.PIPE, stderr=subprocess.DEVNULL, text=True,
+        )
+        return out.stdout.strip() if out.returncode == 0 else ""
+    except Exception:
+        return ""
+
+
+def is_git_repo(root: Path) -> bool:
+    return git(root, "rev-parse", "--is-inside-work-tree") == "true"
+
+
+def resolve_project(cwd: Path):
+    """Return (project_name, project_root). Machine = ~/dev root itself."""
+    cwd = cwd.resolve()
+    if cwd == DEV:
+        return "machine", DEV
+    try:
+        rel = cwd.relative_to(DEV)
+    except ValueError:
+        return None, None  # outside ~/dev — caller exits
+    name = rel.parts[0]
+    return name, DEV / name
+
+
+def files_touched(root: Path):
+    """(files_list, tag) using SessionStart baseline ∪ working-tree ∪ staged."""
+    if not is_git_repo(root):
+        return [], ""  # machine project / non-repo: no git fields
+    paths = set()
+    # Working-tree + staged changes still present at session end.
+    for args in (["diff", "--name-only"], ["diff", "--name-only", "--staged"]):
+        out = git(root, *args)
+        paths.update(p for p in out.splitlines() if p)
+    # New files created this session but not yet committed: git diff ignores
+    # untracked, so list them explicitly. --exclude-standard honours .gitignore
+    # so runtime artifacts (EPISODIC-INDEX.md, .episodic-baseline, …) don't show.
+    out = git(root, "ls-files", "--others", "--exclude-standard")
+    paths.update(p for p in out.splitlines() if p)
+    # Commits made this session, via the SessionStart baseline.
+    baseline_file = root / ".episodic-baseline"
+    tag = ""
+    if baseline_file.exists():
+        baseline = baseline_file.read_text().strip()
+        if baseline:
+            out = git(root, "diff", "--name-only", f"{baseline}..HEAD")
+            paths.update(p for p in out.splitlines() if p)
+    else:
+        tag = "[no-baseline]"  # first run before a baseline was ever captured
+    return sorted(paths), tag
+
+
+def shortstat(root: Path) -> str:
+    if not is_git_repo(root):
+        return ""
+    baseline_file = root / ".episodic-baseline"
+    if baseline_file.exists():
+        baseline = baseline_file.read_text().strip()
+        if baseline:
+            s = git(root, "diff", "--shortstat", f"{baseline}..HEAD")
+            if s:
+                return s
+    return git(root, "diff", "--shortstat")
+
+
+def rotate(index_path: Path) -> None:
+    """Past MAX_LINES, move the oldest half of the index to its archive."""
+    if not index_path.exists():
+        return
+    lines = index_path.read_text().splitlines()
+    if len(lines) <= MAX_LINES:
+        return
+    half = len(lines) // 2
+    archive = index_path.with_name(ARCHIVE_NAME)
+    with archive.open("a") as fh:
+        fh.write("\n".join(lines[:half]) + "\n")
+    index_path.write_text("\n".join(lines[half:]) + "\n")
+
+
+def append_line(index_path: Path, line: str) -> None:
+    """flock-guarded append + rotate so concurrent session-ends don't interleave."""
+    index_path.parent.mkdir(parents=True, exist_ok=True)
+    # One lock per directory (matches the .episodic.lock gitignore entry). Per-project
+    # and global appends live in different dirs, so they take different locks — no nesting.
+    lock_path = index_path.parent / ".episodic.lock"
+    with lock_path.open("w") as lock:
+        if fcntl is not None:
+            fcntl.flock(lock, fcntl.LOCK_EX)
+        try:
+            with index_path.open("a") as fh:
+                fh.write(line + "\n")
+            rotate(index_path)
+        finally:
+            if fcntl is not None:
+                fcntl.flock(lock, fcntl.LOCK_UN)
+
+
+def main() -> None:
+    cwd = Path(sys.argv[1]) if len(sys.argv) > 1 else Path.cwd()
+    project, root = resolve_project(cwd)
+    if project is None:
+        return  # outside ~/dev — nothing to record
+
+    ts = datetime.now(timezone.utc).isoformat(timespec="seconds")
+    branch = git(root, "rev-parse", "--abbrev-ref", "HEAD") if root != DEV else ""
+    files, tag = files_touched(root)
+    stat = shortstat(root)
+
+    # Pipe-separated, one line — greppable by /recall Layer 1.
+    line = f"{ts} | {project} | {branch} | {stat} | files={','.join(files)}"
+    if tag:
+        line += f" | {tag}"
+
+    # Per-project index (machine's per-project index IS the global roll-up).
+    per_project = root / INDEX_NAME
+    append_line(per_project, line)
+
+    # Global roll-up — skip the duplicate write when project is machine.
+    global_index = DEV / INDEX_NAME
+    if per_project.resolve() != global_index.resolve():
+        append_line(global_index, line)
+
+
+if __name__ == "__main__":
+    main()
