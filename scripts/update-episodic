@@ -79,16 +79,17 @@ def files_touched(root: Path):
     # so runtime artifacts (EPISODIC-INDEX.md, .episodic-baseline, …) don't show.
     out = git(root, "ls-files", "--others", "--exclude-standard")
     paths.update(p for p in out.splitlines() if p)
-    # Commits made this session, via the SessionStart baseline.
+    # Commits made this session, via the SessionStart baseline. An absent OR empty
+    # baseline (SessionStart ran in a non-repo, or before the first commit) both mean
+    # "no baseline" — tag the line so the gap is visible rather than silently dropped.
     baseline_file = root / ".episodic-baseline"
+    baseline = baseline_file.read_text().strip() if baseline_file.exists() else ""
     tag = ""
-    if baseline_file.exists():
-        baseline = baseline_file.read_text().strip()
-        if baseline:
-            out = git(root, "diff", "--name-only", f"{baseline}..HEAD")
-            paths.update(p for p in out.splitlines() if p)
+    if baseline:
+        out = git(root, "diff", "--name-only", f"{baseline}..HEAD")
+        paths.update(p for p in out.splitlines() if p)
     else:
-        tag = "[no-baseline]"  # first run before a baseline was ever captured
+        tag = "[no-baseline]"
     return sorted(paths), tag
 
 
