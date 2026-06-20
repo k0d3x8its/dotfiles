@@ -155,6 +155,10 @@ main() {
     ln -sf "$DOTFILES/scripts/rotate-log" "$HOME/.local/bin/rotate-log"
     chmod +x "$DOTFILES/scripts/rotate-log"
 
+    safeguard "$HOME/.local/bin/update-episodic"
+    ln -sf "$DOTFILES/scripts/update-episodic" "$HOME/.local/bin/update-episodic"
+    chmod +x "$DOTFILES/scripts/update-episodic"
+
     # ── opencode ──────────────────────────────────────────────────────────────
 
     log "wiring opencode agents"
