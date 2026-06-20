@@ -20,6 +20,20 @@
           {
             "type": "command",
             "command": "python3 \"$HOME/.claude/hooks/session_timer.py\" session_start 2>/dev/null || true"
+          },
+          {
+            "type": "command",
+            "command": "git -C \"$PWD\" rev-parse HEAD > \"$PWD/.episodic-baseline\" 2>/dev/null || true"
+          }
+        ]
+      }
+    ],
+    "SessionEnd": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 \"$HOME/.claude/hooks/episodic_index.py\" 2>/dev/null || true"
           }
         ]
       }
