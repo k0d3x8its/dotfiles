@@ -59,6 +59,7 @@ No priority tag = Medium (default). `[TEST]` and `[VERIFY]` override all other p
 ## My Conventions
 - Commit messages: conventional commits format (feat:, fix:, docs:, chore:)
 - Commit granularity: when I say "commit changes", commit each changed file as its own separate commit with a brief conventional-commit message describing that file's change. One file per commit.
+- **git-crypt files**: commit message must ONLY be `"updated <filename>"` — never describe contents. Encrypted files (per `.gitattributes`): `KNOWLEDGE.md`, `TODOS.md`, `SESSION-LOG.md`, `findings.md`, `progress.md`, `task_plan.md`, `claude/.claude/KNOWLEDGE.md`. Describing contents leaks plaintext metadata into public git history even when the blob is encrypted.
 - Branch naming: feature/, fix/, docs/, chore/
 - NEVER add `Co-Authored-By` lines to any commit message.
 - All Trello boards use a six-column Kanban: Back Log → To Do → Doing → Review → Testing → Done
