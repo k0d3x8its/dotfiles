@@ -68,20 +68,6 @@ Facts only reach `KNOWLEDGE.md` through explicit approval. The index is a faithf
 
 ---
 
-## Gaps Deliberately Omitted (from claude-mem)
-
-| claude-mem capability | Status here |
-|---|---|
-| SQLite/vector store | Omitted — grep is sufficient; no infra overhead |
-| Chroma semantic embeddings | Omitted — KNOWLEDGE.md bar replaces quality filter |
-| Background worker / daemon | Omitted — hooks + cron cover the automation need |
-| Progressive-disclosure retrieval | ⚠️ building — `/recall` Layer 1→2→3 |
-| Structured episodic records | ⚠️ building — `EPISODIC-INDEX.md` auto-index |
-| Consolidation as distinct phase | ⚠️ building — `/consolidate` skill |
-| Forgetting / decay | ⚠️ building — `update-episodic` rotation into `EPISODIC-ARCHIVE.md` |
-
----
-
 ## Cognition Map
 
 Memory is one faculty of a larger cognitive system. The map lives here (not in a separate `COGNITION.md` — cognition is process, not content; extract only under pressure).
@@ -107,3 +93,7 @@ Memory is one faculty of a larger cognitive system. The map lives here (not in a
 6. **Distill-on-write.** No blind append to `KNOWLEDGE.md` — update existing entries on overlap.
 
 See `MEMORY-STANDARD.md` for the full KNOWLEDGE.md bar, entry format, routing, and dedup rules.
+
+---
+
+*Architecture influenced by [claude-mem](https://github.com/thedotmack/claude-mem). Design decisions diverge intentionally — no SQLite/vector store, no daemon, gated promotion over auto-capture.*
