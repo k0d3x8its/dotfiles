@@ -15,12 +15,15 @@ OUTPUT = Path.home() / "dev" / "TRIAGE-BLOCK.md"
 DEV = Path.home() / "dev"
 DATES_FILE = DEV / ".triage-dates"
 
-# (threshold_days, color) — checked in descending order; first match wins
+# (threshold_days, color) — checked in descending order; first match wins (strictly >)
 STALE_AGE_BANDS = [
-    (31, "#ff1a1a"),   # red   ≥31 days
+    (30, "#ff1a1a"),   # red   >30 days
     (14, "#ff6600"),   # orange 14–30 days
     (7,  "#ffd700"),   # yellow 7–13 days
 ]
+STALE_DAYS = STALE_AGE_BANDS[-1][0]    # minimum threshold (7)
+STALE_LABEL = "stale since"            # always present in stale output
+STALE_COLOR = STALE_AGE_BANDS[-1][1]   # color for minimum-age band
 
 TIER_COLORS = {
     "CRITICAL": "#ff1a1a",
@@ -202,7 +205,7 @@ def build_triage(projects: dict, item_dates: dict) -> dict:
 
 def stale_color(age_days: int) -> str | None:
     for threshold, color in STALE_AGE_BANDS:
-        if age_days >= threshold:
+        if age_days > threshold:
             return color
     return None
 
