@@ -46,6 +46,9 @@ Appended to `SESSION-LOG.md`:
 
 - `path/to/file` — {what changed and why}
 
+<!-- Machine-greppable summary line — /recall Layer 1 filters on this. One line, no wrapping. -->
+Files: path/to/file, path/to/other | Tags: [FEAT] [BUG] {annotation tags from CLAUDE.md describing this session's work}
+
 ### Gotchas / Notes
 
 - {Tech debt, edge cases, token-cost observations, things to watch out for}
@@ -93,6 +96,8 @@ No `### Incomplete / Next Steps` block — open work lives in `TODOS.md` only.
 
 **5.** For **Gotchas / Notes**: flag anything worth knowing — bugs, edge cases, token-cost observations, things the user didn't ask about but should know.
 
+**5b.** Emit the machine-greppable `Files:` / `Tags:` line under **Files Touched** — a single unwrapped line listing the files this session touched and the annotation tags (`[FEAT]`/`[BUG]`/… from `CLAUDE.md`) that classify the work. This is the curated counterpart to the auto-captured `EPISODIC-INDEX.md` line; `/recall` Layer 1 filters on it.
+
 **6.** Append the narrative block to `SESSION-LOG.md` at the project root.
    - If it does not exist, create it first:
      ```markdown
@@ -103,12 +108,12 @@ No `### Incomplete / Next Steps` block — open work lives in `TODOS.md` only.
 
 **7.** KNOWLEDGE.md promotion gate — scan `### Decisions Made` and `### Gotchas / Notes` from the block just written for facts eligible for KNOWLEDGE.md.
 
-   First, read `~/.claude/references/memory-standard.md` — authoritative source for the promotion bar, entry format, routing, and dedup rules.
+   First, read `~/.claude/references/MEMORY-STANDARD.md` — authoritative source for the promotion bar, entry format, routing, and dedup rules.
 
    For each candidate, run all 4 bar tests (SETTLED · NON-OBVIOUS · NOT A RULE · DURABLE). Discard failures. For passing candidates, check against the KNOWLEDGE.md files read in Step 2 for semantic duplicates — skip already-known entries.
 
    If candidates remain:
-   - Present them numbered in one block, each pre-routed LOCAL or GLOBAL per routing rule in memory-standard.md:
+   - Present them numbered in one block, each pre-routed LOCAL or GLOBAL per routing rule in MEMORY-STANDARD.md:
      ```
      KNOWLEDGE.md candidates:
      1. [LOCAL] "- {proposed entry}"  ← {which tests it passed}
