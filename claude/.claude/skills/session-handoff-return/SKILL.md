@@ -52,7 +52,7 @@ description: Pop a tangent back into the main session. Summarizes what the forke
 
 **5.** Print closing message:
    ```
-   ✓ Findings synced to TODOS.md + TRIAGE-BLOCK.md
+   ✓ Findings synced to TODOS.md + .memory/TRIAGE-BLOCK.md
    → Paste the block above into your main session to continue
    ```
 
