@@ -24,7 +24,7 @@ allowed-tools:
 5. Creates `.claude/CLAUDE.md` from template
 6. Scaffolds `.claude/settings.json` with baseline permissions
 7. Configures `.claude/trello-board` for `/sync-trello`
-8. Initializes planning files: `task_plan.md`, `findings.md`, `progress.md`, `SESSION-LOG.md`, `CHANGELOG.md`
+8. Initializes planning files: `.work/PLAN.md`, `.work/FINDINGS.md`, `.work/PROGRESS.md`, `.memory/SESSION-LOG.md`, `CHANGELOG.md`
 9. Creates `KNOWLEDGE.md` — curated facts, committed with the repo
 10. Creates `.gitignore`, or append-if-missing merges into an existing one
 11. Checks git / offers `git init`
@@ -50,7 +50,7 @@ write where. Read the template, substitute these tokens, write to the destinatio
 | `{{BOARD}}` | Step 10 board name, or `not configured — run /sync-trello to set up` |
 | `{{DATE}}` | today |
 
-Static templates (`settings.json`, `SESSION-LOG.md`, `CHANGELOG.md`, `gitignore.core`)
+Static templates (`settings.json`, `SESSION-LOG.md` (written to `.memory/`), `CHANGELOG.md`, `gitignore.core`)
 have no tokens — copy verbatim.
 
 ---
@@ -71,7 +71,7 @@ If different path given, use it for all subsequent operations.
 
 ### Step 2: Project name
 
-> "Project name? Used in CLAUDE.md, README, and task_plan.md."
+> "Project name? Used in CLAUDE.md, README, and .work/PLAN.md."
 > Default: directory basename
 
 ### Step 3: One-line description
@@ -163,17 +163,21 @@ If skipped: note in summary that `/sync-trello` will ask at runtime.
 
 ### Step 11: Initialize planning files
 
-Check which of these exist: `task_plan.md`, `findings.md`, `progress.md`, `SESSION-LOG.md`, `CHANGELOG.md`
+Check which of these exist: `.work/PLAN.md`, `.work/FINDINGS.md`, `.work/PROGRESS.md`, `.memory/SESSION-LOG.md`, `CHANGELOG.md`
 
 For each missing file, write the matching `templates/<name>` (no prompt — always wanted):
 
-| Template | Tokens to substitute |
-|---|---|
-| `task_plan.md` | `{{PROJECT_NAME}}` |
-| `findings.md` | `{{PROJECT_NAME}}`, `{{DATE}}` |
-| `progress.md` | `{{PROJECT_NAME}}`, `{{DATE}}` |
-| `SESSION-LOG.md` | none (static) |
-| `CHANGELOG.md` | none (static) |
+Create `.work/` with `mkdir -p .work` before writing files there.
+
+| Template | Destination | Tokens to substitute |
+|---|---|---|
+| `task_plan.md` | `.work/PLAN.md` | `{{PROJECT_NAME}}` |
+| `findings.md` | `.work/FINDINGS.md` | `{{PROJECT_NAME}}`, `{{DATE}}` |
+| `progress.md` | `.work/PROGRESS.md` | `{{PROJECT_NAME}}`, `{{DATE}}` |
+| `SESSION-LOG.md` | `.memory/SESSION-LOG.md` | none (static) |
+| `CHANGELOG.md` | `CHANGELOG.md` | none (static) |
+
+Create `.memory/` if it does not exist (`mkdir -p .memory`) before writing `SESSION-LOG.md` there.
 
 Print which files were created (skip already-existing ones silently).
 
@@ -215,7 +219,7 @@ The required entry set = `templates/gitignore.core` (static) **plus** the type-s
      Only the marker line plus the missing patterns. Never reorder, rewrite, or delete existing lines.
   5. If the `# --- added by /dev-setup ---` marker already exists from a prior run, append the newly-missing patterns under that same marker rather than adding a second one.
 
-**Why a marked append-merge:** an existing repo's `.gitignore` is user-authored and must survive; but the Step-11 planning files (`task_plan.md`, `findings.md`, `progress.md`, `SESSION-LOG.md`, `RELEASE-NOTES.md`) and `.claude/trello-board` MUST be ignored or they leak. Merging the missing lines under a clear marker satisfies both and stays idempotent across re-runs.
+**Why a marked append-merge:** an existing repo's `.gitignore` is user-authored and must survive; but the Step-11 planning files (`.work/PLAN.md`, `.work/FINDINGS.md`, `.work/PROGRESS.md`, `RELEASE-NOTES.md`) and `.claude/trello-board` MUST be ignored or they leak. `SESSION-LOG.md` lives in `.memory/` and is handled by the git-crypt negation block. Merging the missing lines under a clear marker satisfies both and stays idempotent across re-runs.
 
 **`KNOWLEDGE.md` must NOT be in `.gitignore`** — it is committed source, not a session artifact. If it appears in any existing `.gitignore`, warn the user and do not add it.
 
@@ -243,7 +247,7 @@ If installed, check if `.gitattributes` already exists with `filter=git-crypt` e
 
 Otherwise ask:
 > "Initialize git-crypt to encrypt planning/session files? (yes / skip)"
-> "These files will be encrypted at rest: KNOWLEDGE.md, TODOS.md, SESSION-LOG.md, findings.md, progress.md, task_plan.md"
+> "These files will be encrypted at rest: KNOWLEDGE.md, TODOS.md, .memory/SESSION-LOG.md, .work/FINDINGS.md, .work/PROGRESS.md, .work/PLAN.md"
 
 If yes:
 1. Run `git-crypt init`
@@ -252,16 +256,30 @@ If yes:
    ```
    # git-crypt repo — override global ignore for encrypted planning files
    !KNOWLEDGE.md
-   !SESSION-LOG.md
-   !task_plan.md
-   !findings.md
-   !progress.md
+   !.memory/SESSION-LOG.md
+   !.work/PLAN.md
+   !.work/FINDINGS.md
+   !.work/PROGRESS.md
    !TODOS.md
    ```
 4. Export the key and store in Proton Pass Personal vault:
    - Title: `<repo-name>-gitcrypt`
    - Type: Custom item
-   - Note: `git-crypt key for <repo-name> repo (base64). Decoded and passed to git-crypt unlock on fresh machine setup.`
+   - Note:
+     ```
+     git-crypt symmetric key for the <repo-name> repo.
+     Encrypts planning/session files at rest so they commit safely to a (potentially public) remote.
+
+     The value stored in this item is BASE64-ENCODED — the raw key is binary and cannot be stored as plain text.
+
+     To unlock on a fresh machine (run from inside the repo):
+       k="$(mktemp)"; chmod 600 "$k"
+       echo '{{ pass://Personal/<repo-name>-gitcrypt/key }}' | pass-cli inject | base64 -d > "$k"
+       git-crypt unlock "$k"
+       shred -u "$k"
+
+     Run `pass-cli login` first if the CLI is not authenticated.
+     ```
    - Section name: `git-crypt`
    - Field name: `key`, type: `hidden`, value: `$(git-crypt export-key - | base64 -w 0)`
    - Command: `pass-cli item create custom --vault-name "Personal" --from-template <json>`
@@ -321,7 +339,7 @@ Created:
   .claude/CLAUDE.md
   .claude/settings.json
   .claude/trello-board → "[board]"  (or: not configured)
-  task_plan.md, findings.md, progress.md, SESSION-LOG.md, CHANGELOG.md
+  .work/PLAN.md, .work/FINDINGS.md, .work/PROGRESS.md, .memory/SESSION-LOG.md, CHANGELOG.md
   KNOWLEDGE.md
   .gitignore
   .gitattributes (git-crypt)
@@ -331,7 +349,7 @@ Created:
 
 What's next:
   → /ce-setup          run once to wire up compound-engineering
-  → /plan              build out task_plan.md with your Goals
+  → /write-plan        build out .work/PLAN.md with your Goals
   → /sync-trello       push Goals to Trello
   → /handoff           run at ~50 min to preserve session context
 ```
