@@ -1,13 +1,14 @@
 # Claude Code artifacts
-/SESSION-LOG.md
-/task_plan.md
-/findings.md
-/progress.md
+/.work/PLAN.md
+/.work/FINDINGS.md
+/.work/PROGRESS.md
 /RELEASE-NOTES.md
-/ARCHIVE-LOG.md
 /TODOS.md
 .claude/plugins/
 .claude/skills/
 .episodic-baseline
 .episodic.lock
-/EPISODIC-INDEX.md
+# Memory system — runtime artifacts live in .memory/ subdir
+/.memory/EPISODIC-INDEX.md
+/.memory/EPISODIC-ARCHIVE.md
+/.memory/CONSOLIDATION-INBOX.md
