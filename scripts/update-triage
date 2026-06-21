@@ -55,6 +55,7 @@ ANNOTATION_COLORS = {
     "DOCS":        "#63e6be",
     "PERFORMANCE": "#fd7e14",
     "UX":          "#f783ac",
+    "VERIFY":      "#22b8cf",
 }
 
 PRIORITY_MAP = {
