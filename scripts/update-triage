@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-update-triage: reads ~/dev/.triage-cache, writes ~/dev/TRIAGE-BLOCK.md
+update-triage: reads ~/dev/.triage-cache, writes ~/dev/.memory/TRIAGE-BLOCK.md
 Zero Claude tokens. Called by /handoff step 7d; also run manually.
 """
 
@@ -11,7 +11,7 @@ from datetime import datetime
 from pathlib import Path
 
 CACHE = Path.home() / "dev" / ".triage-cache"
-OUTPUT = Path.home() / "dev" / "TRIAGE-BLOCK.md"
+OUTPUT = Path.home() / "dev" / ".memory" / "TRIAGE-BLOCK.md"
 DEV = Path.home() / "dev"
 DATES_FILE = DEV / ".triage-dates"
 
@@ -182,7 +182,7 @@ def release_pending(projects: dict) -> list:
 
 def find_orphans(projects: dict) -> list:
     tracked = {p.strip("[]") for p in projects}
-    log_files = ("SESSION-LOG.md", "session-log.md", "TODOS.md")
+    log_files = (Path(".memory") / "SESSION-LOG.md", "session-log.md", "TODOS.md")
     return [
         d.name for d in sorted(DEV.iterdir())
         if d.is_dir() and not d.name.startswith(".")
@@ -259,7 +259,7 @@ def write_output(tiers: dict, projects: dict, path: Path) -> None:
         "---",
         "",
         '<span style="color:#555;font-size:0.85em;">'
-        "~/dev/TRIAGE-BLOCK.md · auto-updated by update-triage after /handoff"
+        "~/dev/.memory/TRIAGE-BLOCK.md · auto-updated by update-triage after /handoff"
         "</span>",
         "",
     ]
