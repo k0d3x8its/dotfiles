@@ -32,7 +32,7 @@ Run the verify command FRESH, read the exit code, **before**:
 2. **Run it fresh** — after the last edit, not from memory of an earlier run.
 3. **Read the exit code.** Exit 0 → claim permitted; cite the evidence ("`bats tests/`
    exit 0, 82 tests"). Non-zero → no claim. Fix it, or write the TODO below.
-4. **Per-task evidence:** if the task in `task_plan.md` carries a `verify:` sub-bullet
+4. **Per-task evidence:** if the task in `.work/PLAN.md` carries a `verify:` sub-bullet
    (see `/write-plan`), that command gates that task's checkbox — run it, not just the
    project-wide command.
 
