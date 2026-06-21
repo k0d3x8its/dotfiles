@@ -6,7 +6,7 @@ K0d3x personal dotfiles — Ubuntu 24.04 (Noble).
 
 ## Features
 
-- **Triage system** — zero-token `TODOS.md` → `TRIAGE-BLOCK.md` pipeline with stale age bands and tier classification → [docs/triage-system.md](docs/triage-system.md)
+- **Triage system** — zero-token `TODOS.md` → `.memory/TRIAGE-BLOCK.md` pipeline with stale age bands and tier classification → [docs/triage-system.md](docs/triage-system.md)
 - **Hooks** — auto-refresh triage on edit, session timer warnings, live cost/burn/context statusline → [docs/hooks.md](docs/hooks.md)
 - **Episodic memory** — per-session auto-capture, progressive `/recall`, gated `/consolidate` → [docs/episodic-memory.md](docs/episodic-memory.md)
 - **Memory architecture** — 5-store system (semantic, episodic, prospective, procedural, working) → [claude/.claude/references/MEMORY-ARCHITECTURE.md](claude/.claude/references/MEMORY-ARCHITECTURE.md)
