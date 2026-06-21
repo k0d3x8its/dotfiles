@@ -106,7 +106,7 @@ External (not auto-surfaced): `/ce-code-review` `/ce-security-audit` `/discover`
     prompt. NO SESSION-LOG. ~400 tok.
   - `/checkpoint` (durable): end-of-work-session close. Writes SESSION-LOG narrative +
     rotate-log + triage. ~2K tok. Use when real decisions were made.
-- Always read task_plan.md, findings.md, and progress.md if they exist in the project root.
+- Always read `.work/PLAN.md`, `.work/FINDINGS.md`, and `.work/PROGRESS.md` if they exist.
 - When I paste a re-entry prompt: treat decisions and architectural choices as authoritative.
   File state wins on task-state conflicts.
 - CHANGELOG: use `/changelog` manually when a session produces changelog-worthy changes.
@@ -145,7 +145,7 @@ These four skills manage context across sessions. Pick the right one based on wh
 
 #### `/handoff` — Lean fork
 
-Forks the current session into a focused tangent. Emits a reason-first re-entry prompt and saves it to `/tmp/handoff-{timestamp}.md` for crash safety. Writes nothing to SESSION-LOG.md — that is `/checkpoint`'s job.
+Forks the current session into a focused tangent. Emits a reason-first re-entry prompt and saves it to `/tmp/handoff-{timestamp}.md` for crash safety. Writes nothing to `.memory/SESSION-LOG.md` — that is `/checkpoint`'s job.
 
 When to use: a side-issue surfaces mid-session that needs clean context to chase. Open a fresh session, paste the prompt, work the tangent, then `/handoff-return` to merge findings back.
 
@@ -179,11 +179,11 @@ When to use: wrapping up but no major architectural decisions were made this ses
 
 #### `/checkpoint` — Durable close
 
-Full end-of-work-session wrap-up. Writes a narrative block to `SESSION-LOG.md`, syncs completed/new items to `TODOS.md`, runs the triage pipeline (`update-cache` → `rotate-log` → `update-triage`), and prints a re-entry prompt. Run `/clear` after.
+Full end-of-work-session wrap-up. Writes a narrative block to `.memory/SESSION-LOG.md`, syncs completed/new items to `TODOS.md`, runs the triage pipeline (`update-cache` → `rotate-log` → `update-triage`), and prints a re-entry prompt. Run `/clear` after.
 
 When to use: end of day, or any session where real decisions were made that a future session must not re-litigate.
 
-SESSION-LOG.md block format:
+`.memory/SESSION-LOG.md` block format:
 ```markdown
 ---
 ## Session Checkpoint — {YYYY-MM-DD hh:MM AM/PM}
@@ -229,7 +229,7 @@ When to use: unsure which data model or architecture to commit to; want to see a
 
 #### `/grill-me` — Plan stress-test
 
-Interviews you relentlessly about every aspect of a plan — resolves decisions one branch at a time before building starts. Provides a recommended answer for each question. Appends resolved decisions to `findings.md`.
+Interviews you relentlessly about every aspect of a plan — resolves decisions one branch at a time before building starts. Provides a recommended answer for each question. Appends resolved decisions to `.work/FINDINGS.md`.
 
 When to use: moving from idea → foundation. Run this before `/dev-setup` or any significant build to surface hidden assumptions and lock in decisions.
 
@@ -257,7 +257,7 @@ When to use: after writing a feature to verify test coverage is meaningful, not 
 
 #### `/dev-setup` — Per-project wizard
 
-Complete per-project setup in one guided run. Creates `README.md`, `.claude/CLAUDE.md`, `.claude/settings.json`, `CHANGELOG.md`, `SESSION-LOG.md`, `TODOS.md`, `task_plan.md`, `findings.md`, `progress.md`, `RELEASE-NOTES.md`, and `.gitignore`. Offers git init and GitHub repo creation. Safe to re-run — checks before overwriting.
+Complete per-project setup in one guided run. Creates `README.md`, `.claude/CLAUDE.md`, `.claude/settings.json`, `CHANGELOG.md`, `.memory/SESSION-LOG.md`, `TODOS.md`, `.work/PLAN.md`, `.work/FINDINGS.md`, `.work/PROGRESS.md`, `RELEASE-NOTES.md`, and `.gitignore`. Offers git init and GitHub repo creation. Safe to re-run — checks before overwriting.
 
 When to use: starting any new project.
 
@@ -265,7 +265,7 @@ When to use: starting any new project.
 
 #### `/dev-brief` — Cross-project status brief
 
-Morning or context-switch brief across all projects in `~/dev`. Reads `TODOS.md` (or `SESSION-LOG.md`) per project, surfaces open TODOs by tier, live git state, gotchas, decisions, and release-pending signals. Auto-reconciles open TODOs against recent git commits — flags items that may already be resolved.
+Morning or context-switch brief across all projects in `~/dev`. Reads `TODOS.md` (or `.memory/SESSION-LOG.md`) per project, surfaces open TODOs by tier, live git state, gotchas, decisions, and release-pending signals. Auto-reconciles open TODOs against recent git commits — flags items that may already be resolved.
 
 When to use: first thing in a session to orient across projects, or before a context switch.
 
@@ -289,7 +289,7 @@ When to use: before cutting a release. Run `/changelog` first to populate `[Unre
 
 #### `/sync-trello` — Trello sync
 
-Reads `task_plan.md` and for each Goal without a `[trello:ID]` tag: creates a card at the bottom of "Back Log", creates a checklist for each Micro-Goal, creates checklist items for each Task, then annotates the Goal line with `[trello:CARD_ID]`. Fully idempotent — re-running skips tagged Goals.
+Reads `.work/PLAN.md` and for each Goal without a `[trello:ID]` tag: creates a card at the bottom of "Back Log", creates a checklist for each Micro-Goal, creates checklist items for each Task, then annotates the Goal line with `[trello:CARD_ID]`. Fully idempotent — re-running skips tagged Goals.
 
 Board resolved in order: inline arg → `.claude/trello-board` file → interactive prompt.
 
@@ -369,7 +369,7 @@ Run once when starting any new project:
 | `.claude/CLAUDE.md` | Project-level Claude config from template |
 | `.claude/settings.json` | Baseline permission allowlist |
 | `.claude/trello-board` | Board name for `/sync-trello` auto-resolution |
-| Planning files | `task_plan.md`, `findings.md`, `progress.md`, `SESSION-LOG.md`, `TODOS.md`, `CHANGELOG.md`, `RELEASE-NOTES.md` |
+| Planning files | `.work/PLAN.md`, `.work/FINDINGS.md`, `.work/PROGRESS.md`, `.memory/SESSION-LOG.md`, `TODOS.md`, `CHANGELOG.md`, `RELEASE-NOTES.md` |
 | `.gitignore` | Covers secrets, Claude artifacts, planning files, OS noise |
 | Git init | Checks for repo, offers `git init -b main` if missing |
 | GitHub repo | Offers `gh repo create` with visibility choice |
@@ -379,9 +379,9 @@ Run once when starting any new project:
 
 ---
 
-### task_plan.md Format
+### .work/PLAN.md Format
 
-`/sync-trello` reads this hierarchy from `task_plan.md`:
+`/sync-trello` reads this hierarchy from `.work/PLAN.md`:
 
 ```markdown
 ## Goal: [Goal name] [trello:CARD_ID after first sync]
@@ -422,7 +422,7 @@ Before touching any code, open Claude Code in the project root and run:
 /grill-me
 ```
 
-Resolves every design decision — data model, architecture, scope — before building starts. Outputs to `findings.md`.
+Resolves every design decision — data model, architecture, scope — before building starts. Outputs to `.work/FINDINGS.md`.
 
 Then generate a lightweight spec:
 ```
@@ -440,18 +440,18 @@ Open Claude Code. If continuing from a previous session, paste your re-entry pro
 ```
 "We're building kos-cli. Last session we scaffolded the CLI entrypoint in
 src/cli.py and added argparse. Next: implement the `search` subcommand that
-queries notes.db via fuzzy match. Read task_plan.md for full context."
+queries notes.db via fuzzy match. Read .work/PLAN.md for full context."
 ```
 
 ---
 
 ### Step 3: Work
 
-Claude writes `task_plan.md` automatically using the Goal/Micro-Goal/Task hierarchy.
+Claude writes `.work/PLAN.md` automatically using the Goal/Micro-Goal/Task hierarchy.
 
 Status bar shows live cost/burn/context + session elapsed time passively.
 
-Open work tracks in `TODOS.md` (project root). Across all projects, `~/dev/TRIAGE-BLOCK.md` shows the priority-ordered view — auto-refreshed whenever `TODOS.md` is edited, or run `update-triage` manually.
+Open work tracks in `TODOS.md` (project root). Across all projects, `~/dev/.memory/TRIAGE-BLOCK.md` shows the priority-ordered view — auto-refreshed whenever `TODOS.md` is edited, or run `update-triage` manually.
 
 ---
 
@@ -461,7 +461,7 @@ Open work tracks in `TODOS.md` (project root). Across all projects, `~/dev/TRIAG
 /sync-trello
 ```
 
-Claude reads `task_plan.md`, creates cards/checklists/items for all Goals without a `[trello:ID]` tag, then annotates each Goal with its card ID. Fully idempotent.
+Claude reads `.work/PLAN.md`, creates cards/checklists/items for all Goals without a `[trello:ID]` tag, then annotates each Goal with its card ID. Fully idempotent.
 
 ---
 
@@ -515,9 +515,9 @@ Emits a resume-focused re-entry prompt. No narrative. Run `/clear` after.
 ```
 /checkpoint
 ```
-Writes a full narrative block to `SESSION-LOG.md`, syncs open work to `TODOS.md`, runs the triage pipeline, prints a re-entry prompt. Run `/clear` after. ~2K tokens.
+Writes a full narrative block to `.memory/SESSION-LOG.md`, syncs open work to `TODOS.md`, runs the triage pipeline, prints a re-entry prompt. Run `/clear` after. ~2K tokens.
 
-Example `SESSION-LOG.md` block:
+Example `.memory/SESSION-LOG.md` block:
 ```markdown
 ---
 ## Session Checkpoint — 2026-05-26 02:32 PM
@@ -545,7 +545,7 @@ Implement the `search` subcommand for kos-cli with fuzzy matching against notes.
 
 ### Re-Entry Prompt
 > "kos-cli: implemented search subcommand with fuzzy match via rapidfuzz.
-> Read SESSION-LOG.md and TODOS.md. For what's next, read TRIAGE-BLOCK.md.
+> Read .memory/SESSION-LOG.md and TODOS.md. For what's next, read .memory/TRIAGE-BLOCK.md.
 > First action: add --tag filter flag."
 
 ---
@@ -557,7 +557,7 @@ Open work lives in `TODOS.md` only — there is no `### Incomplete / Next Steps`
 
 ### Step 7: Next session
 
-New session opens. Paste the re-entry prompt. Claude reads `SESSION-LOG.md`, `TODOS.md`, and `task_plan.md`. Full context in seconds.
+New session opens. Paste the re-entry prompt. Claude reads `.memory/SESSION-LOG.md`, `TODOS.md`, and `.work/PLAN.md`. Full context in seconds.
 
 ---
 
@@ -575,8 +575,8 @@ New session opens. Paste the re-entry prompt. Claude reads `SESSION-LOG.md`, `TO
 | 45-minute timer fires, wrapping up | `/close` (lightweight close) |
 | End of work session | `/checkpoint` (durable — writes narrative + triage) |
 | After tangent session done | `/handoff-return` (merges findings to TODOS.md) |
-| Returning after a break | Open `SESSION-LOG.md` → copy re-entry prompt |
-| What's highest priority now | Read `~/dev/TRIAGE-BLOCK.md` |
+| Returning after a break | Open `.memory/SESSION-LOG.md` → copy re-entry prompt |
+| What's highest priority now | Read `~/dev/.memory/TRIAGE-BLOCK.md` |
 | Session produced changes | `/changelog` (manual — do not auto-update inline) |
 | Cutting a release | `/changelog` → `/release-notes` → post to GitHub |
 | Bug or failure | `/diagnose` |
@@ -599,7 +599,7 @@ New session opens. Paste the re-entry prompt. Claude reads `SESSION-LOG.md`, `TO
   hooks/
     session_timer.py              ← tracks session start time
     combined-statusline.sh        ← statusLine: ccusage + caveman mode + elapsed timer
-    refresh_triage.py             ← PostToolUse: auto-refreshes TRIAGE-BLOCK on TODOS.md edit
+    refresh_triage.py             ← PostToolUse: auto-refreshes .memory/TRIAGE-BLOCK.md on TODOS.md edit
     caveman-*.js / .sh            ← caveman plugin hooks
   references/
     kos-code-reference.md         ← KOS-Code vocabulary (read by skills at runtime)
@@ -620,7 +620,7 @@ New session opens. Paste the re-entry prompt. Claude reads `SESSION-LOG.md`, `TO
     ante-mortem/                  ← /ante-mortem  (future bug audit)
     mutation-testing/             ← /mutation-testing  (test gap detection)
     dev-setup/                    ← /dev-setup  (per-project wizard)
-    sync-trello/                  ← /sync-trello  (push task_plan.md → Trello)
+    sync-trello/                  ← /sync-trello  (push .work/PLAN.md → Trello)
     trello-agent/                 ← /trello-agent  (ad-hoc board management)
     write-a-skill/                ← /write-a-skill  (structured skill authoring)
     zoom-out/                     ← /zoom-out  (map unfamiliar codebase)
@@ -635,7 +635,8 @@ New session opens. Paste the re-entry prompt. Claude reads `SESSION-LOG.md`, `TO
 ~/dev/
   .triage-cache                   ← pointer index: project → TODOS.md path + mtime
   .triage-dates                   ← first-seen dates per TODO item (stale detection)
-  TRIAGE-BLOCK.md                 ← auto-generated priority view across all projects
+  .memory/
+    TRIAGE-BLOCK.md               ← auto-generated priority view across all projects
 
 your-project/
   .claude/
@@ -647,11 +648,13 @@ your-project/
   docs/
     prd.md                        ← committed, project north star
   README.md                       ← committed
-  SESSION-LOG.md                  ← checkpoint/handoff narrative (gitignored)
   TODOS.md                        ← canonical open work — single source of truth (gitignored)
-  task_plan.md                    ← live Goals/Micro-Goals/Tasks + Trello IDs (gitignored)
-  findings.md                     ← research and decisions (gitignored)
-  progress.md                     ← session progress log (gitignored)
+  .memory/
+    SESSION-LOG.md                ← checkpoint/handoff narrative (git-crypt encrypted)
+  .work/
+    PLAN.md                       ← live Goals/Micro-Goals/Tasks + Trello IDs (gitignored)
+    FINDINGS.md                   ← research and decisions (gitignored)
+    PROGRESS.md                   ← session progress log (gitignored)
   CHANGELOG.md                    ← committed changelog (updated via /changelog)
   KNOWLEDGE.md                    ← committed curated facts about this codebase
   RELEASE-NOTES.md                ← scratch pad for /release-notes (gitignored)
@@ -693,7 +696,7 @@ Board resolution order:
 
 ### How it works
 
-Reads `task_plan.md` and for each Goal without a `[trello:ID]` tag:
+Reads `.work/PLAN.md` and for each Goal without a `[trello:ID]` tag:
 1. Creates a Trello card at the bottom of "Back Log"
 2. Annotates the Goal line immediately with `[trello:CARD_ID]`
 3. Creates a checklist for each Micro-Goal
