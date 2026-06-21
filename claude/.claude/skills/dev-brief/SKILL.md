@@ -1,6 +1,6 @@
 ---
 name: dev-brief
-description: Morning/context-switch brief across all projects in ~/dev. Reads TODOS.md or SESSION-LOG.md per project, surfaces open TODOs, live git state, gotchas, decisions, branch, and release-pending signals. Auto-reconciles TODOs against live git state. Triggers on /dev-brief or /dev-brief <project>.
+description: Morning/context-switch brief across all projects in ~/dev. Reads TODOS.md or .memory/SESSION-LOG.md per project, surfaces open TODOs, live git state, gotchas, decisions, branch, and release-pending signals. Auto-reconciles TODOs against live git state. Triggers on /dev-brief or /dev-brief <project>.
 ---
 
 # Dev Brief Skill
@@ -23,9 +23,9 @@ description: Morning/context-switch brief across all projects in ~/dev. Reads TO
 find ~/dev -mindepth 1 -maxdepth 1 -type d -printf '%f\n' | sort
 ```
 
-Active = has `TODOS.md`, `SESSION-LOG.md`, or `session-log.md`. None = orphan.
+Active = has `TODOS.md`, `.memory/SESSION-LOG.md`, or `session-log.md`. None = orphan.
 
-Also check `~/dev/SESSION-LOG.md` / `~/dev/session-log.md` → treat as `[machine]` (no git state, show first).
+Also check `~/dev/.memory/SESSION-LOG.md` / `~/dev/session-log.md` → treat as `[machine]` (no git state, show first).
 
 ### Step 2 — Per project: cache gate → data
 
@@ -72,7 +72,7 @@ Not a git repo → `not a git repo`. No upstream → `no upstream`.
 
 **Release pending:** `[ -s ~/dev/<project>/RELEASE-NOTES.md ] && echo "RELEASE PENDING"`
 
-**task_plan.md:** if present, merge `- [ ]` items into TODOs labeled `[plan]`.
+**`.work/PLAN.md`:** if present, merge `- [ ]` items into TODOs labeled `[plan]`.
 
 **KNOWLEDGE.md (deep-dive only):** if `KNOWLEDGE.md` exists in the project root, read it. Surface entries under a `### Knowledge` section in the deep-dive output, before the TODOs tiers.
 
@@ -145,11 +145,11 @@ Strip priority tags from displayed text (tier already shows it). Sort within tie
 1. Execute immediately — no clarifying questions.
 2. Cache gate before every log read. Refresh after every READ is mandatory — unrefreshed block re-reads forever. Deep-dive always READs its single target (skip gate).
 3. Latest session = highest date in block headers; never assume by position.
-4. Orphans = directories only. Root files never listed (except `~/dev/SESSION-LOG.md` → `[machine]`).
+4. Orphans = directories only. Root files never listed (except `~/dev/.memory/SESSION-LOG.md` → `[machine]`).
 5. Output: plain markdown, no code-block wrapper.
 6. Fix-commit flags (Step 3b): advisory only — never written, never auto-closed, recomputed each run.
 7. Triage Block: default mode only, after orphans list. Deep-dive skips it.
 8. Dev dir = `~/dev/`. Never prompt for path.
-9. Triage mode: after terminal output, run `update-triage` via Bash — script writes HTML to `TRIAGE-BLOCK.md`. Do not generate HTML directly.
+9. Triage mode: after terminal output, run `update-triage` via Bash — script writes HTML to `~/dev/.memory/TRIAGE-BLOCK.md`. Do not generate HTML directly.
 10. `[BUG]` Triage item → append `→ /diagnose`. `[TEST]` → append `→ /tdd`.
 11. Deep-dive: if `KNOWLEDGE.md` exists in project root, read and show it. Section header: `### Knowledge`. Place before TODOs tiers.
