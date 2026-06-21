@@ -1,12 +1,12 @@
 ---
 name: checkpoint
-description: Durable end-of-work-session checkpoint. Writes a narrative block to SESSION-LOG.md, syncs TODOS.md, rotates the log, refreshes the triage pipeline, and prints a re-entry prompt. Triggers on /checkpoint. Use at end of day or end of a multi-hour work session — not for quick mid-session forks (use /handoff for those).
+description: Durable end-of-work-session checkpoint. Writes a narrative block to .memory/SESSION-LOG.md, syncs TODOS.md, rotates the log, refreshes the triage pipeline, and prints a re-entry prompt. Triggers on /checkpoint. Use at end of day or end of a multi-hour work session — not for quick mid-session forks (use /handoff for those).
 ---
 
 # Session Checkpoint Skill
 
 **Trigger:** `/checkpoint`
-**Purpose:** Durably close a work session — capture the *why* (decisions, gotchas) to `SESSION-LOG.md`, sync open work to `TODOS.md`, refresh the triage pipeline, print a re-entry prompt.
+**Purpose:** Durably close a work session — capture the *why* (decisions, gotchas) to `.memory/SESSION-LOG.md`, sync open work to `TODOS.md`, refresh the triage pipeline, print a re-entry prompt.
 
 **Not this skill:** quick mid-session tangent fork → `/handoff`. Merging tangent findings back → `/handoff-return`. Checkpoint is the heavy, durable one — run it when real decisions were made or at end of a work session.
 
@@ -24,7 +24,7 @@ For a cheap mid-session fork that does **not** need durable narrative, use `/han
 
 ## Output Format
 
-Appended to `SESSION-LOG.md`:
+Appended to `.memory/SESSION-LOG.md`:
 
 ```markdown
 ---
@@ -56,7 +56,7 @@ Files: path/to/file, path/to/other | Tags: [FEAT] [BUG] {annotation tags from CL
 ### Re-Entry Prompt
 
 > "{Compact summary: project, what was built, where you left off, first action next session.
-> Read SESSION-LOG.md, TODOS.md, and KNOWLEDGE.md (local + global) — if any reads as git-crypt ciphertext, unlock first per `~/.claude/references/git-crypt-lock-check.md` (the manual fetch→unlock pipe, run from inside the repo). For what's next across projects, read TRIAGE-BLOCK.md.
+> Read `.memory/SESSION-LOG.md`, `TODOS.md`, and `KNOWLEDGE.md` (local + global) — if any reads as git-crypt ciphertext, unlock first per `~/.claude/references/git-crypt-lock-check.md` (the manual fetch→unlock pipe, run from inside the repo). For what's next across projects, read `.memory/TRIAGE-BLOCK.md`.
 > First action: {step}}"
 
 ---
@@ -72,14 +72,14 @@ No `### Incomplete / Next Steps` block — open work lives in `TODOS.md` only.
 
 **2.** Read:
    - `TODOS.md` in the project root (canonical open work)
-   - The **most recent block only** of `SESSION-LOG.md` (for Goal/Decisions context). Do not read the whole file.
+   - The **most recent block only** of `.memory/SESSION-LOG.md` (for Goal/Decisions context). Do not read the whole file.
    - `KNOWLEDGE.md` in the project root (if it exists) — needed for dedup in Step 7
    - `~/.claude/KNOWLEDGE.md` (global knowledge) — same reason
-   - If `TODOS.md` does not exist: create it with this header, then scan all prior `### Incomplete / Next Steps` blocks in `SESSION-LOG.md` and migrate every unchecked `- [ ]` item into it (one-time, deduplicated):
+   - If `TODOS.md` does not exist: create it with this header, then scan all prior `### Incomplete / Next Steps` blocks in `.memory/SESSION-LOG.md` and migrate every unchecked `- [ ]` item into it (one-time, deduplicated):
      ```markdown
      # {project} TODOS
 
-     > Canonical open TODO list. Maintained by /handoff + /checkpoint. Never duplicate into SESSION-LOG.md.
+     > Canonical open TODO list. Maintained by /handoff + /checkpoint. Never duplicate into `.memory/SESSION-LOG.md`.
      > Last updated: {YYYY-MM-DD}
 
      ---
@@ -96,10 +96,11 @@ No `### Incomplete / Next Steps` block — open work lives in `TODOS.md` only.
 
 **5.** For **Gotchas / Notes**: flag anything worth knowing — bugs, edge cases, token-cost observations, things the user didn't ask about but should know.
 
-**5b.** Emit the machine-greppable `Files:` / `Tags:` line under **Files Touched** — a single unwrapped line listing the files this session touched and the annotation tags (`[FEAT]`/`[BUG]`/… from `CLAUDE.md`) that classify the work. This is the curated counterpart to the auto-captured `EPISODIC-INDEX.md` line; `/recall` Layer 1 filters on it.
+**5b.** Emit the machine-greppable `Files:` / `Tags:` line under **Files Touched** — a single unwrapped line listing the files this session touched and the annotation tags (`[FEAT]`/`[BUG]`/… from `CLAUDE.md`) that classify the work. This is the curated counterpart to the auto-captured `.memory/EPISODIC-INDEX.md` line; `/recall` Layer 1 filters on it.
 
-**6.** Append the narrative block to `SESSION-LOG.md` at the project root.
-   - If it does not exist, create it first:
+**6.** Append the narrative block to `.memory/SESSION-LOG.md` at the project root.
+   - If `.memory/` does not exist, create it first (`mkdir -p .memory`).
+   - If `.memory/SESSION-LOG.md` does not exist, create it first:
      ```markdown
      # Session Log
      > Auto-generated by session skills. Do not edit manually mid-session.
@@ -126,27 +127,27 @@ No `### Incomplete / Next Steps` block — open work lives in `TODOS.md` only.
    - No candidates pass bar: skip this step silently
 
 **8.** Refresh the triage pipeline (only for logs under `~/dev/`):
-   - Project name = `[machine]` if log is `~/dev/SESSION-LOG.md`; else `basename` of the log's parent dir
-   - TODOS path = `{log_dir}/TODOS.md`
+   - Project name = `[machine]` if log is `~/dev/.memory/SESSION-LOG.md`; else `basename` of the log's grandparent dir (since log is now at `<root>/.memory/SESSION-LOG.md`)
+   - TODOS path = `{log_dir}/../TODOS.md` (TODOS.md stays at project root, not in .memory/)
    ```bash
    update-cache '{project}' '{todos_path}'
    rotate-log '{log_path}' 8
    update-cache '{project}' '{todos_path}'
-   update-triage 2>/dev/null || echo "(update-triage failed — run manually to refresh TRIAGE-BLOCK.md)"
+   update-triage 2>/dev/null || echo "(update-triage failed — run manually to refresh .memory/TRIAGE-BLOCK.md)"
    ```
    All calls idempotent. If any fails, note it but don't block the checkpoint.
 
 **9.** Changelog: use `/changelog` manually if this session produced changelog-worthy changes. Do not auto-update inline — CLAUDE.md delegates this to `/changelog`.
 
 **10.** Print the **Re-Entry Prompt** to the terminal (same text written into the log block). It must include:
-   - Directive for next session to read `SESSION-LOG.md`, `TODOS.md`, and `KNOWLEDGE.md` (local + global) at start
-   - Pointer: "for what's next across projects, read `TRIAGE-BLOCK.md`" (do **not** embed a top-5 — TRIAGE-BLOCK is the single source for what's next)
+   - Directive for next session to read `.memory/SESSION-LOG.md`, `TODOS.md`, and `KNOWLEDGE.md` (local + global) at start
+   - Pointer: "for what's next across projects, read `~/.memory/TRIAGE-BLOCK.md`" (do **not** embed a top-5 — TRIAGE-BLOCK is the single source for what's next)
    - A single "first action" line
 
 **11.** Print closing message:
    ```
-   ✓ Checkpoint written to SESSION-LOG.md
-   ✓ TODOS.md + TRIAGE-BLOCK.md updated
+   ✓ Checkpoint written to .memory/SESSION-LOG.md
+   ✓ TODOS.md + .memory/TRIAGE-BLOCK.md updated
    → Run /clear now to reset the cache
    → Paste the Re-Entry Prompt above as your first message in the new session
    ```
@@ -165,6 +166,6 @@ Works around Claude Code's **1-hour cache TTL**. Cached tokens cost ~10% of norm
 
 ## Integration With Other Skills
 
-- **planning-with-files** active: read `task_plan.md`, `findings.md`, `progress.md` first; sync completed/open between `task_plan.md` and `TODOS.md`.
+- Planning files present: read `.work/PLAN.md`, `.work/FINDINGS.md`, `.work/PROGRESS.md` first; sync completed/open between `.work/PLAN.md` and `TODOS.md`.
 - Project-level `.claude/CLAUDE.md` exists: note conventions relevant to open items; don't reproduce it.
 - Skill routing for new `TODOS.md` items: `[BUG]` → "start next session with `/diagnose`"; `[TEST]` → "use `/tdd`"; `[FEAT]` early-stage → "consider `/prototype` before building".
