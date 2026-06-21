@@ -17,7 +17,7 @@ this skill proposes and explores. It never interrogates; stress-testing is `/gri
 
 Understand before asking. Read what exists in the target project:
 
-- `task_plan.md`, `findings.md`, `progress.md`, `KNOWLEDGE.md` if present
+- `.work/PLAN.md`, `.work/FINDINGS.md`, `.work/PROGRESS.md`, `KNOWLEDGE.md` if present
 - The code the idea touches — entry points, existing patterns, constraints
 - Prior design docs in `docs/brainstorm/` on related topics
 
@@ -52,7 +52,7 @@ Revise once. Do not loop.
 ## Phase 6 — Hand off
 
 > Design doc written to `docs/brainstorm/<file>`. Recommend `/grill-me` next — it walks
-> the Open questions one branch at a time and writes resolved decisions to findings.md.
+> the Open questions one branch at a time and writes resolved decisions to `.work/FINDINGS.md`.
 
 ---
 
