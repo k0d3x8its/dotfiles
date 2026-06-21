@@ -2,7 +2,7 @@
 
 ## Skills Available
 The harness auto-lists every custom skill + its description each session — names below are the slash aliases, not re-described here. Tag routing lives in the TODO Tags table.
-`/handoff` `/handoff-return` `/close` `/checkpoint` `/changelog` `/dev-brief` `/planning-with-files` `/release-notes` `/find-skills` `/diagnose` `/tdd` `/prototype` `/sync-trello` `/remember` `/recall` `/consolidate` `/brainstorm` `/grill-me` `/write-plan` `/trust-but-verify` `/review-response`
+`/handoff` `/handoff-return` `/close` `/checkpoint` `/changelog` `/dev-brief` `/release-notes` `/find-skills` `/diagnose` `/tdd` `/prototype` `/sync-trello` `/remember` `/recall` `/consolidate` `/brainstorm` `/grill-me` `/write-plan` `/trust-but-verify` `/review-response`
 External (not auto-surfaced): `/ce-code-review` `/discover` `/write-prd`
 
 ## Session Rules
@@ -11,12 +11,12 @@ External (not auto-surfaced): `/ce-code-review` `/discover` `/write-prd`
   - `/handoff` (push/fork): lean mid-session tangent. Emits reason-first re-entry prompt. NO SESSION-LOG narrative. ~400 tok. Use to spin off a side-issue with clean context; main session stays alive.
   - `/handoff-return` (pop/merge): close a tangent, auto-sync its findings to TODOS.md, print paste-back block for the still-alive main session. ~400 tok.
   - `/close` (close+resume): lightweight session close. Emits resume-focused re-entry prompt (working on + left off). NO SESSION-LOG. ~400 tok. Use when wrapping up but no major decisions were made.
-  - `/checkpoint` (durable): end-of-work-session close. Writes SESSION-LOG narrative + rotate-log + triage. ~2K tok. Use when real decisions were made — /close and /handoff do NOT persist the why.
-- Always read task_plan.md, findings.md, and progress.md if they exist in the project root.
+  - `/checkpoint` (durable): end-of-work-session close. Writes `.memory/SESSION-LOG.md` narrative + rotate-log + triage. ~2K tok. Use when real decisions were made — /close and /handoff do NOT persist the why.
+- Always read `.work/PLAN.md`, `.work/FINDINGS.md`, and `.work/PROGRESS.md` if they exist.
 - Always read KNOWLEDGE.md in the project root (if it exists) and `~/.claude/KNOWLEDGE.md` at session start.
-- At session start, if SESSION-LOG.md exists in the project root, read ONLY its newest `## Session` block (not the whole file) — surfaces last session's decisions/why when I cold-start without pasting a re-entry prompt. Newest = last block in file order if checkpoint ordering holds, else the block with the latest date header. Skip if I paste a re-entry prompt (it already points me there). ~1K tok ceiling; never read older blocks or ARCHIVE-LOG.md automatically.
+- At session start, if `.memory/SESSION-LOG.md` exists in the project root, read ONLY its newest `## Session` block (not the whole file) — surfaces last session's decisions/why when I cold-start without pasting a re-entry prompt. Newest = last block in file order if checkpoint ordering holds, else the block with the latest date header. Skip if I paste a re-entry prompt (it already points me there). ~1K tok ceiling; never read older blocks or `.memory/ARCHIVE-LOG.md` automatically.
 - KNOWLEDGE.md writes: if I ask to add/append a fact to KNOWLEDGE.md directly (without /remember), recommend `/remember <fact>` and route through it instead of appending raw — the promotion bar and dedup must run. Raw write only if I explicitly insist (treat as `/remember --force`). Whenever the knowledge system presents options (destination, bar-failure rerouting, overlap handling), lead with a recommendation + one-line why — never a neutral list. Details: `~/.claude/references/MEMORY-STANDARD.md` § Direct-Write Requests / § Recommendations.
-- When I paste a re-entry prompt: treat decisions, background context, and architectural choices as authoritative. Reconcile task state (completed/open/in-progress) against current files (task_plan.md, progress.md, `git log --oneline -5`) before acting — file state wins on conflicts.
+- When I paste a re-entry prompt: treat decisions, background context, and architectural choices as authoritative. Reconcile task state (completed/open/in-progress) against current files (`.work/PLAN.md`, `.work/PROGRESS.md`, `git log --oneline -5`) before acting — file state wins on conflicts.
 - CHANGELOG: use `/changelog` manually when a session produces changelog-worthy changes. Works for any project (including dotfiles). Do not auto-update changelogs inline.
 - Trust-but-verify reflex: before any done/works/fixed claim, `git push`, PR, or handoff (/close, /checkpoint, /handoff, /handoff-return, subagent) — run the project's verify command FRESH (resolve via `~/.claude/skills/trust-but-verify/detect.md`) and read its exit code. Not before commits. Unproven claim → `[VERIFY]` TODO; machine-unverifiable → `[UX]` checklist.
 
@@ -59,33 +59,33 @@ No priority tag = Medium (default). `[TEST]` and `[VERIFY]` override all other p
 ## My Conventions
 - Commit messages: conventional commits format (feat:, fix:, docs:, chore:)
 - Commit granularity: when I say "commit changes", commit each changed file as its own separate commit with a brief conventional-commit message describing that file's change. One file per commit.
-- **git-crypt files**: commit message must ONLY be `"updated <filename>"` — never describe contents. Encrypted files (per `.gitattributes`): `KNOWLEDGE.md`, `TODOS.md`, `SESSION-LOG.md`, `findings.md`, `progress.md`, `task_plan.md`, `claude/.claude/KNOWLEDGE.md`. Describing contents leaks plaintext metadata into public git history even when the blob is encrypted.
+- **git-crypt files**: commit message must ONLY be `"updated <filename>"` — never describe contents. Encrypted files (per `.gitattributes`): `KNOWLEDGE.md`, `TODOS.md`, `.memory/SESSION-LOG.md`, `.work/FINDINGS.md`, `.work/PROGRESS.md`, `.work/PLAN.md`, `claude/.claude/KNOWLEDGE.md`. Describing contents leaks plaintext metadata into public git history even when the blob is encrypted.
 - Branch naming: feature/, fix/, docs/, chore/
 - NEVER add `Co-Authored-By` lines to any commit message.
 - All Trello boards use a six-column Kanban: Back Log → To Do → Doing → Review → Testing → Done
 - Code comments: always explain the why, not just the what
 
 ## Trello Sync Rules
-When syncing task_plan.md to Trello, always map as follows:
+When syncing `.work/PLAN.md` to Trello, always map as follows:
 - Goal       → Trello card (placed at the bottom of the "Back Log" list)
 - Micro-Goal → Trello checklist on that card
 - Task       → Trello checklist item
 
 Always create in order: card first, checklist second, items third.
 Before creating, check if a [trello:ID] tag exists on the Goal — if so, skip it.
-After creating a card, annotate the Goal in task_plan.md with [trello:CARD_ID].
+After creating a card, annotate the Goal in `.work/PLAN.md` with [trello:CARD_ID].
 
 ## File Taxonomy (What Goes Where)
 
 | Fact type | Destination |
 |---|---|
 | Open work, next steps | `TODOS.md` |
-| Structured implementation plan (Goals/Micro-Goals/Tasks + Trello IDs) | `task_plan.md` |
+| Structured implementation plan (Goals/Micro-Goals/Tasks + Trello IDs) | `.work/PLAN.md` |
 | Design docs (approaches + tradeoffs + recommendation, pre-plan) | `docs/brainstorm/<topic>-YYYY-MM-DD.md` (via `/brainstorm`) |
 | Normative rules, standing instructions | `CLAUDE.md` |
 | Empirical facts, env truths, codebase gotchas | `KNOWLEDGE.md` (local or global) |
 | Architectural decisions (cost meaningful + future reader wonders why + alternatives considered) | `docs/adr/ADR-NNNN-*.md` (CLI/SDK projects) |
-| Session narrative, decisions + why | `SESSION-LOG.md` |
+| Session narrative, decisions + why | `.memory/SESSION-LOG.md` |
 | Changelog-worthy changes (features, fixes) | `CHANGELOG.md` (via `/changelog`) |
-| Per-task scratch, investigation notes | `findings.md` |
+| Per-task scratch, investigation notes | `.work/FINDINGS.md` |
 | Claude's working scratchpad (preferences, corrections — auto-written, not committed) | `~/.claude/projects/<hash>/memory/` |
