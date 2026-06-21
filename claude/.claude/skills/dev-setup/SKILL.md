@@ -24,13 +24,14 @@ allowed-tools:
 5. Creates `.claude/CLAUDE.md` from template
 6. Scaffolds `.claude/settings.json` with baseline permissions
 7. Configures `.claude/trello-board` for `/sync-trello`
-8. Initializes planning files: `task_plan.md`, `findings.md`, `progress.md`, `session-log.md`, `CHANGELOG.md`
+8. Initializes planning files: `task_plan.md`, `findings.md`, `progress.md`, `SESSION-LOG.md`, `CHANGELOG.md`
 9. Creates `KNOWLEDGE.md` — curated facts, committed with the repo
 10. Creates `.gitignore`, or append-if-missing merges into an existing one
 11. Checks git / offers `git init`
-12. Offers GitHub repo creation via `gh`
-13. Reminds about `/ce-setup`
-14. Prints completion summary
+12. Offers git-crypt init + `.gitattributes` for encrypted planning files
+13. Offers GitHub repo creation via `gh`
+14. Reminds about `/ce-setup`
+15. Prints completion summary
 
 ---
 
@@ -49,7 +50,7 @@ write where. Read the template, substitute these tokens, write to the destinatio
 | `{{BOARD}}` | Step 10 board name, or `not configured — run /sync-trello to set up` |
 | `{{DATE}}` | today |
 
-Static templates (`settings.json`, `session-log.md`, `CHANGELOG.md`, `gitignore.core`)
+Static templates (`settings.json`, `SESSION-LOG.md`, `CHANGELOG.md`, `gitignore.core`)
 have no tokens — copy verbatim.
 
 ---
@@ -162,7 +163,7 @@ If skipped: note in summary that `/sync-trello` will ask at runtime.
 
 ### Step 11: Initialize planning files
 
-Check which of these exist: `task_plan.md`, `findings.md`, `progress.md`, `session-log.md`, `CHANGELOG.md`
+Check which of these exist: `task_plan.md`, `findings.md`, `progress.md`, `SESSION-LOG.md`, `CHANGELOG.md`
 
 For each missing file, write the matching `templates/<name>` (no prompt — always wanted):
 
@@ -171,7 +172,7 @@ For each missing file, write the matching `templates/<name>` (no prompt — alwa
 | `task_plan.md` | `{{PROJECT_NAME}}` |
 | `findings.md` | `{{PROJECT_NAME}}`, `{{DATE}}` |
 | `progress.md` | `{{PROJECT_NAME}}`, `{{DATE}}` |
-| `session-log.md` | none (static) |
+| `SESSION-LOG.md` | none (static) |
 | `CHANGELOG.md` | none (static) |
 
 Print which files were created (skip already-existing ones silently).
@@ -214,7 +215,7 @@ The required entry set = `templates/gitignore.core` (static) **plus** the type-s
      Only the marker line plus the missing patterns. Never reorder, rewrite, or delete existing lines.
   5. If the `# --- added by /dev-setup ---` marker already exists from a prior run, append the newly-missing patterns under that same marker rather than adding a second one.
 
-**Why a marked append-merge:** an existing repo's `.gitignore` is user-authored and must survive; but the Step-11 planning files (`task_plan.md`, `findings.md`, `progress.md`, `session-log.md`, `RELEASE-NOTES.md`) and `.claude/trello-board` MUST be ignored or they leak. Merging the missing lines under a clear marker satisfies both and stays idempotent across re-runs.
+**Why a marked append-merge:** an existing repo's `.gitignore` is user-authored and must survive; but the Step-11 planning files (`task_plan.md`, `findings.md`, `progress.md`, `SESSION-LOG.md`, `RELEASE-NOTES.md`) and `.claude/trello-board` MUST be ignored or they leak. Merging the missing lines under a clear marker satisfies both and stays idempotent across re-runs.
 
 **`KNOWLEDGE.md` must NOT be in `.gitignore`** — it is committed source, not a session artifact. If it appears in any existing `.gitignore`, warn the user and do not add it.
 
@@ -232,7 +233,46 @@ Run `git status`.
 
 ---
 
-### Step 15: GitHub repo setup
+### Step 15: git-crypt
+
+Check if `git-crypt` is installed (`which git-crypt`). If not:
+> "git-crypt not found. Install it (`brew install git-crypt` / `apt install git-crypt`) then re-run this step, or skip."
+> Option to skip.
+
+If installed, check if `.gitattributes` already exists with `filter=git-crypt` entries — if so, print "✓ git-crypt already configured" and skip.
+
+Otherwise ask:
+> "Initialize git-crypt to encrypt planning/session files? (yes / skip)"
+> "These files will be encrypted at rest: KNOWLEDGE.md, TODOS.md, SESSION-LOG.md, findings.md, progress.md, task_plan.md"
+
+If yes:
+1. Run `git-crypt init`
+2. Write `templates/gitattributes` to `.gitattributes` (append-if-missing if file exists — never overwrite other rules)
+3. Append the following negation block to `.gitignore` (global gitignore ignores these files by default; local negation re-includes them so git-crypt can encrypt them):
+   ```
+   # git-crypt repo — override global ignore for encrypted planning files
+   !KNOWLEDGE.md
+   !SESSION-LOG.md
+   !task_plan.md
+   !findings.md
+   !progress.md
+   !TODOS.md
+   ```
+4. Export the key and store in Proton Pass Personal vault:
+   - Title: `<repo-name>-gitcrypt`
+   - Type: Custom item
+   - Note: `git-crypt key for <repo-name> repo (base64). Decoded and passed to git-crypt unlock on fresh machine setup.`
+   - Section name: `git-crypt`
+   - Field name: `key`, type: `hidden`, value: `$(git-crypt export-key - | base64 -w 0)`
+   - Command: `pass-cli item create custom --vault-name "Personal" --from-template <json>`
+4. Delete temp key file immediately after storing
+5. Print: "✓ git-crypt initialized. Key stored in Proton Pass Personal vault as `<repo-name>-gitcrypt`."
+
+**Important:** `.gitattributes` is committed source — do NOT add it to `.gitignore`.
+
+---
+
+### Step 16: GitHub repo setup
 
 Ask:
 > "Create a GitHub repo for this project? Requires `gh` CLI."
@@ -255,7 +295,7 @@ If skipped: note in summary.
 
 ---
 
-### Step 16: Remind about /ce-setup
+### Step 17: Remind about /ce-setup
 
 Always print — regardless of other choices:
 ```
@@ -270,7 +310,7 @@ Always print — regardless of other choices:
 
 ---
 
-### Step 17: Completion summary
+### Step 18: Completion summary
 
 ```
 ✓ [Project Name] is ready.
@@ -281,10 +321,12 @@ Created:
   .claude/CLAUDE.md
   .claude/settings.json
   .claude/trello-board → "[board]"  (or: not configured)
-  task_plan.md, findings.md, progress.md, session-log.md, CHANGELOG.md
+  task_plan.md, findings.md, progress.md, SESSION-LOG.md, CHANGELOG.md
   KNOWLEDGE.md
   .gitignore
+  .gitattributes (git-crypt)
   Git: [initialized / already existed]
+  git-crypt: [initialized / already existed / skipped]
   GitHub: [repo URL / skipped]
 
 What's next:
