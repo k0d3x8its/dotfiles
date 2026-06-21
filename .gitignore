@@ -26,24 +26,25 @@ claude/.claude/plugins/plugin-catalog-cache.json
 # Claude session artifacts — generated, not config
 session-log.md
 RELEASE-NOTES.md
-# ARCHIVE-LOG.md stays machine-local (large, low sync value); backed up out-of-repo
+# .memory/ARCHIVE-LOG.md stays machine-local (large, low sync value); backed up out-of-repo
+/.memory/ARCHIVE-LOG.md
 
 # Episodic memory — high-churn runtime artifacts (NOT encrypted: git-crypt has no
 # delta-compression, so an append-only file would bloat the repo). Durable facts
 # graduate to KNOWLEDGE.md via /consolidate instead.
-EPISODIC-INDEX.md
-EPISODIC-ARCHIVE.md
+/.memory/EPISODIC-INDEX.md
+/.memory/EPISODIC-ARCHIVE.md
+/.memory/CONSOLIDATION-INBOX.md
 .episodic-baseline
 .episodic.lock
-CONSOLIDATION-INBOX.md
 
 # git-crypt: un-ignore this repo's planning files so they encrypt + commit
 # (override the global ~/.gitignore_global anchors; contents protected by .gitattributes)
 !/TODOS.md
-!/findings.md
-!/progress.md
-!/task_plan.md
-!/SESSION-LOG.md
+!/.work/FINDINGS.md
+!/.work/PROGRESS.md
+!/.work/PLAN.md
+!/.memory/SESSION-LOG.md
 
 # General
 .DS_Store
