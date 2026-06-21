@@ -1,6 +1,6 @@
 ---
 name: sync-trello
-description: Sync task_plan.md to Trello — Goals→cards, Micro-Goals→checklists, Tasks→items. Idempotent (skips Goals tagged [trello:ID]); annotates task_plan.md after each card. Board resolved per-project. Triggers on /sync-trello.
+description: Sync .work/PLAN.md to Trello — Goals→cards, Micro-Goals→checklists, Tasks→items. Idempotent (skips Goals tagged [trello:ID]); annotates .work/PLAN.md after each card. Board resolved per-project. Triggers on /sync-trello.
 allowed-tools:
   - Bash
   - Read
@@ -10,13 +10,13 @@ allowed-tools:
 # Sync Trello Skill
 
 **Trigger:** `/sync-trello [board name]`
-**Purpose:** Push Goals from `task_plan.md` into Trello as cards with checklists and checklist items. Idempotent — already-synced Goals are skipped.
+**Purpose:** Push Goals from `.work/PLAN.md` into Trello as cards with checklists and checklist items. Idempotent — already-synced Goals are skipped.
 
 ---
 
-## task_plan.md Format
+## .work/PLAN.md Format
 
-This skill expects the following hierarchy in `task_plan.md`:
+This skill expects the following hierarchy in `.work/PLAN.md`:
 
 ```markdown
 ## Goal: [Goal name] [trello:CARD_ID]   ← [trello:ID] appended after first sync
@@ -36,10 +36,10 @@ This skill expects the following hierarchy in `task_plan.md`:
 
 ## Sync Algorithm
 
-### Step 1: Read task_plan.md
+### Step 1: Read .work/PLAN.md
 
-Read `task_plan.md` from the current working directory. If missing, stop:
-> "No task_plan.md found. Create one first, or run /plan to generate one."
+Read `.work/PLAN.md` from the current working directory. If missing, stop:
+> "No .work/PLAN.md found. Create one first, or run /plan to generate one."
 
 ### Step 2: Resolve the board
 
@@ -56,7 +56,7 @@ Record the resolved board name — use it for every subsequent command in this r
 
 ### Step 3: Parse Goals
 
-Scan `task_plan.md` for lines matching `## Goal:`. For each Goal:
+Scan `.work/PLAN.md` for lines matching `## Goal:`. For each Goal:
 - Extract the Goal name (text after `## Goal:`, strip any trailing `[trello:...]` tag)
 - Check if a `[trello:CARD_ID]` tag already exists on that line
 - Collect all Micro-Goals and Tasks nested under this Goal (until the next `## Goal:` or end of file)
@@ -78,7 +78,7 @@ trello card:create -n "[Goal name]" --board "[board]" --list "Back Log" --positi
 
 Capture the returned card ID from JSON output.
 
-#### 4c. Annotate task_plan.md immediately
+#### 4c. Annotate .work/PLAN.md immediately
 Edit the Goal line to append the card ID **before** creating checklists. This ensures the ID is saved even if later steps fail.
 
 Before: `## Goal: Implement login flow`
@@ -116,7 +116,7 @@ Tasks outside any Micro-Goal are ignored — they have no checklist to belong to
 ```
 ✓ Synced [N] card(s) to "[board]"
 ⏭  Skipped [N] already-synced Goal(s)
-→ task_plan.md annotated with card IDs
+→ .work/PLAN.md annotated with card IDs
 ```
 
 ---
@@ -127,7 +127,7 @@ Tasks outside any Micro-Goal are ignored — they have no checklist to belong to
 - `card:checklist` fails → print error, skip items for that Micro-Goal, continue to next Micro-Goal
 - `card:add-checklist-item` fails → print error, skip that item, continue
 - Never retry a failed command
-- Never write to task_plan.md unless `card:create` succeeded (step 4c only runs on success)
+- Never write to .work/PLAN.md unless `card:create` succeeded (step 4c only runs on success)
 
 ---
 
