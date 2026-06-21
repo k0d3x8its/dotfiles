@@ -1,6 +1,6 @@
 ---
 name: consolidate
-description: Episodic-to-semantic promotion ("sleep" phase). Sweeps SESSION-LOG and EPISODIC-INDEX entries since the last consolidation marker, runs the 4-bar promotion gate (SETTLED · NON-OBVIOUS · NOT A RULE · DURABLE), and routes approved facts through /remember's dedup logic into KNOWLEDGE.md. Use when running /consolidate manually or when reviewing a CONSOLIDATION-INBOX.md written by a scheduled run. Never auto-writes — always requires explicit approval.
+description: Episodic-to-semantic promotion ("sleep" phase). Sweeps .memory/SESSION-LOG.md and .memory/EPISODIC-INDEX.md entries since the last consolidation marker, runs the 4-bar promotion gate (SETTLED · NON-OBVIOUS · NOT A RULE · DURABLE), and routes approved facts through /remember's dedup logic into KNOWLEDGE.md. Use when running /consolidate manually or when reviewing a .memory/CONSOLIDATION-INBOX.md written by a scheduled run. Never auto-writes — always requires explicit approval.
 ---
 
 # Consolidate Skill
@@ -51,8 +51,8 @@ Format (mirrors `.triage-cache`):
    - Otherwise: sweep only entries with a timestamp newer than the stored value.
 
 **4.** Read sources in this order:
-   - `<project-root>/EPISODIC-INDEX.md` — filter to lines with timestamps newer than the marker
-   - `<project-root>/SESSION-LOG.md` — find `## Session` blocks whose date header is newer than the marker
+   - `<project-root>/.memory/EPISODIC-INDEX.md` — filter to lines with timestamps newer than the marker
+   - `<project-root>/.memory/SESSION-LOG.md` — find `## Session` blocks whose date header is newer than the marker
    - For each qualifying SESSION-LOG block, scan `### Decisions Made` and `### Gotchas / Notes` sections for candidate facts (same sections /checkpoint's Step 7 scans)
 
 **5.** Read dedup targets:
@@ -112,7 +112,7 @@ Format (mirrors `.triage-cache`):
 
 When running unattended (via `/schedule` or system cron), follow Steps 1–6 above, then:
 
-**S7.** Instead of presenting candidates interactively, write them to `CONSOLIDATION-INBOX.md` in the project root:
+**S7.** Instead of presenting candidates interactively, write them to `.memory/CONSOLIDATION-INBOX.md` in the project root:
    ```markdown
    # Consolidation Inbox — {ISO timestamp}
 
@@ -129,7 +129,7 @@ When running unattended (via `/schedule` or system cron), follow Steps 1–6 abo
 
 **S9.** Notify (print to stdout / send to configured notifier): "Consolidation inbox written — {N} candidates pending review."
 
-**Live session processes inbox:** When a user runs `/consolidate` and `CONSOLIDATION-INBOX.md` exists, read it first and process its candidates instead of re-sweeping from the marker. On completion: delete `CONSOLIDATION-INBOX.md`, advance the marker.
+**Live session processes inbox:** When a user runs `/consolidate` and `.memory/CONSOLIDATION-INBOX.md` exists, read it first and process its candidates instead of re-sweeping from the marker. On completion: delete `.memory/CONSOLIDATION-INBOX.md`, advance the marker.
 
 ---
 
