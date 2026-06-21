@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""PostToolUse hook: refresh TRIAGE-BLOCK.md when a TODOS.md is edited.
+"""PostToolUse hook: refresh .memory/TRIAGE-BLOCK.md when a TODOS.md is edited.
 
 Wired to the Edit|Write tools. The matcher fires on every edit, so this
 script is the path guard: it acts only when the edited file is a TODOS.md
@@ -12,7 +12,7 @@ Flow on a TODOS.md edit:
      ~/dev/<proj>/TODOS.md -> "<proj>")
   2. update-cache <project> <path>   (bumps mtime pointer in .triage-cache
      so /dev-brief's read-skip sees the change)
-  3. update-triage                   (re-renders TRIAGE-BLOCK.md from the
+  3. update-triage                   (re-renders .memory/TRIAGE-BLOCK.md from the
      live TODOS.md content the cache points at)
 """
 import json
