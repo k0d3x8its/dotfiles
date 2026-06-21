@@ -10,18 +10,19 @@
 .claude/skills/
 
 # Planning & session files (local context, not source)
-task_plan.md
-findings.md
-progress.md
-SESSION-LOG.md
+.work/PLAN.md
+.work/FINDINGS.md
+.work/PROGRESS.md
 RELEASE-NOTES.md
 
-# Episodic memory — high-churn runtime artifacts, not source
-EPISODIC-INDEX.md
-EPISODIC-ARCHIVE.md
+# Memory system — runtime artifacts live in .memory/ subdir
+/.memory/EPISODIC-INDEX.md
+/.memory/EPISODIC-ARCHIVE.md
+/.memory/CONSOLIDATION-INBOX.md
+# .memory/ARCHIVE-LOG.md stays machine-local (large, low sync value)
+/.memory/ARCHIVE-LOG.md
 .episodic-baseline
 .episodic.lock
-CONSOLIDATION-INBOX.md
 
 # OS
 .DS_Store
