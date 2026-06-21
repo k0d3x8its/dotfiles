@@ -1,6 +1,6 @@
 # Triage System
 
-Zero-token TODOS.md → TRIAGE-BLOCK.md pipeline. No Claude API calls — runs entirely in the harness.
+Zero-token TODOS.md → `.memory/TRIAGE-BLOCK.md` pipeline. No Claude API calls — runs entirely in the harness.
 
 ---
 
@@ -11,7 +11,7 @@ TODOS.md (per project)
     ↓  update-cache <project> <path>
 ~/dev/.triage-cache          (pointer registry)
     ↓  update-triage
-~/dev/TRIAGE-BLOCK.md        (rendered output for /dev-brief)
+~/dev/.memory/TRIAGE-BLOCK.md        (rendered output for /dev-brief)
 ```
 
 `refresh_triage.py` (PostToolUse hook) triggers the full pipeline automatically whenever a `TODOS.md` is edited in Claude Code. Run manually anytime:
@@ -30,11 +30,11 @@ Writes or updates one project's block in `~/.triage-cache`. Stores a path + mtim
 
 ### `update-triage`
 
-Reads `~/.triage-cache`, loads each live `TODOS.md`, and renders `~/dev/TRIAGE-BLOCK.md` sorted by tier and urgency. Also reads `~/.triage-dates` for first-seen timestamps to compute stale age.
+Reads `~/.triage-cache`, loads each live `TODOS.md`, and renders `~/dev/.memory/TRIAGE-BLOCK.md` sorted by tier and urgency. Also reads `~/.triage-dates` for first-seen timestamps to compute stale age.
 
 ### `rotate-log <log_path> [N]`
 
-Keeps the newest N session blocks in `SESSION-LOG.md`; moves older blocks to `ARCHIVE-LOG.md`. Default N=8. Matches both `## Session Handoff` and `## Session Checkpoint` block types — missing either causes silent block loss.
+Keeps the newest N session blocks in `.memory/SESSION-LOG.md`; moves older blocks to `.memory/ARCHIVE-LOG.md`. Default N=8. Matches both `## Session Handoff` and `## Session Checkpoint` block types — missing either causes silent block loss.
 
 ---
 
@@ -75,6 +75,6 @@ First-seen dates are seeded from `~/.triage-dates`. Override retroactively by ad
 |------|---------|-----------|
 | `~/dev/.triage-cache` | Pointer registry: project → path + mtime | No — runtime artifact |
 | `~/dev/.triage-dates` | First-seen timestamps keyed by item hash | No — runtime artifact |
-| `~/dev/TRIAGE-BLOCK.md` | Rendered output consumed by `/dev-brief` | No — runtime artifact |
-| `~/dev/SESSION-LOG.md` | Session narratives written by `/checkpoint` | Yes — git-crypt encrypted |
-| `~/dev/ARCHIVE-LOG.md` | Overflow blocks rotated out by `rotate-log` | No — not committed |
+| `~/dev/.memory/TRIAGE-BLOCK.md` | Rendered output consumed by `/dev-brief` | No — runtime artifact |
+| `~/dev/.memory/SESSION-LOG.md` | Session narratives written by `/checkpoint` | Yes — git-crypt encrypted |
+| `~/dev/.memory/ARCHIVE-LOG.md` | Overflow blocks rotated out by `rotate-log` | No — not committed |
