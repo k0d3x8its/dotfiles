@@ -71,6 +71,8 @@ git-crypt status -f
 
 Then re-run `git-crypt status 2>&1` and confirm no WARNINGs remain.
 
+**Important:** `git-crypt status -f` pre-stages the encrypted blobs. Those staged files will bundle into the next `git commit` automatically — no separate commit is needed. When you commit `.gitattributes`, the re-encrypted files come along. If you then try `git add <file> && git commit` for those same files, you'll get "nothing to commit."
+
 ### Step 3 — confirm target files
 
 All files matching the `.gitattributes` patterns should appear as `encrypted:` in the output. Report any that do not.
@@ -90,4 +92,6 @@ Untracked files that haven't been committed yet will still show as `encrypted:` 
 
 ## § .gitattributes handling
 
-`.gitattributes` may already exist (EOL rules, LFS config, etc). Always Read before writing — never overwrite existing content. Use append-if-missing: add only the git-crypt block if no `filter=git-crypt` lines are present yet.
+If `.gitattributes` exists (EOL rules, LFS config, etc): Read first, then append — never overwrite existing content. Add only the git-crypt block if no `filter=git-crypt` lines are present yet.
+
+If `.gitattributes` does not exist: Write directly (no Read needed).
