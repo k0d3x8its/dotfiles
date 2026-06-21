@@ -23,14 +23,14 @@
 | `/handoff` | Lean fork — spin off side-issue, main session stays alive |
 | `/handoff-return` | Merge tangent back, auto-sync findings to TODOS.md |
 | `/close` | Lightweight session close + resume prompt (no decisions made) |
-| `/checkpoint` | Durable close — writes SESSION-LOG narrative (decisions made) |
+| `/checkpoint` | Durable close — writes `.memory/SESSION-LOG.md` narrative (decisions made) |
 
 ### Planning
 | Skill | When to use |
 |---|---|
 | `/brainstorm` | Design doc with approaches + tradeoffs before planning |
 | `/grill-me` | Stress-test a plan before committing |
-| `/write-plan` | Create/update task_plan.md Goals/Micro-Goals/Tasks |
+| `/write-plan` | Create/update `.work/PLAN.md` Goals/Micro-Goals/Tasks |
 | `/write-prd` | Write a product requirements doc |
 | `/discover` | Open-ended research / discovery sweep |
 | `/prototype` | Spike mode — fast throwaway proof of concept |
@@ -61,14 +61,14 @@
 ### Utilities
 | Skill | When to use |
 |---|---|
-| `/sync-trello` | Push task_plan.md Goals to Trello |
+| `/sync-trello` | Push `.work/PLAN.md` Goals to Trello |
 | `/find-skills` | List or search available skills |
 
 ## Session Rules
-- Always read task_plan.md, findings.md, and progress.md if they exist
+- Always read `.work/PLAN.md`, `.work/FINDINGS.md`, and `.work/PROGRESS.md` if they exist
 - When I paste a re-entry prompt, treat it as ground truth for project state
 - KNOWLEDGE.md writes: use `/remember` — never raw-append
 
 ## Current State
-See task_plan.md for active goals and progress.
-See SESSION-LOG.md for recent session history.
+See `.work/PLAN.md` for active goals and progress.
+See `.memory/SESSION-LOG.md` for recent session history.
