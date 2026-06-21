@@ -3,8 +3,8 @@
 
 Called by the SessionEnd hook (episodic_index.py) with the session cwd as argv[1];
 also runnable manually. Writes:
-  - per-project  <project-root>/EPISODIC-INDEX.md
-  - global       ~/dev/EPISODIC-INDEX.md   (roll-up across all projects)
+  - per-project  <project-root>/.memory/EPISODIC-INDEX.md
+  - global       ~/dev/.memory/EPISODIC-INDEX.md   (roll-up across all projects)
 
 Why a SessionStart git baseline (not a bare end-of-session diff): per-file commits
 are the house convention, so by session end the working tree is usually clean and a
@@ -17,7 +17,7 @@ is guarded and it gets a line with empty git fields rather than an error.
 
 Concurrency: two sessions can end at once and race-append the global roll-up, so the
 append+rotate is wrapped in an flock. Rotation (decay) keeps the index thin: past
-MAX_LINES, the oldest half moves to EPISODIC-ARCHIVE.md (also a runtime artifact).
+MAX_LINES, the oldest half moves to .memory/EPISODIC-ARCHIVE.md (also a runtime artifact).
 """
 import os
 import subprocess
@@ -76,7 +76,7 @@ def files_touched(root: Path):
         paths.update(p for p in out.splitlines() if p)
     # New files created this session but not yet committed: git diff ignores
     # untracked, so list them explicitly. --exclude-standard honours .gitignore
-    # so runtime artifacts (EPISODIC-INDEX.md, .episodic-baseline, …) don't show.
+    # so runtime artifacts (.memory/EPISODIC-INDEX.md, .episodic-baseline, …) don't show.
     out = git(root, "ls-files", "--others", "--exclude-standard")
     paths.update(p for p in out.splitlines() if p)
     # Commits made this session, via the SessionStart baseline. An absent OR empty
@@ -123,8 +123,9 @@ def rotate(index_path: Path) -> None:
 def append_line(index_path: Path, line: str) -> None:
     """flock-guarded append + rotate so concurrent session-ends don't interleave."""
     index_path.parent.mkdir(parents=True, exist_ok=True)
-    # One lock per directory (matches the .episodic.lock gitignore entry). Per-project
-    # and global appends live in different dirs, so they take different locks — no nesting.
+    # One lock per .memory/ dir (matches the .episodic.lock gitignore entry — pattern is
+    # depth-independent so it covers .memory/.episodic.lock too). Per-project and global
+    # appends live in different .memory/ dirs, so they take different locks — no nesting.
     lock_path = index_path.parent / ".episodic.lock"
     with lock_path.open("w") as lock:
         if fcntl is not None:
@@ -154,12 +155,12 @@ def main() -> None:
     if tag:
         line += f" | {tag}"
 
-    # Per-project index (machine's per-project index IS the global roll-up).
-    per_project = root / INDEX_NAME
+    # Per-project index lives in .memory/ — created on first write, no pre-init needed.
+    per_project = root / ".memory" / INDEX_NAME
     append_line(per_project, line)
 
     # Global roll-up — skip the duplicate write when project is machine.
-    global_index = DEV / INDEX_NAME
+    global_index = DEV / ".memory" / INDEX_NAME
     if per_project.resolve() != global_index.resolve():
         append_line(global_index, line)
 
