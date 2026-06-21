@@ -10,7 +10,7 @@ All hooks suppress stdout by design. Emitting to stdout injects text into the mo
 
 | Hook file | Event | What it does |
 |-----------|-------|--------------|
-| `refresh_triage.py` | PostToolUse (Edit/Write) | Auto-refreshes TRIAGE-BLOCK.md when a TODOS.md is edited |
+| `refresh_triage.py` | PostToolUse (Edit/Write) | Auto-refreshes `.memory/TRIAGE-BLOCK.md` when a TODOS.md is edited |
 | `session_timer.py` | SessionStart / Stop | Records session start time; fires 45m/55m warnings |
 | `combined-statusline.sh` | StatusLine | Renders live cost, burn rate, context %, caveman mode, elapsed time |
 | `statusline-bars.sh` | (called by combined-statusline) | Computes 5hr/weekly rate-limit burn bar from stdin JSON |
@@ -25,7 +25,7 @@ Path-guards before acting — exits silently if the edited file is not a `TODOS.
 
 1. Derives project name from path (`~/dev/TODOS.md` → `machine`; `~/dev/<proj>/TODOS.md` → `<proj>`)
 2. Runs `update-cache <project> <path>` — bumps the mtime pointer in `.triage-cache`
-3. Runs `update-triage` — re-renders `TRIAGE-BLOCK.md` from live content
+3. Runs `update-triage` — re-renders `.memory/TRIAGE-BLOCK.md` from live content
 
 Silent by design. Any stdout from a PostToolUse hook gets injected back into the model context, which would cost tokens on every edit.
 
