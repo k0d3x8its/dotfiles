@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-rotate-log: keep the newest N session-handoff blocks live; move older ones to ARCHIVE-LOG.md.
+rotate-log: keep the newest N session-handoff blocks live; move older ones to .memory/ARCHIVE-LOG.md.
 Usage: rotate-log <log_path> [N]   (default N=6)
 Zero Claude tokens. Called by /handoff step 7c.
 Prints "rotated" if rotation occurred so caller knows to re-run update-cache.
