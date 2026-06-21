@@ -14,8 +14,8 @@ description: Create new agent skills with proper structure, progressive disclosu
    - Any reference materials to include?
 
 2. **Draft the skill** - create:
-   - SKILL.md with concise instructions
-   - Additional reference files if content exceeds 500 lines
+   - SKILL.md with concise instructions (ideal: 150 lines, hard limit: 300 lines)
+   - Additional reference files if SKILL.md would exceed 300 lines or has distinct content domains
    - Utility scripts if deterministic operations needed
 
 3. **Review with user** - present draft and ask:
@@ -101,7 +101,7 @@ Scripts save tokens and improve reliability vs generated code.
 
 Split into separate files when:
 
-- SKILL.md exceeds 100 lines
+- SKILL.md exceeds 300 lines (hard limit) — ideal target is 150 lines
 - Content has distinct domains (finance vs sales schemas)
 - Advanced features are rarely needed
 
@@ -110,7 +110,7 @@ Split into separate files when:
 After drafting, verify:
 
 - [ ] Description includes triggers ("Use when...")
-- [ ] SKILL.md under 100 lines
+- [ ] SKILL.md at or under 150 lines (300 hard limit — split to REFERENCE.md if over)
 - [ ] No time-sensitive info
 - [ ] Consistent terminology
 - [ ] Concrete examples included
