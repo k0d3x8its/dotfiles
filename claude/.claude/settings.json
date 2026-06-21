@@ -12,7 +12,7 @@
       "Bash(nc *)"
     ]
   },
-  "model": "opus",
+  "model": "sonnet",
   "hooks": {
     "SessionStart": [
       {
@@ -62,7 +62,7 @@
   },
   "statusLine": {
     "type": "command",
-    "command": "bash \"/home/k0d3x/.claude/hooks/combined-statusline.sh\""
+    "command": "bash \"/home/k0d3x/.claude/kos-burn-tap.sh\""
   },
   "enabledPlugins": {
     "caveman@caveman": true,
