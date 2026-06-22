@@ -1,8 +1,8 @@
 # git-crypt lock precheck
 
-Before reading any planning file — `TODOS.md`, `.work/FINDINGS.md`, `.work/PROGRESS.md`,
-`.work/PLAN.md`, `.memory/SESSION-LOG.md`, `KNOWLEDGE.md` — in a repo that may use
-git-crypt, confirm the file isn't locked. A git-crypt-locked file is ciphertext
+Before reading any planning or design file — `TODOS.md`, `.work/FINDINGS.md`, `.work/PROGRESS.md`,
+`.work/PLAN.md`, `.memory/SESSION-LOG.md`, `KNOWLEDGE.md`, `docs/GDD-*.md`, `docs/PRD-*.md`,
+`docs/ARD-*.md` — in a repo that may use git-crypt, confirm the file isn't locked. A git-crypt-locked file is ciphertext
 on disk and parses as garbage; ingesting it silently corrupts context.
 
 ## Detect
