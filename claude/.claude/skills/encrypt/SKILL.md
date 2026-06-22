@@ -37,9 +37,15 @@ See [REFERENCE.md](REFERENCE.md) for Proton Pass JSON template and verification 
 /TODOS.md                filter=git-crypt diff=git-crypt
 /.memory/SESSION-LOG.md  filter=git-crypt diff=git-crypt
 /.work/*                 filter=git-crypt diff=git-crypt
+
+# Design documents — encrypted to protect IP
+/docs/GDD-*.md           filter=git-crypt diff=git-crypt
+/docs/PRD-*.md           filter=git-crypt diff=git-crypt
+/docs/ARD-*.md           filter=git-crypt diff=git-crypt
 ```
 
 `/.work/*` encrypts all current and future files in `.work/` without revisiting `.gitattributes`.
+`docs/GDD-*.md`, `docs/PRD-*.md`, `docs/ARD-*.md` protect IP in public repos — commit messages for these must be `"updated <filename>"` only.
 
 ### .gitignore negations (append-if-missing)
 
