@@ -12,7 +12,6 @@
       "Bash(nc *)"
     ]
   },
-  "model": "opus",
   "hooks": {
     "SessionStart": [
       {
