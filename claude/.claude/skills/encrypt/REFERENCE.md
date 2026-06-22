@@ -84,6 +84,9 @@ All files matching the `.gitattributes` patterns should appear as `encrypted:` i
     encrypted: .work/PROGRESS.md          ✓
     encrypted: TODOS.md                   ✓
     encrypted: KNOWLEDGE.md               ✓
+    encrypted: docs/GDD-*.md              ✓  (if present)
+    encrypted: docs/PRD-*.md              ✓  (if present)
+    encrypted: docs/ARD-*.md              ✓  (if present)
 ```
 
 Untracked files that haven't been committed yet will still show as `encrypted:` — correct, they will encrypt on first commit.
