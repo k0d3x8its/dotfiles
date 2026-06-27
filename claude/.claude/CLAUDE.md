@@ -59,7 +59,7 @@ No priority tag = Medium (default). `[TEST]` and `[VERIFY]` override all other p
 ## My Conventions
 - Commit messages: conventional commits format (feat:, fix:, docs:, chore:)
 - Commit granularity: when I say "commit changes", commit each changed file as its own separate commit with a brief conventional-commit message describing that file's change. One file per commit.
-- **git-crypt files**: commit message must ONLY be `"updated <filename>"` — never describe contents. Encrypted files (per `.gitattributes`): `KNOWLEDGE.md`, `TODOS.md`, `.memory/SESSION-LOG.md`, `.work/FINDINGS.md`, `.work/PROGRESS.md`, `.work/PLAN.md`, `claude/.claude/KNOWLEDGE.md`, `docs/GDD-*.md`, `docs/PRD-*.md`, `docs/ARD-*.md`. Describing contents leaks plaintext metadata into public git history even when the blob is encrypted.
+- **git-crypt files**: commit message must ONLY be `"updated <filename>"` — never describe contents. Encrypted files (per `.gitattributes`): `KNOWLEDGE.md`, `TODOS.md`, `.memory/SESSION-LOG.md`, `.work/FINDINGS.md`, `.work/PROGRESS.md`, `.work/PLAN.md`, `claude/.claude/KNOWLEDGE.md`, `docs/GDD-*.md`, `docs/PRD-*.md`, `docs/ARD-*.md`, `docs/post-mortems/*` (when the repo encrypts that dir). Describing contents leaks plaintext metadata into public git history even when the blob is encrypted.
 - Branch naming: feature/, fix/, docs/, chore/
 - NEVER add `Co-Authored-By` lines to any commit message.
 - All Trello boards use a six-column Kanban: Back Log → To Do → Doing → Review → Testing → Done
@@ -85,6 +85,7 @@ After creating a card, annotate the Goal in `.work/PLAN.md` with [trello:CARD_ID
 | Normative rules, standing instructions | `CLAUDE.md` |
 | Empirical facts, env truths, codebase gotchas | `KNOWLEDGE.md` (local or global) |
 | Architectural decisions (cost meaningful + future reader wonders why + alternatives considered) | `docs/adr/ADR-NNNN-*.md` (CLI/SDK projects) |
+| Bug post-mortems (root cause + fix + what-would-prevent, via `/diagnose`) | `docs/post-mortems/<YYYY-MM-DD>-<slug>.md` — one file per bug; git-crypt the dir on public repos |
 | Session narrative, decisions + why | `.memory/SESSION-LOG.md` |
 | Changelog-worthy changes (features, fixes) | `CHANGELOG.md` (via `/changelog`) |
 | Per-task scratch, investigation notes | `.work/FINDINGS.md` |
