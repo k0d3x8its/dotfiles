@@ -126,7 +126,17 @@ Required before declaring done:
 - [ ] All `[DEBUG-...]` instrumentation removed (`grep` the prefix)
 - [ ] Throwaway prototypes deleted
 
-**Then write `POST-MORTEM.md` in the project root.**
+**Then write the post-mortem to `docs/post-mortems/<YYYY-MM-DD>-<kebab-slug>.md`** —
+one file per bug, not a single growing log. Create `docs/post-mortems/` if absent.
+The slug is a short kebab name for the bug (e.g. `2026-06-27-chat-bar-expand-glitch.md`).
+
+Encryption: if the repo is **public** (`gh repo view --json visibility`), a post-mortem
+narrates internal architecture and the exact vulnerable code path, so it's the same
+sensitivity class as encrypted planning files. Ensure `docs/post-mortems/**` is in
+`.gitattributes` with `filter=git-crypt diff=git-crypt` (add it if missing and git-crypt
+is set up). Deliberately publish a zero-sensitivity one by moving it out of that dir.
+NEVER let a `[SECURITY]` post-mortem land in a plaintext/public path. Private repo → no
+encryption needed.
 
 ```markdown
 # Post-Mortem: <short title>
