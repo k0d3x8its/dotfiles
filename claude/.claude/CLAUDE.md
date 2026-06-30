@@ -85,7 +85,7 @@ After creating a card, annotate the Goal in `.work/PLAN.md` with [trello:CARD_ID
 | Normative rules, standing instructions | `CLAUDE.md` |
 | Empirical facts, env truths, codebase gotchas | `KNOWLEDGE.md` (local or global) |
 | Architectural decisions (cost meaningful + future reader wonders why + alternatives considered) | `docs/adr/ADR-NNNN-*.md` (CLI/SDK projects) |
-| Bug post-mortems (root cause + fix + what-would-prevent, via `/diagnose`) | `docs/post-mortems/<YYYY-MM-DD>-<slug>.md` — one file per bug; git-crypt the dir on public repos |
+| Bug post-mortems (root cause + fix + what-would-prevent, via `/diagnose`) | `docs/post-mortems/<slug>.md` — one file per bug (no date prefix; date is in the `**Date:**` field inside); git-crypt the dir on public repos |
 | Session narrative, decisions + why | `.memory/SESSION-LOG.md` |
 | Changelog-worthy changes (features, fixes) | `CHANGELOG.md` (via `/changelog`) |
 | Per-task scratch, investigation notes | `.work/FINDINGS.md` |
