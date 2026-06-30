@@ -126,9 +126,10 @@ Required before declaring done:
 - [ ] All `[DEBUG-...]` instrumentation removed (`grep` the prefix)
 - [ ] Throwaway prototypes deleted
 
-**Then write the post-mortem to `docs/post-mortems/<YYYY-MM-DD>-<kebab-slug>.md`** —
+**Then write the post-mortem to `docs/post-mortems/<kebab-slug>.md`** —
 one file per bug, not a single growing log. Create `docs/post-mortems/` if absent.
-The slug is a short kebab name for the bug (e.g. `2026-06-27-chat-bar-expand-glitch.md`).
+The slug is a short kebab name for the bug (e.g. `chat-bar-expand-glitch.md`); NO date
+prefix — the date lives in the `**Date:**` field inside the file (keeps filenames short).
 
 Encryption: if the repo is **public** (`gh repo view --json visibility`), a post-mortem
 narrates internal architecture and the exact vulnerable code path, so it's the same
