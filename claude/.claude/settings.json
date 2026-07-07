@@ -4,8 +4,15 @@
       "Read(~/.ssh/**)",
       "Read(~/.aws/**)",
       "Read(**/.env*)",
+      "Read(~/.config/gh/**)",
+      "Read(~/.netrc)",
+      "Read(~/.docker/config.json)",
+      "Read(~/.gnupg/**)",
+      "Read(~/.kube/**)",
+      "Read(~/.config/gcloud/**)",
       "Write(~/.ssh/**)",
       "Write(~/.aws/**)",
+      "Write(**/.env*)",
       "Bash(curl * | bash)",
       "Bash(ssh *)",
       "Bash(scp *)",
@@ -58,7 +65,31 @@
         ]
       }
     ],
+    "PreToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 \"$HOME/.claude/hooks/command_guard.py\""
+          },
+          {
+            "type": "command",
+            "command": "python3 \"$HOME/.claude/hooks/secret_guard.py\""
+          }
+        ]
+      }
+    ],
     "PostToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 \"$HOME/.claude/hooks/bash_audit.py\" 2>/dev/null || true"
+          }
+        ]
+      },
       {
         "matcher": "Edit|Write",
         "hooks": [
