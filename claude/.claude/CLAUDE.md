@@ -51,7 +51,7 @@ No priority tag = Medium (default). `[TEST]` and `[VERIFY]` override all other p
 | `[INVESTIGATE]` | Needs research, audit, or open sweep before action — no hypothesis required | Read code/logs first, don't jump to solutions. Output findings list; spawn new tasks from it. |
 | `[SYNC]` | Spans two+ repos that must stay aligned | Audit BOTH sides for drift; don't assume one is canonical. Keep one canonical TODO (machine log) + pointer stubs in each repo |
 | `[WAITING]` | Blocked on something OUTSIDE my control (PR review, upstream, monitoring) | Poll/check status, don't nag or try to action. Distinct from `[BLOCKER]` (which gates other work) |
-| `[SECURITY]` | Security-sensitive (auth, secrets, perms, input handling) | Drop caveman, write careful, flag blast radius, suggest `ce-security-sentinel` (swap to `/code-sec` once built) |
+| `[SECURITY]` | Security-sensitive (auth, secrets, perms, input handling) | Drop caveman, write careful, flag blast radius, suggest `/code-sec` |
 | `[DOCS]` | Documentation-only (README, CHANGELOG, release notes, comments) | Prose mode, no code logic; batches with release work |
 | `[PERFORMANCE]` | Performance / token-cost work | Measure + deliver projection BEFORE changing anything |
 | `[UX]` | Requires manual user verification of a flow or experience — can't be automated | Write a checklist of steps + success criteria, then hand off. Don't try to automate or simulate. |
