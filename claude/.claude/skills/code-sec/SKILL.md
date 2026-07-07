@@ -56,7 +56,15 @@ git ls-files | grep -E 'KNOWLEDGE|TODOS|SESSION-LOG|\.work/|GDD-|PRD-|ARD-'  # w
 - Tracked taxonomy file NOT in `git-crypt status -e` → finding (severity `[BLOCKER]` if the repo has a public remote, default otherwise).
 - No git-crypt at all but taxonomy files tracked → route to `/encrypt`.
 - Check `.gitattributes` patterns are **root-anchored** (`/KNOWLEDGE.md` not `KNOWLEDGE.md`) — unanchored patterns encrypt nested template copies.
-- Verify an encrypted file's staged blob actually starts `\0GITCRYPT` before trusting the attribute.
+- Verify an encrypted file's staged blob actually starts `\0GITCRYPT` before trusting the attribute:
+
+  ```bash
+  git cat-file blob :FILE | head -c 9 | grep -qa GITCRYPT && echo OK || echo PLAINTEXT
+  ```
+
+  The `-a` is load-bearing — the blob starts with a NUL byte, and without `-a`
+  grep treats it as binary and exits 1, falsely reporting an encrypted file as
+  plaintext (field-test 2026-07-07). `| head -c 16 | xxd` to double-check by eye.
 
 ### 4. Input-handling scan — ast-grep first, rg for the rest
 
@@ -129,7 +137,13 @@ Close-out checklist for this phase (all verified or N/A-with-reason):
 For repos containing `.claude/`, hooks, or skills (e.g. dotfiles): check hooks
 for exfiltration paths (network calls, transcript reads sent anywhere),
 settings for `enableAllProjectMcpServers`/`ANTHROPIC_BASE_URL` overrides, and
-skills for hidden-unicode (`rg -n '[​-‏ -‮]'`).
+skills for hidden-unicode — use the ESCAPED class below (a literal char class
+would plant invisible chars in this very file and self-hit every sweep;
+field-test 2026-07-07):
+
+```bash
+rg -n '[\x{200B}-\x{200F}\x{202A}-\x{202E}\x{2066}-\x{2069}]' claude/.claude/skills/ claude/.claude/hooks/
+```
 
 ## Output
 
@@ -140,4 +154,5 @@ skills for hidden-unicode (`rg -n '[​-‏ -‮]'`).
 ## Close-out
 
 - Never mark the sweep "done" without having RUN phases 1–4 fresh (trust-but-verify: read the exit codes).
+- When a scanner is piped (`gitleaks … | tail`, `rg … | head`), `$?` is the LAST pipe stage — read `${PIPESTATUS[0]}` or the scanner's verdict is silently replaced by tail/head's.
 - Offer follow-ups: `/encrypt` for coverage gaps, `/diagnose` for any confirmed vuln, rotation checklist for leaked secrets.
