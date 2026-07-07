@@ -12,6 +12,7 @@
       "Bash(nc *)"
     ]
   },
+  "model": "claude-fable-5[1m]",
   "hooks": {
     "SessionStart": [
       {
@@ -43,6 +44,16 @@
           {
             "type": "command",
             "command": "python3 \"$HOME/.claude/hooks/session_timer.py\" stop 2>/dev/null || true"
+          }
+        ]
+      }
+    ],
+    "UserPromptSubmit": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash \"$HOME/.claude/hooks/fable-mode-inject.sh\" 2>/dev/null || true"
           }
         ]
       }
@@ -106,6 +117,8 @@
       }
     }
   },
+  "effortLevel": "medium",
+  "advisorModel": "fable",
   "theme": "dark",
   "agentPushNotifEnabled": true
 }
