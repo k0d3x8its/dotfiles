@@ -27,7 +27,7 @@ case "$MODE" in
   *) exit 0 ;;
 esac
 
-if [ -z "$MODE" ] || [ "$MODE" = "full" ]; then
+if [ -z "$MODE" ]; then
   printf '\033[38;5;172m[CAVEMAN]\033[0m'
 else
   SUFFIX=$(printf '%s' "$MODE" | tr '[:lower:]' '[:upper:]')
