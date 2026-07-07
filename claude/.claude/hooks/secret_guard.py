@@ -17,6 +17,7 @@ the session transcript (which is itself a file on disk).
 """
 
 import json
+import os
 import re
 import shutil
 import subprocess
@@ -24,6 +25,29 @@ import sys
 
 COMMIT_RE = re.compile(r"\bgit\b[^|;&]*\bcommit\b")
 PUSH_RE = re.compile(r"\bgit\b[^|;&]*\bpush\b")
+# The hook fires BEFORE the command runs, so payload cwd is the session cwd —
+# a `cd repo && git commit` targets a different repo than the one gitleaks
+# would scan. Recover the real target from `git -C <path>` or the last
+# `cd <path>` preceding the git call.
+GIT_C_RE = re.compile(r"\bgit\s+-C\s+(?:\"([^\"]+)\"|'([^']+)'|(\S+))")
+CD_RE = re.compile(r"\bcd\s+(?:\"([^\"]+)\"|'([^']+)'|([^\s;|&]+))")
+
+
+def resolve_repo_cwd(command, session_cwd):
+    """Best-effort target-repo resolution; falls back to session cwd."""
+    git_c = GIT_C_RE.search(command)
+    if git_c:
+        path = next(g for g in git_c.groups() if g)
+    else:
+        git_pos = command.find("git")
+        cds = [m for m in CD_RE.finditer(command) if m.start() < git_pos]
+        if not cds:
+            return session_cwd
+        path = next(g for g in cds[-1].groups() if g)
+    path = os.path.expanduser(os.path.expandvars(path))
+    if not os.path.isabs(path):
+        path = os.path.join(session_cwd or ".", path)
+    return path if os.path.isdir(path) else session_cwd
 
 
 def run_gitleaks(args, cwd):
@@ -64,6 +88,8 @@ def main() -> int:
     is_push = bool(PUSH_RE.search(command))
     if not (is_commit or is_push):
         return 0
+
+    cwd = resolve_repo_cwd(command, cwd)
 
     if not shutil.which("gitleaks"):
         print("secret-guard: gitleaks not on PATH — scan skipped (fail-open)", file=sys.stderr)
