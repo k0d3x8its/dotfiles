@@ -41,7 +41,9 @@ RULES = [
         # Obfuscated execution: base64 decode piped into a shell or eval.
         re.compile(
             rf"base64\b[^|;&\n]*(?:-d|--decode)[^|;&\n]*\|\s*(?:sudo\s+)?{SHELLS}\b"
-            rf"|(?:eval|{SHELLS})\s*(?:\$\(|`)[^)`]*base64"
+            # optional quote: eval "$(...)" is the common spelling and must
+            # not slip past on the quote character (regression 2026-07-07)
+            rf"|(?:eval|{SHELLS})\s*[\"']?\s*(?:\$\(|`)[^)`]*base64"
         ),
         "base64-decode-into-shell is blocked — decode to a file and inspect before executing",
     ),
