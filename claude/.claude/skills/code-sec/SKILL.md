@@ -15,7 +15,44 @@ report: security findings must be unambiguous.
 - **Never print a discovered secret.** Reference file:line + rule ID only. Use `--redact` on every gitleaks call.
 - **Severity-tag every finding**: `[BROKEN]` (live leaked secret in a public repo), `[BLOCKER]` (secret in history / unencrypted sensitive file about to be pushed), default (hardening gap), `[LOW]` (defense-in-depth).
 
+## Finding discipline
+
+Thoroughness without noise control is just noise. Before a hit becomes a finding:
+
+- **Taint-trace it.** For any injection-class hit (phases 4–5), trace the data
+  from its ENTRY POINT (request param, CLI arg, file read, env var) to the
+  dangerous SINK. A sink fed only by constants/internal config is not a
+  finding. Report the trace in the finding: `entry → path → sink`.
+- **Confidence-tier every finding:**
+  - `CONFIRMED` — exploitable is verifiable from the code alone (literal
+    f-string SQL, unauthenticated endpoint touching `current_user`). File it.
+  - `TRACED` — full attack path constructible: untrusted entry → no
+    sanitization → sink. File it.
+  - `CANDIDATE` — dangerous pattern present, exploitability unconfirmed
+    (input might be validated in middleware not read; ORM might parameterize).
+    File ONLY if potential impact is critical (RCE, auth bypass, data exposure)
+    — mark `[DECISION]`; otherwise eyeball deeper or drop.
+- **Suppress (do not file):** defense-in-depth suggestions on already-protected
+  code (parameterized query doesn't also need escaping); theoretical attacks
+  needing physical/local access; HTTP-vs-HTTPS in dev/test configs; generic
+  hardening advice ("consider rate limiting") with no exploitable finding
+  attached — that's architecture feedback, not a sweep finding.
+
 ## Sweep phases (run all, in order)
+
+### 0. Attack-surface inventory
+
+Enumerate what the repo exposes before scanning it — this scopes phases 4–5
+and is itself a findings source:
+
+- **Endpoints / listeners** — HTTP routes, WebSocket handlers, RPC, sockets. Who can reach each?
+- **Data stores** — DBs, files with user data, caches. What sensitivity? Access control?
+- **Third-party integrations** — APIs called, webhooks received, SDKs. What crosses the trust boundary each way? Where do their credentials live, and is rotation possible? What happens if the third party is compromised or returns malicious data? Is more data shared than necessary?
+- **Input entry points** — request params, CLI args, env vars, file formats parsed, IPC.
+
+Any inventoried surface with NO corresponding security consideration
+(validation, authn/z, credential strategy) = finding. No HTTP surface and no
+integrations → note it and skip phase 5.
 
 ### 1. Secret scan — full history
 
@@ -87,12 +124,22 @@ ast-grep -p 'eval($X)' -l js .   # repeat with -l ts
 ast-grep -p 'new Function($$$)' -l js .
 ast-grep -p 'execSync($$$)' -l js .
 ast-grep -p '$EL.innerHTML = $X' -l js .
-ast-grep -p 'dangerouslySetInnerHTML' -l tsx . 2>/dev/null || rg -n 'dangerouslySetInnerHTML'
+ast-grep -p 'dangerouslySetInnerHTML' -l tsx . 2>/dev/null || rg -n 'dangerouslySetInnerHTML' .
 # Lua (nvim configs/plugins) — dynamic execution
 ast-grep -p 'loadstring($X)' -l lua .
 ast-grep -p 'load($X)' -l lua .
 ast-grep -p 'os.execute($X)' -l lua .
 ast-grep -p 'io.popen($X)' -l lua .
+# SSRF — server-side HTTP client fed a variable URL (taint-trace: is $URL user-controlled? allowlist?)
+ast-grep -p 'requests.$FN($URL)' -l py .        # get/post/etc — variable arg only; literals are fine
+ast-grep -p 'urllib.request.urlopen($URL)' -l py .
+ast-grep -p 'fetch($URL)' -l js .    # repeat with -l ts; flag when $URL is not a literal
+ast-grep -p 'axios.$FN($URL)' -l js .
+# Path traversal — filesystem op fed a variable path (taint-trace: canonicalized? boundary-checked?)
+ast-grep -p 'open($PATH)' -l py .               # then check for os.path.realpath/commonpath guard
+ast-grep -p 'os.path.join($A, $B)' -l py .      # $$$-then-$X does not match; two-metavar form does (field-test 2026-07-07)
+ast-grep -p 'fs.readFile($PATH, $$$)' -l js .
+ast-grep -p 'fs.readFileSync($PATH, $$$)' -l js .
 ```
 
 For complex constraints (e.g. `yaml.load` WITHOUT SafeLoader), write a YAML
@@ -103,12 +150,19 @@ languages ast-grep has no grammar for — shell, config files):
 
 ```bash
 # credentials in code/config — string literals across ANY file type
-rg -in 'password\s*=\s*["'\'']|api_?key\s*=\s*["'\'']|token\s*=\s*["'\'']|secret\s*=\s*["'\'']' -g '!*.lock'
+rg -in 'password\s*=\s*["'\'']|api_?key\s*=\s*["'\'']|token\s*=\s*["'\'']|secret\s*=\s*["'\'']' -g '!*.lock' .
 # world-writable / permissive (shell scripts, Makefiles)
-rg -n 'chmod\s+(-R\s+)?0?77[67]|umask\s+0+'
+rg -n 'chmod\s+(-R\s+)?0?77[67]|umask\s+0+' .
 # pipe-to-shell in scripts/docs (install instructions count — they get copy-pasted)
-rg -n '(curl|wget)[^|]*\|\s*(sudo\s+)?(ba|z|da)?sh\b'
+rg -n '(curl|wget)[^|]*\|\s*(sudo\s+)?(ba|z|da)?sh\b' .
+# secrets leaking into logs / error output / URLs — candidates, eyeball each
+rg -in '(log|logger|console)\.\w*\([^)]*(password|passwd|token|secret|api_?key|authorization)' .
+rg -in '[?&](token|key|password|secret)=' -g '!*.lock' .
 ```
+
+The trailing `.` on every rg call is load-bearing: without a path, rg reads
+STDIN when the shell is non-interactive (agent Bash, CI) and hangs until
+timeout (field-test 2026-07-07).
 
 ast-grep hits are near-conclusive; rg hits are candidates — eyeball rg hits in
 context before they become findings.
@@ -121,6 +175,8 @@ Skip for pure CLIs, configs, and libraries with no request surface.
 - **SQL injection** — any string concatenation/f-string/interpolation building a query is a finding, even if "the input is trusted today"; parameterized queries only. `ast-grep -p 'cursor.execute($SQL % $$$)' -l py` and f-string variants; eyeball ORM `.raw()`/`text()` calls.
 - **XSS / output escaping** — every point user content is rendered: template auto-escape not disabled (`| safe`, `{% autoescape off %}`, `v-html`), innerHTML sinks already in phase 4, CSP header present on served pages.
 - **Auth/authz** — every endpoint states its auth requirement explicitly; authorization checked at BOTH route and resource level (object ownership, not just "logged in"); look for privilege-escalation paths (IDs from client trusted, mass-assignment of role fields, unsafe redirects after login).
+- **Sessions** — cookie flags present (`Secure`, `HttpOnly`, `SameSite`); session ID rotated on login (fixation); logout actually invalidates server-side, not just clears the cookie.
+- **SSRF / path traversal in request handlers** — phase-4 hits where the tainted value comes from a request: URL params fetched server-side need an allowlist (not a denylist); user-supplied filenames need `realpath` + prefix check against the intended base dir.
 
 Close-out checklist for this phase (all verified or N/A-with-reason):
 
@@ -128,7 +184,9 @@ Close-out checklist for this phase (all verified or N/A-with-reason):
 - [ ] SQL queries parameterized (no string building)
 - [ ] Output escaping on all user content + CSP where pages are served
 - [ ] Auth on every endpoint; authz at resource level
+- [ ] Session cookies flagged Secure/HttpOnly/SameSite; ID rotated on login
 - [ ] CSRF protection on state-changing routes
+- [ ] Server-side fetches allowlisted; file paths canonicalized + boundary-checked
 - [ ] HTTPS enforced; security headers configured
 - [ ] Error messages / logs leak no sensitive data
 
@@ -147,9 +205,10 @@ rg -n '[\x{200B}-\x{200F}\x{202A}-\x{202E}\x{2066}-\x{2069}]' claude/.claude/ski
 
 ## Output
 
-1. **Findings report** in the session (grouped by phase, severity-first). Each finding: what, where (file:line / commit), why it matters, suggested remediation.
-2. **Append to `TODOS.md`** — one tagged item per actionable finding, `[SECURITY]` + severity + phase context. Confirm with the user before writing.
-3. If zero findings in a phase, say so explicitly — silence is not a clean bill.
+1. **Findings report** in the session (grouped by phase, severity-first). Each finding: what, where (file:line / commit), confidence tier (CONFIRMED/TRACED/CANDIDATE), taint trace for injection-class hits, why it matters, suggested remediation.
+2. **Mini threat model** — close the report with the top 3 exploits an attacker would try against this repo as it stands: most likely, highest impact, most subtle. One sentence each + the mitigation. Forces prioritization even when individual findings are all `[LOW]`.
+3. **Append to `TODOS.md`** — one tagged item per actionable finding, `[SECURITY]` + severity + phase context. Confirm with the user before writing.
+4. If zero findings in a phase, say so explicitly — silence is not a clean bill.
 
 ## Close-out
 
