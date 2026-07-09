@@ -1,0 +1,19 @@
+{
+  "name": "k0d3x-local",
+  "interface": {
+    "displayName": "K0d3x local"
+  },
+  "plugins": [
+    {
+      "name": "k0d3x-harness",
+      "source": {
+        "source": "local",
+        "path": "./.codex"
+      },
+      "policy": {
+        "installation": "AVAILABLE"
+      },
+      "category": "Developer Tools"
+    }
+  ]
+}
