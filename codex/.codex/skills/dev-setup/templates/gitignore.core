@@ -1,0 +1,35 @@
+# Environment & secrets
+.env
+.env.*
+!.env.example
+
+# Claude Code — local/ephemeral files (not project code)
+.claude/trello-board
+.claude/settings.local.json
+.claude/plugins/
+.claude/skills/
+
+# Planning & session files (local context, not source)
+.work/PLAN.md
+.work/FINDINGS.md
+.work/PROGRESS.md
+RELEASE-NOTES.md
+
+# Memory system — runtime artifacts live in .memory/ subdir
+/.memory/EPISODIC-INDEX.md
+/.memory/EPISODIC-ARCHIVE.md
+/.memory/CONSOLIDATION-INBOX.md
+# .memory/ARCHIVE-LOG.md stays machine-local (large, low sync value)
+/.memory/ARCHIVE-LOG.md
+.episodic-baseline
+.episodic.lock
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Editor
+.vscode/
+.idea/
+*.swp
+*.swo
