@@ -1,0 +1,6 @@
+KNOWLEDGE.md filter=git-crypt diff=git-crypt
+TODOS.md filter=git-crypt diff=git-crypt
+.memory/SESSION-LOG.md filter=git-crypt diff=git-crypt
+.work/FINDINGS.md filter=git-crypt diff=git-crypt
+.work/PROGRESS.md filter=git-crypt diff=git-crypt
+.work/PLAN.md filter=git-crypt diff=git-crypt
