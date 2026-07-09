@@ -15,6 +15,11 @@
 - Use changelog updates manually when a session produces changelog-worthy changes. Do not auto-update changelogs inline.
 - Before any done/works/fixed claim, `git push`, PR, or handoff, run the project's verify command fresh and read its exit code. Unproven claim -> `[VERIFY]` TODO; machine-unverifiable -> `[UX]` checklist.
 
+## Codex Surface Notes
+- Codex skills may trigger through natural language even when the TUI slash menu does not autocomplete the skill name. If a user invokes a known skill by name, use the skill.
+- Do not assume Claude-style statusline UI exists in Codex. Codex hooks are backend lifecycle checks only unless current runtime evidence proves a visible UI channel.
+- Caveman and other Marketplace skills may live in `~/.agents/skills`; dotfiles-owned Codex workflow skills live in `~/.codex/skills` or the `k0d3x-harness` plugin cache.
+
 ## TODO Tags
 
 When writing TODOs to `TODOS.md` via any session workflow or inline, prefix items with the appropriate tags. Tags combine freely.
