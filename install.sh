@@ -118,6 +118,31 @@ main() {
         ln -sf "$skill_dir" "$HOME/.claude/skills/$skill"
     done
 
+    # ── codex ────────────────────────────────────────────────────────────────
+    # Codex keeps mutable runtime state in ~/.codex, so wire only source-owned
+    # instructions, hooks, and skills. Leave config.toml/auth/history/cache alone.
+
+    log "wiring codex config"
+    mkdir -p "$HOME/.codex/skills"
+
+    safeguard "$HOME/.codex/AGENTS.md"
+    ln -sf "$DOTFILES/codex/.codex/AGENTS.md" "$HOME/.codex/AGENTS.md"
+
+    # Global empirical memory is shared across Claude and Codex. The canonical
+    # file lives with Claude config for history/backward compatibility.
+    safeguard "$HOME/.codex/KNOWLEDGE.md"
+    ln -sf "$DOTFILES/claude/.claude/KNOWLEDGE.md" "$HOME/.codex/KNOWLEDGE.md"
+
+    safeguard "$HOME/.codex/hooks"
+    ln -sf "$DOTFILES/codex/.codex/hooks" "$HOME/.codex/hooks"
+
+    for skill_dir in "$DOTFILES"/codex/.codex/skills/*/; do
+        skill_dir="${skill_dir%/}"
+        skill="$(basename "$skill_dir")"
+        safeguard "$HOME/.codex/skills/$skill"
+        ln -sf "$skill_dir" "$HOME/.codex/skills/$skill"
+    done
+
     # ── ghostty sidebar ───────────────────────────────────────────────────────
     # Requires: xdotool  (sudo nala install xdotool)
     # Runs Ghostty under XWayland at boot — right-edge sidebar, btop top pane.
