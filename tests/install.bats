@@ -29,6 +29,15 @@ make_fixture() {
         touch "$dir/claude/.claude/skills/$skill/SKILL.md"
     done
 
+    mkdir -p "$dir/codex/.codex/hooks"
+    touch "$dir/codex/.codex/AGENTS.md"
+    touch "$dir/codex/.codex/hooks/hook.py"
+
+    for skill in changelog dev-brief diagnose session-close session-handoff trust-but-verify; do
+        mkdir -p "$dir/codex/.codex/skills/$skill"
+        touch "$dir/codex/.codex/skills/$skill/SKILL.md"
+    done
+
     mkdir -p "$dir/ghostty/.config/ghostty"
     mkdir -p "$dir/ghostty/.config/autostart"
     mkdir -p "$dir/ghostty/.local/bin"
@@ -307,6 +316,36 @@ EOF
     [[ "${#actual[@]}" -eq "${#expected[@]}" ]]
     for skill in "${expected[@]}"; do
         [[ -L "$FAKE_HOME/.claude/skills/$skill" ]]
+    done
+}
+
+@test "codex: AGENTS.md, KNOWLEDGE.md, and hooks are symlinked" {
+    run_install
+
+    [[ -L "$FAKE_HOME/.codex/AGENTS.md" ]]
+    [[ "$(readlink "$FAKE_HOME/.codex/AGENTS.md")" == "$FAKE_DOTFILES/codex/.codex/AGENTS.md" ]]
+    [[ -L "$FAKE_HOME/.codex/KNOWLEDGE.md" ]]
+    [[ "$(readlink "$FAKE_HOME/.codex/KNOWLEDGE.md")" == "$FAKE_DOTFILES/claude/.claude/KNOWLEDGE.md" ]]
+    [[ -L "$FAKE_HOME/.codex/hooks" ]]
+    [[ "$(readlink "$FAKE_HOME/.codex/hooks")" == "$FAKE_DOTFILES/codex/.codex/hooks" ]]
+}
+
+@test "codex: every tracked skill is symlinked, no extras" {
+    run_install
+
+    local expected=()
+    while IFS= read -r -d '' entry; do
+        expected+=("$(basename "$entry")")
+    done < <(find "$FAKE_DOTFILES/codex/.codex/skills" -maxdepth 1 -mindepth 1 -type d -print0 | sort -z)
+
+    local actual=()
+    while IFS= read -r -d '' entry; do
+        actual+=("$(basename "$entry")")
+    done < <(find "$FAKE_HOME/.codex/skills" -maxdepth 1 -mindepth 1 -type l -print0 | sort -z)
+
+    [[ "${#actual[@]}" -eq "${#expected[@]}" ]]
+    for skill in "${expected[@]}"; do
+        [[ -L "$FAKE_HOME/.codex/skills/$skill" ]]
     done
 }
 
