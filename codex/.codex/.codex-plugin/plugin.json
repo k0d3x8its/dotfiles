@@ -1,0 +1,27 @@
+{
+  "name": "k0d3x-harness",
+  "version": "0.1.0",
+  "description": "K0d3x Codex harness hooks and workflow skills.",
+  "author": {
+    "name": "K0d3x"
+  },
+  "license": "UNLICENSED",
+  "keywords": [
+    "codex",
+    "hooks",
+    "skills",
+    "workflow"
+  ],
+  "skills": "./skills/",
+  "interface": {
+    "displayName": "K0d3x Harness",
+    "shortDescription": "Personal Codex hooks and workflow skills",
+    "longDescription": "Personal Codex harness configuration: safety hooks, session hooks, and workflow skills ported from the K0d3x Claude setup.",
+    "developerName": "K0d3x",
+    "category": "Developer Tools",
+    "capabilities": [
+      "Read",
+      "Write"
+    ]
+  }
+}
