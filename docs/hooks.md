@@ -1,19 +1,20 @@
 # Hooks
 
-Claude Code hooks that run in the harness — zero model tokens, no API calls.
+Harness hooks for Claude Code and Codex. Claude has a visible StatusLine event; Codex currently uses backend lifecycle hooks only.
 
-All hooks suppress stdout by design. Emitting to stdout injects text into the model context window and would defeat the zero-token guarantee.
+All non-UI hooks suppress stdout by design. Emitting plain stdout can inject text into the model context window and would defeat the zero-token guarantee.
 
 ---
 
 ## Hook inventory
 
-| Hook file | Event | What it does |
-|-----------|-------|--------------|
-| `refresh_triage.py` | PostToolUse (Edit/Write) | Auto-refreshes `.memory/TRIAGE-BLOCK.md` when a TODOS.md is edited |
-| `session_timer.py` | SessionStart / Stop | Records session start time; fires 45m/55m warnings |
-| `combined-statusline.sh` | StatusLine | Renders live cost, burn rate, context %, caveman mode, elapsed time |
-| `statusline-bars.sh` | (called by combined-statusline) | Computes 5hr/weekly rate-limit burn bar from stdin JSON |
+| Hook file | Agent | Event | What it does |
+|-----------|-------|-------|--------------|
+| `refresh_triage.py` | Claude, Codex | PostToolUse (Edit/Write) | Auto-refreshes `.memory/TRIAGE-BLOCK.md` when a TODOS.md is edited |
+| `session_timer.py` | Claude, Codex | SessionStart / Stop / SessionEnd | Records session start time; emits 45m/55m handoff guidance if the host surfaces hook messages |
+| `episodic_index.py` | Codex | SessionEnd | Refreshes the episodic index for projects under `~/dev` |
+| `combined-statusline.sh` | Claude only | StatusLine | Renders live cost, burn rate, context %, caveman mode, elapsed time |
+| `statusline-bars.sh` | Claude only | (called by combined-statusline) | Computes 5hr/weekly rate-limit burn bar from stdin JSON |
 
 ---
 
@@ -35,18 +36,18 @@ See [triage-system.md](triage-system.md) for the full pipeline.
 
 ## `session_timer.py` — Session warnings
 
-**Events:** SessionStart, Stop.
+**Events:** SessionStart, Stop, SessionEnd depending on host.
 
-**SessionStart:** records the current time to `~/.claude/.session-start`. Clears any one-shot warning markers from the previous session.
+**SessionStart:** records the current time under the agent home (`~/.claude` or `~/.codex`). Clears one-shot warning markers from the previous session.
 
-**Stop:** computes elapsed time. At thresholds, surfaces a warning through the JSON `systemMessage` field — not plain stdout. This distinction matters: Stop hook stdout only reaches Claude Code's internal debug log and is never shown in the UI. The `systemMessage` field is the only reliable user-visible channel from a Stop hook.
+**Stop / SessionEnd:** computes elapsed time. At thresholds, emits a JSON `systemMessage` when supported. Claude surfaces this path; Codex hook output visibility is not guaranteed, so Codex must not depend on a visible statusline or banner.
 
 | Threshold | Message |
 |-----------|---------|
 | 45 minutes | `⚠️ 45m — consider /handoff, /close, or /checkpoint` |
 | 55 minutes | `🚨 55m — context getting long` |
 
-The persistent elapsed clock in the statusline is separate — it updates on every response via `combined-statusline.sh`.
+The persistent elapsed clock is Claude-only — it updates on every response via `combined-statusline.sh`. Codex does not currently render this statusline surface.
 
 ---
 
