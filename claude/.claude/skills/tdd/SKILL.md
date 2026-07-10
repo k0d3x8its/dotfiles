@@ -1,6 +1,6 @@
 ---
 name: tdd
-description: Test-driven development with red-green-refactor loop. Use when user wants to build features or fix bugs using TDD, mentions "red-green-refactor", wants integration tests, or asks for test-first development. Maps to the [TEST] TODO tag.
+description: Test-driven development with red-green loop. Use when user wants to build features or fix bugs using TDD, mentions "red-green" or "test-first", wants integration tests, or asks for test-driven development. Maps to the [TEST] TODO tag.
 ---
 
 # Test-Driven Development
@@ -96,17 +96,9 @@ Rules:
 - Don't anticipate future tests
 - Keep tests focused on observable behavior
 
-### 4. Refactor
+### 4. Review
 
-After all tests pass, look for candidates (see `~/.claude/skills/tdd/refactoring.md`):
-
-- Extract duplication
-- Deepen modules (move complexity behind simple interfaces)
-- Apply SOLID principles where natural
-- Consider what new code reveals about existing code
-- Run tests after each refactor step
-
-**Never refactor while RED.** Get to GREEN first.
+After all tests pass, run `/code-review` to surface cleanup candidates. See `~/.claude/skills/tdd/refactoring.md` for refactoring patterns.
 
 ## Checklist Per Cycle
 
