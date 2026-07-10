@@ -1,0 +1,109 @@
+# CODE-PRINCIPLES
+
+Language-agnostic principles this environment has committed to. Read before writing or
+reviewing code. This file selects and locally interprets principles — it does not teach
+them (they're in your priors). Per-language mechanics live in `CODE-STANDARD.md` and the
+files it delegates to.
+
+## Precedence (collision heuristics — not a ranked lattice)
+
+These resolve *principle* collisions; they are not themselves totally ordered. When
+two of them conflict, **Surgical Scope is the outer gate**: no other rule may push an
+edit outside the current diff — file it as `[CHORE]` instead. (Example: your diff adds
+the *third* occurrence of a look-alike but the first two live in untouched files —
+rule of three does NOT license editing them; extract in-scope or file the `[CHORE]`.
+Forcing the cross-file edit is shotgun surgery, the smell below.)
+
+1. **Working beats elegant.** A verified, passing change outranks any cleanup. Never
+   trade green tests for structure. Verify before claiming (see `/trust-but-verify`).
+2. **KISS/YAGNI beat DRY — for look-alike code only.** Repeated *actions* and repeated
+   *knowledge* always get extracted (that's what functions are for). But merging code
+   that merely *looks similar* waits for the *rule of three*: the third occurrence
+   proves the pattern and reveals the abstraction's true shape. A wrong abstraction is
+   costlier than duplication — especially for agents, which extend bad patterns
+   confidently.
+3. **Surgical scope beats Boy Scout (outer gate).** Clean only what the current change
+   already touches. Cleanups outside the diff become `[CHORE]` TODOs, not drive-by
+   edits — this gate overrides the other three when they would reach outside the diff.
+4. **Explicit beats implicit.** When simplicity and cleverness conflict, write the
+   boring version a stranger can read without context.
+
+## Committed principles
+
+### TDD — main methodology
+- Loop is **red-green**, one vertical slice at a time. Red before green, always.
+- Refactoring is **not** part of the loop — it happens at the review stage
+  (see Smells below). Do not overload implementation with restructuring.
+- Workflow, tooling, and test-quality bars live in the `/tdd` skill — invoke it;
+  do not restate its steps here or elsewhere.
+
+### KISS — Keep It Simple
+- The primary failure mode of coding agents is over-engineering. Default to the
+  simplest design that passes the tests.
+- No configuration options, parameters, or indirection that the current task
+  does not exercise.
+
+### YAGNI — You Aren't Gonna Need It
+- Build for the requirement in front of you, not the one you can imagine.
+- Speculative extension points are a smell (see *speculative generality*).
+  Extensibility is earned by a second concrete consumer, not predicted.
+
+### DRY — with the rule of three
+- Repeated actions become a function immediately — code exists to prevent repeat actions.
+- Knowledge (business rules, constants, formats) must have one authoritative home.
+- Code *shape* similarity alone is neither of the above. Extract look-alike code on the
+  third occurrence, when the abstraction's real boundaries are visible.
+- When an existing abstraction fights a new case, prefer inlining it back over
+  adding flags to it.
+
+### Boy Scout Rule — scoped
+- Leave every file you *touch* cleaner than you found it: better name, dead code
+  removed, comment corrected — within the lines your change already visits.
+- Anything wider than the current diff: record as `[CHORE]`, move on.
+
+### SRP — Single Responsibility (module-level)
+- Applies to modules/files/functions, not just classes: one reason to change each.
+- Test: describe the module in one sentence without "and". If you can't, split it.
+
+### DIP — Dependency Inversion (seams)
+- Depend on seams, not concretions: pass collaborators in (the `wire{}` DI pattern
+  in kodex-ide is the local idiom) rather than reaching out to globals or requiring
+  deep into another module's internals.
+- A seam exists so tests can substitute it. If a module can't be tested without the
+  real world attached, it's missing a seam.
+
+## Explicitly dropped — do not apply
+
+- **OCP** (open/closed): invites speculative abstraction layers; contradicts YAGNI.
+  Modify the code directly; extension points are earned (see YAGNI).
+- **LSP / ISP**: class-hierarchy principles; this stack (Lua modules, bash, Solidity
+  contracts, embedded C++) is not hierarchy-OOP. Where real subtyping appears
+  (TypeScript, Python classes), plain SRP + small interfaces already cover it.
+
+## Smells — the review-stage refactoring vocabulary
+
+At review (`/code-review` after green, per TDD above), check the diff against these
+Fowler smells by name. Naming the smell is the trigger — flag it, then fix or file it.
+
+- **Mysterious name** — name doesn't reveal intent (single-letter identifiers are
+  banned outright in this environment; see CODE-STANDARD.md)
+- **Duplicated code** — same knowledge in two homes (apply rule of three before extracting)
+- **Long function / large module** — can't be described without "and"
+- **Data clumps** — same 3+ values traveling together; they want to be a structure
+- **Primitive obsession** — domain concept passed around as bare string/number
+- **Repeated switches** — same discriminator switched on in multiple places
+- **Divergent change** — one module edited for many unrelated reasons (SRP breach)
+- **Shotgun surgery** — one logical change forces edits across many modules
+- **Feature envy** — function mostly manipulates another module's data
+- **Message chains** — `a.b().c().d()` reaching through structure
+- **Middle man** — module that only delegates
+- **Speculative generality** — hooks/params/layers with no current caller (YAGNI breach)
+- **Dead code / commented-out code** — delete it; git remembers
+
+## Related
+
+- `/tdd` — the methodology this file commits to
+- `/trust-but-verify` — the evidence gate behind precedence rule 1
+- `karpathy-guidelines` skill — behavioral guardrails (surgical changes, surfaced
+  assumptions); complements, does not duplicate, this file
+- `CODE-STANDARD.md` — mechanical rules + per-language delegation
