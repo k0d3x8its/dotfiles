@@ -39,6 +39,17 @@ only because its state lives **on disk**, not in attention. On activation:
 3. Every time a gate passes, update `Current gate:` and append one line to the log.
    Any time you feel lost or the context has grown long: **re-read `.work/GATES.md`
    before your next move.** That file is the anchor; your memory of it is not.
+4. **Mechanical levers** — disposition is best-effort; these are enforced by the
+   harness whether or not the model remembers. Once per activation (don't nag):
+   - If the session isn't already at high effort, recommend `/effort max`. Reasoning
+     density is governed by the effort level on adaptive-thinking models, not by
+     token budgets — `MAX_THINKING_TOKENS` does nothing there. Measured Fable traces
+     reasoned on ~86% of beats vs ~39% baseline; prose alone doesn't close that gap,
+     effort does most of it.
+   - If the project has a real verify command (resolve via the trust-but-verify
+     `detect.md`) and no such hook yet, offer a `PostToolUse` hook matched on
+     `Edit|Write|MultiEdit` that runs it. Wire it via the update-config skill only
+     if the user accepts — never add hooks silently.
 
 **Deactivation:** on "fable mode off" / "stop fable" — delete `.work/.fable-active`,
 append a final line to GATES.md, stop applying the loop. Also deactivate when the task's
@@ -100,9 +111,6 @@ Before committing to an answer, switch roles and try to kill it.
   reason and name the reason; if a plausible one exists, respect it.
 - When reviewing, finding nothing wrong is a legitimate result. "Already solid" beats an
   invented problem; never manufacture findings to look thorough.
-- Re-decide after every result. Each tool result either confirms the plan or changes it;
-  ask which, every time. The failure mode is momentum: executing step 4 of a plan that
-  step 2's output already invalidated.
 - Two failed attempts at the same fix means the diagnosis is wrong. Stop patching, find
   the assumption underneath both attempts, and test that assumption directly. If it's a
   real bug hunt, escalate to the `/diagnose` loop.
@@ -130,6 +138,9 @@ Before committing to an answer, switch roles and try to kill it.
 - **Harness routing:** this gate is enforced by `/trust-but-verify` (fresh verify
   command, read the exit code) and `/verify` (drive the real flow end-to-end). Reach
   for them; don't reinvent them.
+- This gate is deliberately stricter than the source. Measured across real traces,
+  running the real test after an edit was Fable's own weakest habit (~two-thirds of
+  edit sessions). Exceed the source here: verify every time, not most of the time.
 
 ### Gate 5 — Report calibrated
 
@@ -149,6 +160,31 @@ The report is part of the work, not an afterthought.
 - Anything unproven at report time becomes a `[VERIFY]` TODO in TODOS.md, per the
   trust-but-verify rules — not a hedged sentence in the report.
 
+## The inner loop (runs inside every gate, on every beat)
+
+The gates are the macro discipline; this is the micro. Measured from real Fable traces,
+the habits that separated Fable most from baseline models were per-beat, not per-task:
+reasoning before the first action (92% vs 40%) and re-evaluating after each result
+(87% vs 39%). Run this cycle on every non-trivial beat:
+
+```
+REASON       one line: what you expect this action to show
+ACT          the next deliberate step — batch what's independent
+OBSERVE      actually read what came back
+RE-EVALUATE  confirms the plan, or changes it? decide, then loop
+```
+
+- Before the first tool call of a beat, state the hypothesis — even one line. Naming
+  what you expect to find changes what you do next.
+- After every result, ask: confirms or changes? The failure mode is momentum —
+  executing step 4 of a plan that step 2's output already invalidated.
+- Fresh read before every edit. Read the exact lines you're about to change, in this
+  session, right before changing them. Context from five steps ago is stale; it causes
+  the edit that fails to match, the duplicated block, the change already made.
+- Batch independent operations in one round trip: parallel reads, independent checks,
+  grouped homogeneous edits. Only if truly independent — if step B needs step A's
+  output, they are not parallel, and pretending they are produces cancelled work.
+
 ## Standing habits (always on, every gate)
 
 - Convert relative to absolute: "tomorrow" becomes a date, "the latest version" becomes
@@ -166,6 +202,17 @@ The report is part of the work, not an afterthought.
   Reasoning is for judgment; scripts are for repetition.
 - Preserve by default. When editing something that exists, touch only what the task
   requires; deleting substantive content needs explicit approval.
+- First failure: diagnose, then fix. Read the error, inspect the file or state it
+  points at, form a corrected action, re-verify. Never re-issue the identical failing
+  command hoping for a different result; never silently drop a failing step — if it
+  can't be resolved, say so with the evidence. (Two failures of the same fix →
+  Gate 3's stop rule.)
+- Narrate transitions. Say which gate you're entering and why; surface hygiene
+  (branching, grounding, re-reading GATES.md) instead of doing it silently. Don't go
+  dark for twenty tool calls and surface only at the end — narration is what lets the
+  user course-correct early.
+- Absolute paths over `cd` in shell commands. Avoids a class of permission prompts
+  and keeps each command self-contained.
 
 ## Consulting an advisor (when an advisor tool is available)
 
@@ -189,6 +236,8 @@ the ask. When consulting while fable-mode is active:
 
 - You're building something and haven't opened the real data/file/API response it
   depends on. (Gate 2)
+- You fired a tool call without being able to say, even in one line, what you expected
+  it to show. (Inner loop)
 - You just said or thought "should work" about anything you can test right now. (Gate 4)
 - You're on attempt three of the same fix. (Gate 3)
 - Your last three actions came from the original plan with no check against
@@ -205,6 +254,16 @@ Any one of these: stop, re-read `.work/GATES.md`, go back to that gate.
 
 - This is a method skill, not a workflow. It changes how you execute the current task;
   its only artifacts are the marker file and GATES.md.
+- **When the inner loop feels mechanical** on a weaker model, load
+  `references/fable-patterns.md` — the six concrete reasoning moves distilled from
+  4,665 real Fable traces (state-summary-first openings, expectation-before-action,
+  anchor-selection reasoning, out-loud self-correction), with measured frequencies.
+- **Measure, don't assume.** `scripts/fable-score.py <model>` scores local sessions on
+  the seven discipline habits (`--baseline <model2>` compares models;
+  `--split-fable` compares fable-mode ON vs OFF sessions). Run it occasionally to see
+  whether the skill is actually moving the needle — evidence, not vibes.
+  `scripts/fetch-fable-traces.py` re-downloads the public trace dataset for local
+  analysis (AGPL-3.0 — analyse locally, never commit or redistribute the data).
 - It is the **dispatcher layer** over the task-specific skills named in the gate
   routings (/grill-me, /write-plan, planning-with-files, /diagnose, /code-review,
   /ante-mortem, /review-response, /trust-but-verify, /verify). Those are the "how to
