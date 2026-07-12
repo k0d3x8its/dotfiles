@@ -19,7 +19,7 @@
       "Bash(nc *)"
     ]
   },
-  "model": "opus",
+  "model": "claude-fable-5[1m]",
   "hooks": {
     "SessionStart": [
       {
@@ -149,7 +149,6 @@
     }
   },
   "effortLevel": "medium",
-  "advisorModel": "fable",
   "theme": "dark",
   "agentPushNotifEnabled": true
 }
