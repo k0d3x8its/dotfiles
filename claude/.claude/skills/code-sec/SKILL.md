@@ -42,6 +42,15 @@ Thoroughness without noise control is just noise. Before a hit becomes a finding
 
 ### 0. Attack-surface inventory
 
+First read `.work/SEC-CONTEXT.md` if it exists — the shared, git-crypted
+security-context file (threat-model's interview also writes it; bounty-hunter
+reads/writes it too). Its **Auth mechanics & sanitizers** section names the
+repo's own auth guards and input sanitizers, so you don't flag them as missing
+controls; its **Topology & exposure** and **Trust boundaries** sections seed the
+inventory below. If the file is absent, its template lives at
+`~/.claude/skills/code-sec/templates/SEC-CONTEXT.md` — enumerate from scratch and
+consider scaffolding it as you learn the topology.
+
 Enumerate what the repo exposes before scanning it — this scopes phases 4–5
 and is itself a findings source. Start with the deterministic enumerator, then
 reason over its output (don't hand-enumerate from scratch):
