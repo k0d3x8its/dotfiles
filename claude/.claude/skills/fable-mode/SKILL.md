@@ -101,21 +101,41 @@ Never design from memory of what a file, API, or dataset "probably" looks like. 
 
 ### Gate 3 — Reason adversarially
 
-Before committing to an answer, switch roles and try to kill it.
+Before committing to an answer, switch roles and try to kill it. The strongest form of
+this gate is not self-attack — it is an **independent attacker with cold context**,
+because the mind that wrote the answer shares the blind spots that produced it. Grading
+your own homework is the weak form; delegate the attack when the work has real blast
+radius.
 
-- Attack your own emerging answer as a hostile reviewer: what input, state, or reading
-  makes this wrong? Actually test that case; don't just imagine it.
+- **Route the attack in preference order:**
+  1. **A live advisor**, if an advisor tool is available — a peer model with fresh
+     context is the strongest attacker. Steer it per the "Consulting an advisor"
+     section: frame the ask by gate state, point it at the specific thing to break.
+  2. **A subagent**, when no advisor is reachable — the common case, since the
+     cross-session advisor is often unavailable. Spawn a cold-context reviewer:
+     `cavecrew-reviewer` for a file or diff, an adversarial-reviewer persona to
+     CONSTRUCT failure scenarios ("what input makes this produce the wrong result"),
+     or `/code-review` for a diff (it runs its own review agents). Hand it the artifact
+     plus the `.work/GATES.md` frame; don't let it re-derive scope.
+  3. **Inline self-attack**, the floor — for small work, or when neither of the above is
+     available. Still switch roles deliberately; don't just reread your answer approvingly.
+- Whoever attacks: **name the concrete failure direction first.** For a reachability or
+  security gate it's the FALSE-NEGATIVE (what real problem slips through silently); for a
+  parser it's the malformed input; for a claim it's the counterexample. Actually test the
+  case; don't just imagine it.
 - Then steelman what survives. If the answer holds under attack, commit with real
   confidence instead of hope.
 - Steelman the existing thing before changing it. Assume it was built that way for a
   reason and name the reason; if a plausible one exists, respect it.
-- When reviewing, finding nothing wrong is a legitimate result. "Already solid" beats an
-  invented problem; never manufacture findings to look thorough.
+- Finding nothing wrong is a legitimate result — for you or the delegated attacker.
+  "Already solid" beats an invented problem; never manufacture findings to look thorough,
+  and don't discard a reviewer's "clean" verdict just because you wanted findings.
 - Two failed attempts at the same fix means the diagnosis is wrong. Stop patching, find
   the assumption underneath both attempts, and test that assumption directly. If it's a
   real bug hunt, escalate to the `/diagnose` loop.
 - **Harness routing:** `/code-review` attacks a diff; `/ante-mortem` attacks a design's
   future failure modes; `/review-response` is this gate applied to incoming feedback.
+  The delegated-attacker options above feed all three.
 
 ### Gate 4 — Verify before declaring done
 
@@ -216,8 +236,10 @@ RE-EVALUATE  confirms the plan, or changes it? decide, then loop
 
 ## Consulting an advisor (when an advisor tool is available)
 
-The advisor cannot load this skill — it sees only the transcript. Steer it through
-the ask. When consulting while fable-mode is active:
+When available, the advisor is the **preferred Gate-3 attacker** (top of that gate's
+preference ladder) — a peer model with fresh context beats a spawned subagent, which
+beats self-attack. The advisor cannot load this skill — it sees only the transcript.
+Steer it through the ask. When consulting while fable-mode is active:
 
 - Frame the ask by gate state, from `.work/GATES.md`, not from memory:
   "At Gate <N>. Done means: <done-definition>. Check: <check>. Unresolved unknowns:
