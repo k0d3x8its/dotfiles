@@ -85,10 +85,15 @@ instead of re-asks.
 ### Step 4 — non-interactive escape hatch
 
 `--assume-public` skips the prompt entirely and treats every network entry point
-as external-unauthenticated. Use it in CI or when no human is present. It is the
-conservative default: it over-reports (collapses toward code-sec noise) but never
-misses a public surface. Local-only binds are still classified local unless the
-bind hint itself says otherwise.
+as external-unauthenticated. Use it in CI or when no human is present. It over-reports
+(collapses toward code-sec noise) rather than under-reports — but it is NOT a guarantee
+that no public surface is missed. Exposure is guessed per FILE from a bind literal in
+that file's source, and `--assume-public` still honours a `local` guess. So a file whose
+routes are production-public (served by gunicorn/pm2 on `0.0.0.0`, no bind literal in the
+source) but which also contains a dev-only `app.run(host="127.0.0.1")` is classified
+local and its routes are dropped — even under `--assume-public`. When a human is present,
+confirm exposure in Phase 0 rather than trusting the flag; treat `--assume-public` as a
+CI convenience, not a completeness guarantee.
 
 ## Auth tiers (external-reachable, tagged per finding)
 
@@ -126,5 +131,79 @@ escalation without importing full RBAC ceremony.
 State the degraded mode in the report header whenever any required tool was
 missing — a quiet degrade reads as a clean sweep and is worse than none.
 
-<!-- Next: CVE consume-and-rank, report shape (grouped by entry point), overlap
-     handoff + next-steps guide, and the on-demand domain-pack seam. -->
+## CVE pass — consume and reachability-rank, never own the scan
+
+bounty-hunter does not own an authoritative dependency-CVE scan; it **ranks** one
+by reachability. A package CVE becomes a finding here ONLY if that package sits on
+a path from an external entry point to where its vulnerable code runs.
+
+- **Consume first.** If a `code-sec` phase-2 dependency scan ran this session, take
+  its output as the raw CVE input — one source of truth, no second scan drifting
+  from the first.
+- **Standalone fallback.** Run alone, invoke the scanner yourself so the skill
+  never blocks on code-sec: `osv-scanner -r .` → `npm audit` (per lockfile) →
+  consume-only if neither is present. Whichever ran, its output is raw INPUT to the
+  gate, **never findings as-is** — an unranked CVE dump is code-sec's job, not this
+  skill's contribution.
+- **Disclose when no scan ran.** If the chain reaches consume-only with no CVE
+  input (no scanner installed, no same-session code-sec run, nothing user-supplied),
+  the report's dependency section must say so explicitly — `dependency CVEs: NOT
+  SCANNED (no scanner available)` — never an empty section that reads as a clean
+  dependency posture. An absent scan is a degraded run, disclosed like any missing
+  required tool, not a silent pass.
+- **Rank by reachability, then drop or keep:**
+  - Deserialization/RCE CVE in a library that parses request bodies on a public
+    route → **CONFIRMED critical**, reachable, filed.
+  - The same CVE in a build-time-only or dev dependency → **dropped**, annotated
+    `→ code-sec` (not request-reachable). It is not a bounty-hunter finding.
+- CVE data is always queried live, never hardcoded (suite convention). Attach the
+  advisory link (`osv.dev` / GHSA) to each reachable CVE finding.
+
+## Report shape — grouped by entry point (attack surface)
+
+Reachability is a per-entry-point property, so the report is organized by attack
+surface, not as a flat repo-wide list. This mirrors how the analysis actually runs
+— pick a surface, enumerate what an attacker can do to it — and makes the attack
+surface itself legible.
+
+- **One group per external entry point**, headed with its confirmed exposure + auth
+  tier from Phase 0: `POST /api/score (public, unauth)`, `WS /game (public, any-user)`.
+- **Severity-first within each group.**
+- **A surface with zero findings still shows its header** — "checked, clean" is
+  information, not silence. (If a required tool was missing, the header must say the
+  surface was scanned in a degraded mode, per the degrade clause above — a quiet
+  clean-looking group over an unscannable language is the dangerous failure.)
+- **Trailing `Dropped — local-only` section** carries the annotations below.
+
+The **finding format itself is identical to code-sec** — what / where (`file:line`) /
+confidence tier (`CONFIRMED` / `TRACED` / `CANDIDATE`) / taint trace (entry → sink) /
+why / remediation. Only the outer grouping differs, so a reader who knows code-sec
+reads this instantly.
+
+## Overlap handoff and next-steps guide
+
+**Dropped findings are annotated, not filed.** A finding gated out as unreachable
+gets one line in the trailing section — `SQLi at db.py:44 — local-only (CLI arg,
+not request-reachable) → code-sec territory` — and nothing more. bounty-hunter does
+NOT write a `[SECURITY]` TODO for anything it dropped: only reachable findings become
+filed TODOs (user-confirmed, same as code-sec). Auto-filing dropped items would
+double-report whenever both skills run and would assert more than this pass verified.
+
+Every report closes with a standing **next-steps guide** (a fixed section, not
+per-run boilerplate) routing each output class:
+
+- **Reachable findings (filed TODOs)** → remediate by severity; `/diagnose` any
+  `CONFIRMED` vuln.
+- **Dropped local-only annotations** → run `/code-sec` for a full investigation and
+  proper filing; bounty-hunter deliberately did not verify these.
+- **Dependency CVEs ranked reachable** → patch/upgrade the reachable ones first;
+  advisory link is on each finding.
+- **Exposure-tier corrections** → if a surface marked internal turns out public
+  later, re-run (the confirmed tiers persist in `.work/SEC-CONTEXT.md`).
+- **Follow-up skills** → `/code-sec` (breadth), `/threat-model` (design-time, if
+  pre-launch), `/encrypt` (if secrets or planning files surfaced).
+
+The annotation is a pointer; the guide is the map. Together they route the user
+without the skill silently filing low-confidence noise.
+
+<!-- Next (G12): on-demand domain-pack seam — domain-detect signal + domains/_TEMPLATE.md. -->
