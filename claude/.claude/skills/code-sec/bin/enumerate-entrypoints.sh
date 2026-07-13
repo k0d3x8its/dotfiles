@@ -48,7 +48,8 @@ done
 find_sources() {
   find "$@" -type f \
     \( -name '*.py' -o -name '*.js' -o -name '*.ts' -o -name '*.mjs' \
-       -o -name '*.go' -o -name '*.lua' -o -name '*.sol' \) 2>/dev/null
+       -o -name '*.go' -o -name '*.lua' -o -name '*.sol' \
+       -o -name '*.ino' -o -name '*.cpp' -o -name '*.c' -o -name '*.h' -o -name '*.hpp' \) 2>/dev/null
 }
 
 # --- exposure guess ----------------------------------------------------------
@@ -60,6 +61,9 @@ detect_exposure() {
   # A deployed contract is globally callable — every public/external function
   # is on-chain-reachable, so a .sol file's exposure is public by construction.
   case $f in *.sol) echo public; return ;; esac
+  # An Arduino sketch running a WiFi/Ethernet server is reachable by anything that
+  # can route to the device — no 0.0.0.0 literal to key on, so treat .ino as public.
+  case $f in *.ino) echo public; return ;; esac
   if grep -qE '0\.0\.0\.0|ListenAndServe\(":|INADDR_ANY|"::"|\[::\]' "$f"; then
     echo public
   elif grep -qE '127\.0\.0\.1|localhost|::1' "$f"; then
@@ -103,6 +107,15 @@ LISTEN_RE='\b(app|application|socketio|server|srv|uvicorn|http|web|r|router|api|
 # signature is the documented blind spot above.
 SOL_RE='function[[:space:]]+[A-Za-z_][A-Za-z0-9_]*[^;{]*\b(external|public)\b|\b(receive|fallback)[[:space:]]*\([[:space:]]*\)'
 
+# Arduino/ESP (C/C++): a WiFi/Ethernet web server is the device's network surface.
+# Route form is `server.on("/path", handler)` — the leading-slash string arg
+# distinguishes an ESP HTTP route from a WebSocket `.on("connection")` (WS_RE).
+# Listener signal is the server-object DECLARATION (type followed by a variable
+# name) — the trailing identifier keeps `#include <WebServer.h>` from matching.
+# `.begin()` is too generic (Serial/Wire/SPIFFS all use it) to key on.
+INO_ROUTE_RE='\.on\(["'\'']/'
+INO_LISTEN_RE='\b(WiFiServer|EthernetServer|WebServer|AsyncWebServer|ESP8266WebServer|WiFiEspServer)[[:space:]]+[A-Za-z_]'
+
 # Collapse indentation + internal whitespace runs, strip a trailing CR (CRLF
 # files would otherwise leave \r embedded before the ` | exposure` column).
 trim() { sed -e 's/^[[:space:]]*//' -e 's/[[:space:]]\{2,\}/ /g' -e 's/\r$//'; }
@@ -131,6 +144,11 @@ while IFS= read -r file; do
     emit_kind "$file" ws-handler "$WS_RE" "$exposure"
     emit_kind "$file" listener "$LISTEN_RE" "$exposure"
     case $file in *.sol) emit_kind "$file" contract-fn "$SOL_RE" "$exposure" ;; esac
+    case $file in
+      *.ino|*.cpp|*.c|*.h|*.hpp)
+        emit_kind "$file" http-route "$INO_ROUTE_RE" "$exposure"
+        emit_kind "$file" listener  "$INO_LISTEN_RE" "$exposure" ;;
+    esac
   )
   if [ -n "$out" ]; then
     # A line can match >1 pattern (e.g. a route that is also a bind); collapse
