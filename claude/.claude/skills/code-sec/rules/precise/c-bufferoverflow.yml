@@ -1,0 +1,7 @@
+id: c-bufferoverflow-strcpy
+language: c
+severity: error
+message: Buffer overflow — unbounded strcpy of request data into a fixed buffer (CWE-120)
+metadata: {cwe: CWE-120, reachable: true}
+rule:
+  pattern: "strcpy($DST, $SRC)"
