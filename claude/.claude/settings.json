@@ -19,7 +19,7 @@
       "Bash(nc *)"
     ]
   },
-  "model": "opus",
+  "model": "claude-fable-5[1m]",
   "hooks": {
     "SessionStart": [
       {
