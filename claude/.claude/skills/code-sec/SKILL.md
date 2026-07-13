@@ -43,9 +43,17 @@ Thoroughness without noise control is just noise. Before a hit becomes a finding
 ### 0. Attack-surface inventory
 
 Enumerate what the repo exposes before scanning it — this scopes phases 4–5
-and is itself a findings source:
+and is itself a findings source. Start with the deterministic enumerator, then
+reason over its output (don't hand-enumerate from scratch):
 
-- **Endpoints / listeners** — HTTP routes, WebSocket handlers, RPC, sockets. Who can reach each?
+```bash
+# Structured entry-point inventory: file:line | kind | bind-hint | exposure-guess.
+# Exposure column seeds the reachability judgment (0.0.0.0→public, 127.0.0.1→local,
+# unix-socket/pipe→internal). Covers py/js/ts/go/lua/solidity route + listener shapes.
+~/.claude/skills/code-sec/bin/enumerate-entrypoints.sh <target-dir>
+```
+
+- **Endpoints / listeners** — HTTP routes, WebSocket handlers, RPC, sockets. Who can reach each? (enumerator finds these; confirm exposure per its guess column)
 - **Data stores** — DBs, files with user data, caches. What sensitivity? Access control?
 - **Third-party integrations** — APIs called, webhooks received, SDKs. What crosses the trust boundary each way? Where do their credentials live, and is rotation possible? What happens if the third party is compromised or returns malicious data? Is more data shared than necessary?
 - **Input entry points** — request params, CLI args, env vars, file formats parsed, IPC.
@@ -105,9 +113,24 @@ git ls-files | grep -E 'KNOWLEDGE|TODOS|SESSION-LOG|\.work/|GDD-|PRD-|ARD-'  # w
 
 ### 4. Input-handling scan — ast-grep first, rg for the rest
 
-**Structural patterns via ast-grep** (matches real call/assignment nodes, so
-comments, docstrings, and string fixtures don't false-positive — near-zero
-eyeball overhead vs grep):
+**Tiered rule pack first** — the versioned reachable-CWE pack under `rules/`
+(SQLi/cmd-inj/SSRF/path-traversal/deserialization/IDOR/auth-bypass on py+js) is
+fixture-backed (red-green against `fixtures/vuln-app`) and CWE-tagged, so process
+its output precise-tier-first: `precise/` hits are near-conclusive, `normal/` are
+shape heuristics, `noisy/` are candidates the taint-trace + reachability judgment
+must confirm:
+
+```bash
+# Whole tiered pack in one project-mode scan. NB: `scan -r` takes a single rule
+# FILE; a directory of rules needs `-c <sgconfig>` (field-test 2026-07-12).
+ast-grep scan -c ~/.claude/skills/code-sec/rules/sgconfig.yml <target-dir>
+```
+
+**Then the inline patterns below** for families/languages the pack does NOT cover
+— dynamic-exec (`eval`/`exec`/`os.system`), XSS (`innerHTML`), Lua, `marshal`,
+`urllib`. Patterns already subsumed by a pack rule are marked RETIRED inline.
+ast-grep matches real call/assignment nodes, so comments, docstrings, and string
+fixtures don't false-positive:
 
 ```bash
 # Python — dynamic execution & shell injection
@@ -116,8 +139,7 @@ ast-grep -p 'exec($X)' -l py .
 ast-grep -p 'os.system($X)' -l py .
 ast-grep -p 'subprocess.$FN($$$ARGS, shell=True)' -l py .
 # Python — unsafe deserialization
-ast-grep -p 'pickle.loads($$$)' -l py .
-ast-grep -p 'yaml.load($$$)' -l py .        # then confirm no SafeLoader arg
+# RETIRED pickle.loads / yaml.load → pack rules py-deser-pickle, py-deser-yaml
 ast-grep -p 'marshal.loads($$$)' -l py .
 # JS/TS — dynamic execution & DOM injection
 ast-grep -p 'eval($X)' -l js .   # repeat with -l ts
