@@ -31,7 +31,7 @@ MANIFEST = CODE_SEC / "fixtures" / "vuln-app" / "MANIFEST.md"
 SGCONFIG = "rules/sgconfig.yml"
 TARGET = "fixtures/vuln-app"
 
-SINK = re.compile(r"([\w./-]+\.(?:py|js|ino)):(\d+)")
+SINK = re.compile(r"([\w./-]+\.(?:py|js|ino|c)):(\d+)")
 
 
 def parse_planted_sinks():
@@ -89,10 +89,10 @@ class TestRulePackRedGreen(unittest.TestCase):
         cls.planted = parse_planted_sinks()
         cls.matches = run_scan()
 
-    def test_manifest_has_sixteen_planted_sinks(self):
+    def test_manifest_has_seventeen_planted_sinks(self):
         # Guards the parser: if MANIFEST reshapes and this drops, every
         # red-green assertion below would weaken silently.
-        self.assertEqual(len(self.planted), 16)
+        self.assertEqual(len(self.planted), 17)
 
     def test_red_every_planted_sink_is_flagged(self):
         for relpath, sinkline in self.planted:
