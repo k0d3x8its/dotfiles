@@ -9,7 +9,7 @@ SAFE variant the rule must stay SILENT on.
 **Do not run these apps — they are intentionally exploitable.**
 
 Reachable CWE families: SQLi, OS command injection, SSRF, path traversal,
-deserialization, IDOR/BOLA, auth bypass.
+deserialization, IDOR/BOLA, auth bypass, buffer overflow (embedded C/C++).
 
 ## Entry points (for the enumerator)
 
@@ -22,16 +22,23 @@ Each app binds public (`0.0.0.0`) in its `vuln.*` and local (`127.0.0.1`) in its
 | `python/safe.py` | 7 | `127.0.0.1:8081` | local |
 | `node/vuln.js` | 6 | `0.0.0.0:8080` | public |
 | `node/safe.js` | 6 | `127.0.0.1:8081` | local |
+| `arduino/vuln.ino` | 2 | WiFi AP `:80` | public |
+| `arduino/safe.ino` | 2 | WiFi AP `:80` | public |
 
-**Total enumerable entry points across the fixture: 27.**
+**Total enumerable entry points across the fixture: 31.**
 Per-file counts are the stable assertion targets (route list below); the total
 is derived and will move if routes are added — assert per file, not the sum.
+Arduino binds public in BOTH variants (a WiFi device is inherently networked;
+the safe/vuln split is the sink fix, not the bind) — the local-bind exposure case
+is already covered by `python/safe.py` and `node/safe.js`.
 
 Route inventory (path → handler line):
 - `python/vuln.py`: `/order`@27 `/ping`@36 `/fetch`@43 `/download`@50 `/import`@58 `/config`@66 `/orders/<order_id>`@72 `/admin/delete`@78
 - `python/safe.py`: `/order`@26 `/ping`@35 `/fetch`@45 `/download`@54 `/config`@62 `/orders/<order_id>`@68 `/admin/delete`@77
 - `node/vuln.js`: `/order`@22 `/ping`@28 `/fetch`@33 `/download`@38 `/import`@43 `/accounts/:id`@49
 - `node/safe.js`: `/order`@20 `/ping`@25 `/fetch`@30 `/download`@37 `/import`@43 `/accounts/:id`@49
+- `arduino/vuln.ino`: `/read`@33 `/greet`@34   (listener: `WebServer server(80)`@14)
+- `arduino/safe.ino`: `/read`@30 `/greet`@31   (listener: `WebServer server(80)`@10)
 
 ## Planted vulns → CWE → sink line → safe variant
 
@@ -62,6 +69,17 @@ IDOR/BOLA tier), `priv` (privilege-escalation target).
 | CWE-22  | Path traversal       | `node/vuln.js:40` (`readFile("/var/data/"+name)`) | `node/safe.js:40` (`basename`+`join`) | yes | unauth |
 | CWE-502 | Deserialization      | `node/vuln.js:45` (`node-serialize` `unserialize`) | `node/safe.js:45` (`JSON.parse`) | yes | unauth |
 | CWE-639 | IDOR / BOLA          | `node/vuln.js:51` (no owner check) | `node/safe.js:53` (owner==session user) | yes | any-user |
+
+### Arduino / ESP (C/C++)
+
+Embedded web-server sinks — the device's WiFi server is the network entry point.
+ast-grep parses `.ino` via its C++ grammar (auto-detected). CWE-120 is the
+embedded-specific family; path traversal reuses CWE-22.
+
+| CWE | Family | Vuln sink | Safe variant | Reachable | Auth tier |
+|---|---|---|---|---|---|
+| CWE-22  | Path traversal   | `arduino/vuln.ino:19` (`SPIFFS.open("/data/"+name)`) | `arduino/safe.ino:16` (allowlist → fixed path, no concat) | yes | unauth |
+| CWE-120 | Buffer overflow  | `arduino/vuln.ino:27` (`strcpy` unbounded) | `arduino/safe.ino:24` (`snprintf` bounded) | yes | unauth |
 
 ## Notes for rule authors (see deepsec `writing-matchers.md`)
 
