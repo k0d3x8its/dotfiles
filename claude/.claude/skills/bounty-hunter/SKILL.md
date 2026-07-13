@@ -84,16 +84,26 @@ instead of re-asks.
 
 ### Step 4 — non-interactive escape hatch
 
-`--assume-public` skips the prompt entirely and treats every network entry point
-as external-unauthenticated. Use it in CI or when no human is present. It over-reports
-(collapses toward code-sec noise) rather than under-reports — but it is NOT a guarantee
-that no public surface is missed. Exposure is guessed per FILE from a bind literal in
-that file's source, and `--assume-public` still honours a `local` guess. So a file whose
-routes are production-public (served by gunicorn/pm2 on `0.0.0.0`, no bind literal in the
-source) but which also contains a dev-only `app.run(host="127.0.0.1")` is classified
-local and its routes are dropped — even under `--assume-public`. When a human is present,
-confirm exposure in Phase 0 rather than trusting the flag; treat `--assume-public` as a
-CI convenience, not a completeness guarantee.
+`--assume-public` skips the prompt entirely and treats EVERY network entry point as
+external-unauthenticated — the enumerator's exposure column is **ignored**, including its
+`local` and `internal` guesses. This is deliberate fail-open. The flag exists for the
+no-human CI path, and a per-file bind literal is too weak a signal to drop a surface on
+when nobody is present to correct it: a file whose routes production serves public
+(gunicorn/pm2 on `0.0.0.0`, no bind literal in source) but that also carries a dev-only
+`app.run(host="127.0.0.1")` would be misclassified local — so under the flag no local/
+internal guess is allowed to silence a surface. It over-reports (collapses toward code-sec
+noise) by construction; that is the safe direction. When a human IS present, prefer the
+Phase-0 confirmation prompt — it prunes the over-reporting precisely, which the blunt flag
+cannot. Treat `--assume-public` as the conservative CI default, not a substitute for the
+prompt when a human can answer it.
+
+Fail open on the GATE without discarding the SIGNAL. Forcing every surface into scope is
+not license to throw away the enumerator's guess: each forced surface header still carries
+the original column as a secondary annotation — `POST /admin (forced-public; enumerator
+guess: local)`. Under the flag a repo with many internal listeners floods the report with
+forced-public groups, and in the no-human CI path there is nobody to prune them — so the
+retained guess is the sort key that lets a later reader re-float the genuinely-public
+surfaces first, instead of the one real finding drowning among forced internal ones.
 
 ## Auth tiers (external-reachable, tagged per finding)
 
@@ -119,6 +129,35 @@ Why three and not one: a binary unauth-only gate would discard every IDOR findin
 by construction — and IDOR is the core risk for any multi-user or multiplayer
 system. Three tiers is the minimum that captures multiplayer IDOR + privilege
 escalation without importing full RBAC ceremony.
+
+## Rule pack vs model pass — what actually finds sinks
+
+Two layers find sinks, and the division between them is load-bearing for how far a
+false-negative can hide:
+
+- **The rule pack (`code-sec/rules/`) is a deterministic fast path, not the ceiling.**
+  It structurally matches KNOWN CWE shapes, but coverage is defined by which file
+  EXTENSIONS ast-grep actually runs the rules on — NOT by the rule's `language:` field,
+  which can diverge from ast-grep's extension dispatch. `language: javascript` runs on
+  `.js/.mjs/.cjs/.jsx` but NOT `.ts/.tsx` (parsed as `typescript`); the pack ships a
+  separate `language: c` rule so `.c/.h` (dispatched to `c`, not `cpp`) are covered too.
+  A pack hit is a high-recall *candidate*, cheap and repeatable — but only on a covered
+  extension. **Covered extensions (verified against ast-grep dispatch, re-verify if the
+  pack changes):** `.py` · `.js .mjs .cjs .jsx` · `.cpp .cc .cxx .hpp .hh .ino` · `.c .h`.
+  Every OTHER enumerated extension — today `.ts .tsx .go .lua .sol` — is model-only (see
+  the coverage declaration in Report shape).
+- **The model pass is the backstop and IS expected to find sinks the pack did not
+  flag.** Taint-trace from every enumerated entry point per code-sec's Finding
+  discipline — including entry points in languages the pack has no rules for, novel
+  sink shapes, and sink variants a narrow rule missed (`%`-format SQLi, `.format()`,
+  string-concat). The pack seeds and floors the search; it never bounds it.
+
+Consequence for confidence tiers: a pack-matched sink can reach `CONFIRMED`/`TRACED`
+off the structural match plus the trace; a **model-only sink is `CANDIDATE` until the
+model fully taint-traces it** to an external entry point. And because the model
+backstops uncovered languages, rule-corpus breadth is a precision/recall *accelerator*,
+not the safety ceiling — its absence degrades confidence and speed, it does not create a
+silent hard drop, *provided the coverage gap is declared* (see Report shape).
 
 ## Dependencies and graceful degradation
 
@@ -174,6 +213,33 @@ surface itself legible.
   surface was scanned in a degraded mode, per the degrade clause above — a quiet
   clean-looking group over an unscannable language is the dangerous failure.)
 - **Trailing `Dropped — local-only` section** carries the annotations below.
+
+### Rule-coverage declaration (mandatory, opens the report)
+
+The rule pack covers a subset of the languages the enumerator finds entry points in, so
+a group can look "clean" only because no deterministic rule ever ran on it. Before the
+per-surface groups, the report MUST state, per enumerated language, whether the rule pack
+ran on it — a one-block header:
+
+```
+Rule coverage this run:
+  python      — rules ran (deterministic + model)
+  javascript  — rules ran (deterministic + model)
+  typescript  — NO SINK RULES RAN — model-only pass; treat as UNSCANNED, not clean
+  go / lua    — NO SINK RULES RAN — model-only pass; treat as UNSCANNED, not clean
+```
+
+Any enumerated language NOT in the pack's live language set (see "Rule pack vs model
+pass") gets the loud `NO SINK RULES RAN` line, and every finding-free surface in that
+language is reported as **model-only / uncovered**, never as a bare "clean."
+
+**TypeScript is the sharp trap and gets called out by name.** ast-grep parses `.ts` as
+language `typescript`, so the JavaScript rules **never execute on it** — a `.ts` service
+is worse than "no rules," because the pack appears present yet fires zero. Confirmed:
+an `exec("ping "+req.query.host)` and concat-SQLi in a `.ts` file draw ZERO pack hits
+while the byte-identical `.js` file fires. So any TypeScript surface is model-only by
+construction until real `.ts` rules exist; declare it uncovered even though JS rules are
+in the pack.
 
 The **finding format itself is identical to code-sec** — what / where (`file:line`) /
 confidence tier (`CONFIRMED` / `TRACED` / `CANDIDATE`) / taint trace (entry → sink) /
