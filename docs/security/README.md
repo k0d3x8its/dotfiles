@@ -130,15 +130,15 @@ code exists (degrades to arch docs + interview pre-code).
 ("what should we be defending against?") rather than code-level. Deliberately
 NOT part of the sweep skills — it is a separate sit-down.
 
-**Status:** design locked (`docs/brainstorm/threat-model-skill-2026-07-11.md`,
-decisions TM-D1..TM-D10 in `.work/FINDINGS.md`), build is PLAN.md Goals 16–19.
-This row updates when it ships.
+**Status:** shipped — `claude/.claude/skills/threat-model/SKILL.md`, symlinked by
+`install.sh`. Design record: `docs/brainstorm/threat-model-skill-2026-07-11.md`
+(decisions TM-D1..TM-D10 encoded in that doc + `.work/PLAN.md` Goals 16–19).
 
 ## End-to-end workflow
 
 Typical order on a real project:
 
-1. **`/threat-model`** (when it ships; design-time, optional for small repos) —
+1. **`/threat-model`** (design-time, optional for small repos) —
    seeds `.work/SEC-CONTEXT.md` with topology, actors, and trust boundaries
    before any code-level pass.
 2. **`/code-sec`** — the broad sweep. Its phase-0 inventory and phase-2
