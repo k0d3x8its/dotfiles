@@ -61,9 +61,12 @@ See [REFERENCE.md](REFERENCE.md) for Proton Pass JSON template and verification 
 !/.work/PLAN.md
 !/.work/FINDINGS.md
 !/.work/PROGRESS.md
+!/.work/SEC-CONTEXT.md
 ```
 
 Glob negations not supported in `.gitignore` — list `.work/` files individually.
+Any git-crypt file that `gitignore.core` also ignores as "local context" needs a
+matching negation here, or it stays ignored and never commits (never persists).
 
 ---
 
