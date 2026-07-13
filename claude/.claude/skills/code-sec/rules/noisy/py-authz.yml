@@ -1,0 +1,14 @@
+id: py-authz-admin-no-gate
+language: python
+severity: warning
+message: Privileged route with no authorization gate (CWE-287)
+metadata: {cwe: CWE-287, reachable: true}
+rule:
+  kind: decorated_definition
+  all:
+    - has: {kind: string, regex: "admin", stopBy: end}
+    - has: {kind: identifier, regex: "^app$", stopBy: end}
+  not:
+    has:
+      pattern: "abort($$$)"
+      stopBy: end

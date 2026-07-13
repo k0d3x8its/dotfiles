@@ -1,0 +1,7 @@
+id: py-idor-subscript-return
+language: python
+severity: warning
+message: Possible IDOR/BOLA — object by id returned with no ownership check (CWE-639)
+metadata: {cwe: CWE-639, reachable: true}
+rule:
+  pattern: "return str($DICT[$KEY])"

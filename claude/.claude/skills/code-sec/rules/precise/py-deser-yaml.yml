@@ -1,0 +1,7 @@
+id: py-deser-yaml-load
+language: python
+severity: error
+message: Unsafe yaml.load without SafeLoader (CWE-502)
+metadata: {cwe: CWE-502, reachable: true}
+rule:
+  pattern: "yaml.load($$$)"
