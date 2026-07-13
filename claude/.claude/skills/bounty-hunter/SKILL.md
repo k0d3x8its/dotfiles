@@ -77,10 +77,11 @@ surface, TWO things together:
 2. **Auth tier required at that surface** — see the three tiers below.
 
 This is a single ~30-second checkpoint, not a per-finding prompt. The user
-corrects defaults rather than authoring from blank. **Persist the confirmed
-result back to `.work/SEC-CONTEXT.md`** (Topology & exposure + Actors & auth
-tiers sections) so the next run — of this skill or any suite sibling — reads
-instead of re-asks.
+corrects defaults rather than authoring from blank. If domain-pack detection
+fired (see Domain packs), its load proposal rides along in this same prompt.
+**Persist the confirmed result back to `.work/SEC-CONTEXT.md`** (Topology &
+exposure + Actors & auth tiers sections) so the next run — of this skill or any
+suite sibling — reads instead of re-asks.
 
 ### Step 4 — non-interactive escape hatch
 
@@ -158,6 +159,30 @@ model fully taint-traces it** to an external entry point. And because the model
 backstops uncovered languages, rule-corpus breadth is a precision/recall *accelerator*,
 not the safety ceiling — its absence degrades confidence and speed, it does not create a
 silent hard drop, *provided the coverage gap is declared* (see Report shape).
+
+## Domain packs — on-demand abuse lenses
+
+The core skill covers the general remote-reachable CWE families. Domain-specific abuse
+— game state-tampering / economy, web business-logic, and the like — lives in on-demand
+packs so the always-on core stays lean (progressive disclosure). A pack has two halves
+under one `<domain>` key: `domains/<domain>.md` is the REASONING layer (how to think
+about that domain's abuse), `rules/<domain>/` is the DETERMINISTIC ast-grep layer.
+
+- **Load signal — runs once, in Phase 0.** After enumeration (Step 2), check each
+  installed pack's `applies when` header against what Phase 0 already produced:
+  dependency manifests / import graph, enumerated entry-point kinds, and file/dir names.
+  Any ONE match PROPOSES that pack.
+- **Confirm, never auto-load silently.** Fold the proposal into the Step-3 confirmation
+  prompt — `Detected domain: game-abuse — load its abuse pack? [Y/n]` — so a false
+  detect is corrected in the same 30-second checkpoint. Persist the choice to
+  `.work/SEC-CONTEXT.md` so the next run reads instead of re-asks.
+- **Loading a pack** = read its `domains/<domain>.md` for the abuse lens AND add
+  `rules/<domain>/` to the ast-grep scan. Zero matches → core-only, no pack loaded
+  (the intended default). `TEMPLATE.md` is the authoring guide and is NEVER loaded —
+  its `applies when` matches nothing by construction.
+
+**v1 ships the seam, not the packs.** There are zero real packs today; a pack is filled
+EMPIRICALLY after a real sweep of that domain, following `domains/TEMPLATE.md`.
 
 ## Dependencies and graceful degradation
 
@@ -271,5 +296,3 @@ per-run boilerplate) routing each output class:
 
 The annotation is a pointer; the guide is the map. Together they route the user
 without the skill silently filing low-confidence noise.
-
-<!-- Next (G12): on-demand domain-pack seam — domain-detect signal + domains/_TEMPLATE.md. -->
