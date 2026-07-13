@@ -47,9 +47,11 @@ done
 # blocks on stdin in a non-tty shell.
 find_sources() {
   find "$@" -type f \
-    \( -name '*.py' -o -name '*.js' -o -name '*.ts' -o -name '*.mjs' \
+    \( -name '*.py' -o -name '*.js' -o -name '*.mjs' -o -name '*.cjs' \
+       -o -name '*.jsx' -o -name '*.ts' -o -name '*.tsx' \
        -o -name '*.go' -o -name '*.lua' -o -name '*.sol' \
-       -o -name '*.ino' -o -name '*.cpp' -o -name '*.c' -o -name '*.h' -o -name '*.hpp' \) 2>/dev/null
+       -o -name '*.ino' -o -name '*.cpp' -o -name '*.cc' -o -name '*.cxx' \
+       -o -name '*.c' -o -name '*.h' -o -name '*.hpp' -o -name '*.hh' \) 2>/dev/null
 }
 
 # --- exposure guess ----------------------------------------------------------
@@ -145,7 +147,7 @@ while IFS= read -r file; do
     emit_kind "$file" listener "$LISTEN_RE" "$exposure"
     case $file in *.sol) emit_kind "$file" contract-fn "$SOL_RE" "$exposure" ;; esac
     case $file in
-      *.ino|*.cpp|*.c|*.h|*.hpp)
+      *.ino|*.cpp|*.cc|*.cxx|*.c|*.h|*.hpp|*.hh)
         emit_kind "$file" http-route "$INO_ROUTE_RE" "$exposure"
         emit_kind "$file" listener  "$INO_LISTEN_RE" "$exposure" ;;
     esac
