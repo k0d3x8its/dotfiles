@@ -42,6 +42,10 @@ See [REFERENCE.md](REFERENCE.md) for Proton Pass JSON template and verification 
 /docs/GDD-*.md           filter=git-crypt diff=git-crypt
 /docs/PRD-*.md           filter=git-crypt diff=git-crypt
 /docs/ARD-*.md           filter=git-crypt diff=git-crypt
+
+# Security artifacts — attacker roadmaps (SEC-CONTEXT covered by /.work/* above)
+/docs/threat-model.md        filter=git-crypt diff=git-crypt
+/docs/threat-model.dfd.mmd   filter=git-crypt diff=git-crypt
 ```
 
 `/.work/*` encrypts all current and future files in `.work/` without revisiting `.gitattributes`.
