@@ -1,6 +1,6 @@
 ---
 name: threat-model
-description: Top-down STRIDE threat model — the design-analysis counterpart to code-sec's bottom-up sweep. Builds a living model at docs/threat-model.md (DFD element table → STRIDE per element → likelihood×impact risk grid → mitigation map, each VERIFIED-in-code / [SECURITY] TODO / ACCEPTED-with-reason) for repos serving HTTP or holding user data. Update mode re-verifies mitigations and re-STRIDEs only changed elements. Design-review mode runs the model against a planning doc — plan-level security review before code exists. Use for /threat-model, "threat model this system", "what could an attacker do to this design", pre-launch or new-system security design review. Deliberate trigger only — never auto-run per sweep. Sibling of code-sec (broad hygiene) and bounty-hunter (reachability filter).
+description: Top-down STRIDE threat model — the design-analysis counterpart to code-sec's bottom-up sweep. Builds a living model at docs/threat-model.md (DFD element table → STRIDE per element → likelihood×impact risk grid → mitigation map, each VERIFIED-in-code / [SECURITY] TODO / ACCEPTED / ELIMINATED / TRANSFERRED) for repos serving HTTP or holding user data. Update mode re-verifies mitigations and re-STRIDEs only changed elements. Design-review mode runs the model against a planning doc — plan-level security review before code exists. Use for /threat-model, "threat model this system", "what could an attacker do to this design", pre-launch or new-system security design review. Deliberate trigger only — never auto-run per sweep. Sibling of code-sec (broad hygiene) and bounty-hunter (reachability filter).
 ---
 
 # threat-model — Living STRIDE Threat Model
@@ -57,7 +57,8 @@ Facts code cannot show come from one shared, persisted context file.
   template at `~/.claude/skills/code-sec/templates/SEC-CONTEXT.md` to
   `.work/SEC-CONTEXT.md` and filling the four sections this skill owns:
   - **Topology & exposure** — what the system exposes and from where (public / internal /
-    local per entry point).
+    local per entry point), and what **leaves** it: exit points — responses, error
+    output, logs, exports to third parties — and who receives each.
   - **Actors & auth tiers** — who interacts, and what auth each entry point requires
     (unauth-external / authenticated-any-user / privileged).
   - **Data stores & business value** — what data is held and why an attacker wants it;
@@ -92,6 +93,11 @@ Rendering is delegated; the table is what update-mode diffs and code-sec greps.
   | TB1| Trust boundary  | Internet edge| —                 | —                  | interview            |
   ```
 
+- **Model exit points, not just entries.** Error messages, dynamic responses, logs,
+  exports — anywhere data leaves the system is where Information-disclosure threats live
+  (verbose stack traces, account-harvesting login errors, SQL errors echoed to the
+  client). Represent each exit as an outbound data flow (P→E / P→S) with its data label.
+  The enumerator only finds entries; exits come from code reads + the phase-0 interview.
 - **Label flows with the DATA, not the verb** — "PII + account number", never "sends".
   Sensitivity ride-along (PII / credentials / regulated / public) is what the risk grid
   consumes. **A DFD without trust boundaries is just a flowchart** — every boundary
@@ -141,8 +147,15 @@ likelihood × impact grid**:
 
 - **Impact** is anchored by the phase-0 business value of the data the threat touches;
   **likelihood** by exposure + attacker effort (use the DFD trust-boundary distance).
+- **Concrete anchors** (OWASP ease-of-exploitation / damage criteria) — each "yes"
+  pushes the score up a step, so High/Medium/Low calls stay reproducible across runs:
+  - **Likelihood:** remotely exploitable? no auth (or only anonymous-tier) required?
+    automatable/scriptable?
+  - **Impact:** full takeover or admin access attainable? secrets / PII / regulated data
+    exposed? multiple systems or data stores in scope?
 - **Disposition by rank:**
-  - **High** → a `[SECURITY]` TODO is **forced**. ACCEPTED only with explicit user
+  - **High** → a `[SECURITY]` TODO is **forced** (ELIMINATED or TRANSFERRED per phase 4
+    also satisfy — they remove or move the risk). ACCEPTED only with explicit user
     **sign-off** recorded in the doc (who accepted, when, why).
   - **Medium** → the model **recommends** a disposition; the user confirms.
   - **Low** → **ACCEPTED-with-reason** is the default; state the reason, no TODO needed.
@@ -154,10 +167,21 @@ Per threat, exactly one disposition, with evidence:
 - **VERIFIED-in-code** — the guard exists. Record it as **guard name + `file:line` +
   ast-grep pattern** so a later code-sec sweep can mechanically re-confirm it. Example:
   `auth_required decorator (routes.py:42) — ast-grep: '@auth_required\ndef $FN($$$)'`.
+  A guard covering only some attack paths is **VERIFIED-partial**: record the covered
+  paths with the same evidence format, and the residual gap is **forced into a
+  `[SECURITY]` TODO** — partial never closes a threat on its own.
 - **`[SECURITY]` TODO** — no guard, or guard insufficient. Confirm before writing (suite
   convention), then file the tagged TODO.
 - **ACCEPTED-with-reason** — risk accepted per the phase-3 rank rules (High needs
   sign-off). State the reason inline.
+- **ELIMINATED** — the feature or flow is removed so the threat has no target. Record
+  what was removed and where (commit / plan section). Often the cheapest answer for a
+  High-rank threat on a low-value feature; in design-review mode this is a design-change
+  recommendation.
+- **TRANSFERRED** — a third party owns the risk (payment processor, managed auth,
+  upstream vendor). Record who and via what mechanism (contract, service boundary).
+  Not ACCEPTED — the residual integration surface (webhooks, callbacks, API keys)
+  stays in the DFD and still gets STRIDE'd.
 
 The ast-grep pattern is the contract between this model and the code-sec verify loop — a
 mitigation with no locatable pattern cannot be re-verified and should be treated as
