@@ -6,4 +6,8 @@ claude/.claude/KNOWLEDGE.md filter=git-crypt diff=git-crypt
 /.work/FINDINGS.md filter=git-crypt diff=git-crypt
 /.work/PROGRESS.md filter=git-crypt diff=git-crypt
 /.work/PLAN.md filter=git-crypt diff=git-crypt
+/.work/SEC-CONTEXT.md filter=git-crypt diff=git-crypt
+# Threat model + its DFD source are attacker roadmaps — encrypt (SVG is derived, gitignored).
+/docs/threat-model.md filter=git-crypt diff=git-crypt
+/docs/threat-model.dfd.mmd filter=git-crypt diff=git-crypt
 /.memory/SESSION-LOG.md filter=git-crypt diff=git-crypt
