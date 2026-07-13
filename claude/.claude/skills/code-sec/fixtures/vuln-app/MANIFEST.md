@@ -81,6 +81,18 @@ embedded-specific family; path traversal reuses CWE-22.
 | CWE-22  | Path traversal   | `arduino/vuln.ino:19` (`SPIFFS.open("/data/"+name)`) | `arduino/safe.ino:16` (allowlist → fixed path, no concat) | yes | unauth |
 | CWE-120 | Buffer overflow  | `arduino/vuln.ino:27` (`strcpy` unbounded) | `arduino/safe.ino:24` (`snprintf` bounded) | yes | unauth |
 
+### Native C (CGI / daemon)
+
+ast-grep parses `.c`/`.h` as language `c` — DISTINCT from `cpp`, so the cpp rule
+pack does NOT run on them. This pair proves the dedicated `language: c` rule
+(`c-bufferoverflow-strcpy`) fires where the cpp rules are silent. CGI handlers
+read request data from the environment; there is no bound listener, so these are
+a rule bed, not an enumeration bed (no route-inventory rows above).
+
+| CWE | Family | Vuln sink | Safe variant | Reachable | Auth tier |
+|---|---|---|---|---|---|
+| CWE-120 | Buffer overflow | `c/vuln.c:17` (`strcpy` of `getenv` into fixed buffer) | `c/safe.c:14` (`snprintf` bounded) | yes | unauth |
+
 ## Notes for rule authors (see deepsec `writing-matchers.md`)
 
 - Match the SHAPE, not fixture identifiers — a SQLi rule keys on
