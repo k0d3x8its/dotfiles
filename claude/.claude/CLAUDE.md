@@ -88,6 +88,8 @@ After creating a card, annotate the Goal in `.work/PLAN.md` with [trello:CARD_ID
 | Empirical facts, env truths, codebase gotchas | `KNOWLEDGE.md` (local or global) |
 | Architectural decisions (cost meaningful + future reader wonders why + alternatives considered) | `docs/adr/ADR-NNNN-*.md` (CLI/SDK projects) |
 | Bug post-mortems (root cause + fix + what-would-prevent, via `/diagnose`) | `docs/post-mortems/<slug>.md` — one file per bug (no date prefix; date is in the `**Date:**` field inside); git-crypt the dir on public repos |
+| Threat model (STRIDE, risk ranks, mitigation map, via `/threat-model`) | `docs/threat-model.md` (git-crypt; DFD source `docs/threat-model.dfd.mmd` git-crypt, `.dfd.svg` render gitignored) |
+| Shared security context (topology, actors/auth tiers, trust boundaries, repo's own sanitizers) | `.work/SEC-CONTEXT.md` (git-crypt; read/written by threat-model, bounty-hunter, code-sec) |
 | Session narrative, decisions + why | `.memory/SESSION-LOG.md` |
 | Changelog-worthy changes (features, fixes) | `CHANGELOG.md` (via `/changelog`) |
 | Per-task scratch, investigation notes | `.work/FINDINGS.md` |
