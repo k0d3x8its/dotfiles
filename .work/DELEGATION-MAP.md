@@ -48,7 +48,7 @@ the red-green bed — it exists; remaining pieces are the rule pack + code-sec c
 | G10 · MG3 | tiered ast-grep rule pack `rules/{precise,normal,noisy}/` + CWE/reachable tags | **Not built.** Rule correctness + noise-tier judgment; spec locked (deepsec docs cited). |
 | G10 · MG4 | wire code-sec SKILL.md phase-0 to consume enumerator + `rules/` | **Not built.** Closes v2 items 2+6 — the consumer is what makes the core "done". |
 | G16 | /diagram DFD mode (notation + engine + smoke-render) | Deterministic render spec fully in TM design doc. |
-| G12 | bounty-hunter domain-pack seam + `_TEMPLATE.md` | Architecture seam; small judgment on the load signal. |
+| G12 | bounty-hunter domain-pack seam + `TEMPLATE.md` | Architecture seam; small judgment on the load signal. |
 
 ## Sonnet + Opus-review — mechanical / config / structured-prose / tests
 
