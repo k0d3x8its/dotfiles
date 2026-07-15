@@ -92,7 +92,7 @@ KOS (Kodex OS) is my personal knowledge management system.
 ## Skills Available
 The harness auto-lists every custom skill + its description each session — names below are the slash aliases, not re-described here. Tag routing lives in the TODO Tags table.
 `/handoff` `/handoff-return` `/close` `/checkpoint` `/changelog` `/dev-brief` `/planning-with-files` `/release-notes` `/find-skills` `/diagnose` `/tdd` `/prototype` `/sync-trello`
-External (not auto-surfaced): `/ce-code-review` `/ce-security-audit` `/discover` `/write-prd`
+External (not auto-surfaced): `/ce-code-review` `/discover` `/write-prd`
 
 ## Session Rules
 - Track session start time. Warn me at 45 minutes to run /handoff (lean fork), /close
@@ -237,7 +237,7 @@ When to use: moving from idea → foundation. Run this before `/dev-setup` or an
 
 #### `/ante-mortem` — Future bug audit
 
-Imagines future post-mortems for the codebase as it stands today. Writes realistic incident reports for bugs that haven't happened yet, identifies fragile code and implicit assumptions. Hardening suggestions become tagged TODOs in `TODOS.md`. Security fragility gets `[SECURITY]` tags and a suggestion to run `/ce-security-audit`. Real bugs found in passing get `[BUG]` TODOs for `/diagnose`.
+Imagines future post-mortems for the codebase as it stands today. Writes realistic incident reports for bugs that haven't happened yet, identifies fragile code and implicit assumptions. Hardening suggestions become tagged TODOs in `TODOS.md`. Security fragility gets `[SECURITY]` tags and a suggestion to run `/code-sec` or `/bounty-hunter`. Real bugs found in passing get `[BUG]` TODOs for `/diagnose`.
 
 Reference catalogue of 11 fragility patterns lives in `ante-mortem/CATALOGUE.md`.
 
@@ -471,11 +471,15 @@ Claude reads `.work/PLAN.md`, creates cards/checklists/items for all Goals witho
 /ce-code-review
 ```
 
-Parallel sub-agents review logic, edge cases, naming, efficiency, test coverage. For anything touching auth, file I/O, or external input:
+Parallel sub-agents review logic, edge cases, naming, efficiency, test coverage. For anything touching auth, file I/O, or external input, run the security suite:
 
 ```
-/ce-security-audit
+/code-sec         # broad hygiene sweep
+/bounty-hunter    # reachability filter (what an attacker can actually reach)
+/harness-audit    # if the project ships .claude/ config
 ```
+
+See [docs/security/README.md](security/README.md) for the full suite and skill composition.
 
 ---
 
@@ -570,7 +574,7 @@ New session opens. Paste the re-entry prompt. Claude reads `.memory/SESSION-LOG.
 | Status (cost/burn/time) | Glance at status bar (always visible) |
 | Goal is ready to track | `/sync-trello` |
 | Before committing code | `/ce-code-review` |
-| Anything touching security | `/ce-security-audit` |
+| Anything touching security | `/code-sec` · `/bounty-hunter` · `/harness-audit` · `/threat-model` |
 | 45-minute timer fires, side-issue | `/handoff` (lean fork) |
 | 45-minute timer fires, wrapping up | `/close` (lightweight close) |
 | End of work session | `/checkpoint` (durable — writes narrative + triage) |
@@ -602,9 +606,14 @@ New session opens. Paste the re-entry prompt. Claude reads `.memory/SESSION-LOG.
     refresh_triage.py             ← PostToolUse: auto-refreshes .memory/TRIAGE-BLOCK.md on TODOS.md edit
     caveman-*.js / .sh            ← caveman plugin hooks
   references/
-    kos-code-reference.md         ← KOS-Code vocabulary (read by skills at runtime)
-    anti-patterns.md              ← anti-pattern catalogue
+    code/
+      CODE-REFERENCE.md           ← vocabulary reference (Ousterhout, Feathers, ADR format + gate)
+      CODE-PRINCIPLES.md          ← committed principles + smell vocabulary
+      CODE-STANDARD.md            ← mechanical rules + per-language delegation
+      ANTI-PATTERNS.md            ← full anti-pattern catalogue (Fowler, Brown, Meszaros)
+      LUA.md / PYTHON.md / ...    ← per-language rules
     MEMORY-STANDARD.md            ← KNOWLEDGE.md promotion bar, routing rules, entry format
+    MEMORY-ARCHITECTURE.md        ← 5-store memory system reference
   skills/
     session-handoff/              ← /handoff  (lean fork)
     session-handoff-return/       ← /handoff-return  (merge tangent)
@@ -617,6 +626,10 @@ New session opens. Paste the re-entry prompt. Claude reads `.memory/SESSION-LOG.
     tdd/                          ← /tdd  (red-green-refactor)
     prototype/                    ← /prototype  (throwaway spike)
     grill-me/                     ← /grill-me  (stress-test a plan)
+    code-sec/                     ← /code-sec  (project security sweep)
+    bounty-hunter/                ← /bounty-hunter  (remote reachability triage)
+    harness-audit/                ← /harness-audit  (harness attack surface audit)
+    threat-model/                 ← /threat-model  (design-time STRIDE)
     ante-mortem/                  ← /ante-mortem  (future bug audit)
     mutation-testing/             ← /mutation-testing  (test gap detection)
     dev-setup/                    ← /dev-setup  (per-project wizard)
