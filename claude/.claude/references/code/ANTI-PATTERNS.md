@@ -1,6 +1,6 @@
-# anti-patterns.md
+# ANTI-PATTERNS.md
 
-> Full anti-pattern and code smell taxonomy. Referenced by kos-code-reference.md.
+> Full anti-pattern and code smell taxonomy. Referenced by CODE-REFERENCE.md.
 > Sources: Fowler (Refactoring 2nd ed), Brown et al (AntiPatterns), Mantyla,
 > Meszaros (xUnit Test Patterns), general OO literature.
 
