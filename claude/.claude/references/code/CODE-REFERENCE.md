@@ -1,8 +1,8 @@
-# kos-code-reference.md
+# CODE-REFERENCE
 
-> On-demand vocabulary and decision reference for code analysis in the KOS system.
-> Loaded by skills (diagnose, tdd, kos-code) when evaluating architecture, writing
-> tests, or recording decisions. Sources: Ousterhout (APOSD), Feathers (WEWLC), Fowler (Refactoring).
+> On-demand vocabulary and decision reference. Loaded by skills (diagnose, tdd,
+> prototype, dev-setup) when evaluating architecture, writing tests, or recording
+> decisions. Sources: Ousterhout (APOSD), Feathers (WEWLC), Fowler (Refactoring).
 
 ---
 
@@ -83,7 +83,7 @@ external call.
 *(Fowler — Refactoring; Mantyla; Brown et al — AntiPatterns; Meszaros — xUnit Test Patterns)*
 
 Full taxonomy (70+ patterns across code, OO design, architecture, testing) lives in:
-**`references/anti-patterns.md`** — Read that file for the complete reference.
+**`references/code/ANTI-PATTERNS.md`** — Read that file for the complete reference.
 
 Most-encountered patterns for quick recall:
 
