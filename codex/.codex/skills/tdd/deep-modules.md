@@ -2,7 +2,7 @@
 
 *(Ousterhout — A Philosophy of Software Design)*
 
-Full vocabulary reference: `~/.codex/references/kos-code-reference.md`
+Full vocabulary reference: `~/.codex/references/code/CODE-REFERENCE.md`
 
 ## The principle
 
