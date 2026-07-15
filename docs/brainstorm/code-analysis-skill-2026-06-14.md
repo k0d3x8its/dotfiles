@@ -8,14 +8,14 @@
 Build a `code-analysis` skill that ranks the hotspots in a repo — the files most worth
 refactoring — by combining **behavioral** signals from git history (churn, age,
 co-change) with **structural** signals (complexity), then names each hotspot through the
-kos-code-reference.md vocabulary (God Class, Shotgun Surgery, Deep/Shallow Module, Lava
+CODE-REFERENCE.md vocabulary (God Class, Shotgun Surgery, Deep/Shallow Module, Lava
 Flow, etc.). v2+ dimensions deferred: static analysis (lint/type errors), coverage gaps
 vs churn, dependency-graph coupling.
 
 ## Context & constraints
 
 - Skill lives in `dotfiles/claude/.claude/skills/code-analysis/` (symlinked to `~/.claude`).
-- Interpretive lens already exists: `references/kos-code-reference.md` + `anti-patterns.md`.
+- Interpretive lens already exists: `references/code/CODE-REFERENCE.md` + `references/code/ANTI-PATTERNS.md`.
 - `ast-grep` 0.43.0 (`sg`) on PATH. **Verified** it supports every language in play:
   Python, JS, TS/TSX, Lua, Bash, C, C++, **Solidity** — all built-in (tested with real
   files; an earlier stdin-based probe falsely reported Solidity unsupported).
