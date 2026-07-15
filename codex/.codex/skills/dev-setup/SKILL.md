@@ -117,7 +117,7 @@ For CLI/backend and Library/SDK projects, note after scaffolding:
 > "`docs/adr/` is active. Record any decision that meets the three-condition ADR gate
 > (cost of change is meaningful + future reader would wonder why + alternatives were
 > considered). Format: `docs/adr/ADR-0001-short-title.md`. Full schema in
-> `~/.codex/references/kos-code-reference.md`."
+> `~/.codex/references/code/CODE-REFERENCE.md`."
 
 Print what was created.
 
