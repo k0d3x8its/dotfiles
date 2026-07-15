@@ -71,6 +71,20 @@ Forcing the cross-file edit is shotgun surgery, the smell below.)
   deep into another module's internals.
 - A seam exists so tests can substitute it. If a module can't be tested without the
   real world attached, it's missing a seam.
+- Three seam types (Feathers): **Object seam** — inject a dependency as a parameter.
+  **Link seam** — swap a module at load time via env or conditional import.
+  **Preprocessing seam** — config/env changes behavior before code runs.
+
+### Depth — prefer deep modules
+- Small interface, large implementation: callers get leverage; they gain a lot of
+  behavior for little interface complexity.
+- At review, flag shallow modules — if the interface is nearly as complex as the
+  implementation, the abstraction earns nothing and is often premature decomposition.
+- Apply the **Deletion Test** when evaluating any module: "If I deleted this, where
+  does the complexity go?" Complexity that vanishes → module hid nothing, delete it.
+  Complexity that scatters → earns its keep. Complexity that consolidates → wrong
+  location, move it.
+- Full vocabulary with diagrams: `CODE-REFERENCE.md`
 
 ## Explicitly dropped — do not apply
 
@@ -107,3 +121,5 @@ Fowler smells by name. Naming the smell is the trigger — flag it, then fix or 
 - `karpathy-guidelines` skill — behavioral guardrails (surgical changes, surfaced
   assumptions); complements, does not duplicate, this file
 - `CODE-STANDARD.md` — mechanical rules + per-language delegation
+- `CODE-REFERENCE.md` — vocabulary definitions (Ousterhout, Feathers), ADR format + gate, Quick-Check Questions
+- `ANTI-PATTERNS.md` — full Fowler/Brown/Meszaros anti-pattern catalogue
