@@ -51,9 +51,19 @@ threat-model / code-sec suite), skip to Step 2 and enumerate from scratch.
 
 ### Step 2 — statically enumerate every entry point
 
+Resolve the active runtime's code-sec skill root, then run its enumerator. Codex
+and Claude share this skill, while code-sec still has runtime-specific wrappers:
+
 ```bash
-~/.claude/skills/code-sec/bin/enumerate-entrypoints.sh <target-dir>
+CODE_SEC_ROOT="$HOME/.codex/skills/code-sec"
+if [[ ! -x "$CODE_SEC_ROOT/bin/enumerate-entrypoints.sh" ]]; then
+  CODE_SEC_ROOT="$HOME/.claude/skills/code-sec"
+fi
+"$CODE_SEC_ROOT/bin/enumerate-entrypoints.sh" <target-dir>
 ```
+
+If neither installation contains the enumerator, use the graceful-degrade path in
+Dependencies below. Do not silently assume the Claude path when Codex is active.
 
 Emits `file:line | kind | bind-hint | exposure-guess`. Supported entry-point
 languages (what the enumerator actually parses): **Python, JavaScript, TypeScript,
