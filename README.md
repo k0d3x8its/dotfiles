@@ -10,6 +10,8 @@ K0d3x personal dotfiles — Ubuntu 24.04 (Noble).
 - **Hooks** — auto-refresh triage on edit, session timer warnings, Claude-only live cost/burn/context statusline → [docs/hooks.md](docs/hooks.md)
 - **Episodic memory** — per-session auto-capture, progressive `/recall`, gated `/consolidate` → [docs/episodic-memory.md](docs/episodic-memory.md)
 - **Memory architecture** — 5-store system (semantic, episodic, prospective, procedural, working) → [claude/.claude/references/MEMORY-ARCHITECTURE.md](claude/.claude/references/MEMORY-ARCHITECTURE.md)
+- **Security suite** — four-skill system (code-sec, bounty-hunter, harness-audit, threat-model) with shared deterministic core → [docs/security/README.md](docs/security/README.md)
+- **Code standards** — principles, mechanical rules, vocabulary reference, and full anti-pattern catalogue → [claude/.claude/references/code/](claude/.claude/references/code/)
 - **Dev workflow** — session tools, skills, per-project setup → [docs/dev-workflow-guide.md](docs/dev-workflow-guide.md)
 - **Git-crypt encryption** — sensitive files encrypted at rest → [docs/git-crypt-encryption.md](docs/git-crypt-encryption.md)
 
