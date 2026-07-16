@@ -10,16 +10,16 @@
       "Read(~/.gnupg/**)",
       "Read(~/.kube/**)",
       "Read(~/.config/gcloud/**)",
-      "Write(~/.ssh/**)",
-      "Write(~/.aws/**)",
-      "Write(**/.env*)",
+      "Edit(~/.ssh/**)",
+      "Edit(~/.aws/**)",
+      "Edit(**/.env*)",
       "Bash(curl * | bash)",
       "Bash(ssh *)",
       "Bash(scp *)",
       "Bash(nc *)"
     ]
   },
-  "model": "opus",
+  "model": "sonnet",
   "hooks": {
     "SessionStart": [
       {
@@ -150,5 +150,6 @@
   },
   "effortLevel": "medium",
   "theme": "dark",
-  "agentPushNotifEnabled": true
+  "agentPushNotifEnabled": true,
+  "advisorModel": "opus"
 }
