@@ -20,6 +20,20 @@
 - Do not assume Claude-style statusline UI exists in Codex. Codex hooks are backend lifecycle checks only unless current runtime evidence proves a visible UI channel.
 - Caveman and other Marketplace skills may live in `~/.agents/skills`; dotfiles-owned Codex workflow skills live in `~/.codex/skills` or the `k0d3x-harness` plugin cache.
 
+## Code Reference Standards
+- Code standards live in `~/.codex/references/code/`, symlinked from the canonical dotfiles source at `claude/.claude/references/code/`.
+- Before writing or reviewing code, read `CODE-PRINCIPLES.md`, `CODE-STANDARD.md`, and only the language file or files matching the code in scope:
+  - Lua / Neovim -> `LUA.md`
+  - Python -> `PYTHON.md`
+  - TypeScript / JavaScript -> `TYPESCRIPT.md`
+  - HTML / CSS / JSON / YAML -> the appendix in `TYPESCRIPT.md`
+  - Solidity -> `SOLIDITY.md`
+  - Bash / shell -> `BASH.md`
+  - Arduino / embedded C++ -> `ARDUINO.md`
+- Do not load every language file. For multi-language changes, load each applicable language file.
+- Read `CODE-REFERENCE.md` when evaluating architecture, module boundaries, seams, ADRs, or design tradeoffs. Read `ANTI-PATTERNS.md` for comprehensive code-smell, architecture, or test anti-pattern analysis.
+- Apply the references' RFC 2119 strength vocabulary. Repository formatter, linter, type-checker, and established neighboring conventions remain authoritative where the references explicitly delegate to them.
+
 ## TODO Tags
 
 When writing TODOs to `TODOS.md` via any session workflow or inline, prefix items with the appropriate tags. Tags combine freely.
