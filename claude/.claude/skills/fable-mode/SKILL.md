@@ -102,40 +102,92 @@ Never design from memory of what a file, API, or dataset "probably" looks like. 
 ### Gate 3 — Reason adversarially
 
 Before committing to an answer, switch roles and try to kill it. The strongest form of
-this gate is not self-attack — it is an **independent attacker with cold context**,
-because the mind that wrote the answer shares the blind spots that produced it. Grading
-your own homework is the weak form; delegate the attack when the work has real blast
-radius.
+this gate is not self-attack — it is an **independent attacker with cold conversational
+context**, because the mind that wrote the answer shares the blind spots that produced
+it. Trivial work skips the five-gate loop, so reaching Gate 3 means delegate the attack
+automatically; do not wait for the user to request it. Grading your own homework is the
+weak form.
 
-- **Route the attack in preference order:**
-  1. **A live advisor**, if an advisor tool is available — a peer model with fresh
-     context is the strongest attacker. Steer it per the "Consulting an advisor"
-     section: frame the ask by gate state, point it at the specific thing to break.
+- Before invoking a route, check user, governing, policy, and tool restrictions.
+  Automatic delegation never overrides a higher-priority prohibition. Skip each
+  prohibited or unavailable route and record why in `.work/GATES.md`.
+- **Route the attack automatically in preference order:**
+  1. **A live advisor**, if an advisor tool is available — a peer model with
+     independent reasoning is the strongest attacker. It sees the transcript, so treat
+     its review as context-aware rather than cold and require evidence-backed challenges
+     to prior conclusions. Invoke it immediately and steer it per the
+     "Consulting an advisor" section: frame the ask by gate state, point it at the
+     specific thing to break. If the Advisor call fails, times out, returns no
+     substantive review, or cannot access the artifact, record the route failure and
+     continue immediately to the subagent.
   2. **A subagent**, when no advisor is reachable — the common case, since the
-     cross-session advisor is often unavailable. Spawn a cold-context reviewer:
-     `cavecrew-reviewer` for a file or diff, an adversarial-reviewer persona to
-     CONSTRUCT failure scenarios ("what input makes this produce the wrong result"),
-     or `/code-review` for a diff (it runs its own review agents). Hand it the artifact
-     plus the `.work/GATES.md` frame; don't let it re-derive scope.
-  3. **Inline self-attack**, the floor — for small work, or when neither of the above is
-     available. Still switch roles deliberately; don't just reread your answer approvingly.
+     cross-session advisor is often unavailable. Invoke the Claude `Agent` tool
+     immediately with `run_in_background: false` so Gate 3 waits for the result.
+     Discover the available `Agent` types first. Use the exact registered cavecrew
+     reviewer type — `cavecrew-reviewer` or its installed namespaced ID — when
+     available; otherwise use a known valid general-purpose type and put the
+     adversarial-reviewer persona in the prompt to CONSTRUCT failure scenarios ("what
+     input makes this produce the wrong result"). Never invent a subagent type.
+     For a diff, when the `/code-review` skill is available, it is an alternate
+     delegated route through its own mechanism. Do not pass the skill name as an
+     `Agent` persona. Treat unavailable, failed, artifact-inaccessible, or
+     non-substantive execution as a route failure and continue through the remaining
+     preference order. Hand the attacker the artifact plus a sanitized gate frame
+     containing only neutral scope, invariant constraints, and the concrete
+     failure direction. Do not pass the intended fix, suspected bug, desired verdict,
+     prior conclusions, the full `.work/GATES.md`, or its resolved unknowns. If the
+     `Agent` call fails, times out, returns no substantive review, or cannot access
+     the artifact, record the route failure. Retry once with a fresh valid `Agent` type
+     and a revised bounded prompt when useful; if that also fails, continue immediately
+     to inline attack.
+  3. **Inline self-attack**, the fallback — only when neither delegated attacker is
+     available, delegated routes failed or returned no substantive review after the
+     permitted retry, the reviewer cannot access the artifact, safety/policy prevents
+     delegation, or governing/user instructions prohibit it. Record the reason in
+     `.work/GATES.md`, switch roles deliberately, and actually test the failure
+     direction; do not just reread your answer approvingly.
+- Apply the sanitized-brief exclusions to every delegated attacker. Because an Advisor
+  already sees the transcript, do not add conclusion-bearing framing to its prompt;
+  require it to challenge prior conclusions with evidence and record the review as
+  context-aware, not cold.
+- Cold context applies to conversation history, not the shared filesystem or governing
+  instructions. Tell a subagent not to open conclusion-bearing plans, findings, memory,
+  or gate logs unless they are themselves the artifact under review. If required
+  context exposes prior conclusions, the reviewer must disclose that and the main agent
+  must record the contamination; describe the result as independent but context-aware,
+  not cold.
+- **Gate 3 has a completion barrier.** Do not advance to Gate 4 until one path finishes:
+  (a) the advisor or subagent returns a substantive review — findings or an
+  evidence-backed already-solid verdict — and every finding is dispositioned, or
+  (b) delegation is unavailable, prohibited, or exhausted after the permitted
+  attempts, and an equally substantive inline attack is completed and dispositioned.
+  A zero-content or artifact-inaccessible review does not satisfy the barrier.
+  Accepted or modified findings must be addressed and rechecked; rejected
+  findings require concrete counterevidence and a recorded probe; deferral requires
+  explicit user authorization.
+- **Loop until stable.** A finding that revises the diagnosis or the fix is a new claim,
+  not a patched old one — re-run the attack (same route preference order) against the
+  REVISED claim before advancing. Stop only when a round returns no finding that changes
+  the diagnosis/fix, or the fix is trivial enough the revision can't plausibly hide
+  another error. Log each round in `.work/GATES.md` (e.g. `G3`, `G3-continued`,
+  `G3-FINAL`) so a stalled loop is visible instead of silently accepted on round one.
 - Whoever attacks: **name the concrete failure direction first.** For a reachability or
-  security gate it's the FALSE-NEGATIVE (what real problem slips through silently); for a
-  parser it's the malformed input; for a claim it's the counterexample. Actually test the
-  case; don't just imagine it.
+  security gate it is the FALSE-NEGATIVE (what real problem slips through silently); for
+  a parser it is the malformed input; for a claim it is the counterexample. Actually
+  test the case; do not just imagine it.
 - Then steelman what survives. If the answer holds under attack, commit with real
   confidence instead of hope.
 - Steelman the existing thing before changing it. Assume it was built that way for a
   reason and name the reason; if a plausible one exists, respect it.
 - Finding nothing wrong is a legitimate result — for you or the delegated attacker.
   "Already solid" beats an invented problem; never manufacture findings to look thorough,
-  and don't discard a reviewer's "clean" verdict just because you wanted findings.
+  and do not discard a reviewer’s "clean" verdict just because you wanted findings.
 - Two failed attempts at the same fix means the diagnosis is wrong. Stop patching, find
-  the assumption underneath both attempts, and test that assumption directly. If it's a
+  the assumption underneath both attempts, and test that assumption directly. If it is a
   real bug hunt, escalate to the `/diagnose` loop.
-- **Harness routing:** `/code-review` attacks a diff; `/ante-mortem` attacks a design's
-  future failure modes; `/review-response` is this gate applied to incoming feedback.
-  The delegated-attacker options above feed all three.
+- **Harness routing:** `/code-review` attacks a diff; `/ante-mortem` attacks future
+  failure modes in a design; `/review-response` is this gate applied to incoming
+  feedback. The delegated-attacker options above feed all three.
 
 ### Gate 4 — Verify before declaring done
 
@@ -236,10 +288,11 @@ RE-EVALUATE  confirms the plan, or changes it? decide, then loop
 
 ## Consulting an advisor (when an advisor tool is available)
 
-When available, the advisor is the **preferred Gate-3 attacker** (top of that gate's
-preference ladder) — a peer model with fresh context beats a spawned subagent, which
-beats self-attack. The advisor cannot load this skill — it sees only the transcript.
-Steer it through the ask. When consulting while fable-mode is active:
+When available, the advisor is the **preferred Gate-3 attacker** at the top of the gate
+preference ladder. A peer model applying independent reasoning to transcript-visible
+context remains preferred over a spawned subagent, which beats self-attack. The advisor cannot load this skill and sees the transcript,
+so its review is context-aware, not cold. Steer it through the ask. When consulting
+while fable-mode is active:
 
 - Frame the ask by gate state, from `.work/GATES.md`, not from memory:
   "At Gate <N>. Done means: <done-definition>. Check: <check>. Unresolved unknowns:
@@ -247,12 +300,16 @@ Steer it through the ask. When consulting while fable-mode is active:
 - Ask the advisor to run the two gates a reviewer can run: Gate 3 (adversarial — try
   to kill the approach before endorsing it; "already solid" is a legitimate verdict)
   and Gate 5 (calibrated — separate what the transcript proves from what it assumes).
-- Consult at the gate boundaries where it pays most: after Gate 1 (before committing
-  to an approach) and at Gate 4/5 (before declaring done) — plus whenever stuck,
-  per the two-failed-attempts rule.
-- The advisor's advice feeds Gate 3 like any other evidence: if it conflicts with
-  something you verified first-hand, surface the conflict in one more consult instead
-  of silently picking a side. Log the resolution in GATES.md.
+- Consult automatically at Gate 3 after Gate 2 evidence is gathered. Optionally
+  consult again at Gate 4/5 before declaring done, and whenever stuck after Gate 2,
+  per the two-failed-attempts rule. Do not consult an Advisor during Gate 1; resolve
+  scope with the user and project rules first.
+- Advisor advice feeds Gate 3 like any other evidence. If it conflicts with something
+  verified first-hand, surface the conflict in one reconciliation consult instead of
+  silently picking a side. Cap reconciliation there: if the conflict persists, run a
+  subagent or inline probe and disposition it from concrete evidence. Escalate to the
+  user only when the unresolved choice is genuinely theirs. Log the resolution in
+  GATES.md.
 
 ## Smells that mean a gate got skipped
 
