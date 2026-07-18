@@ -45,6 +45,15 @@ here contradicts a repo's linter config, the linter config wins; flag the drift.
 - Commented-out code MUST NOT be committed — delete it; git remembers.
 - TODO comments in code MUST be mirrored as tagged items in `TODOS.md` or they
   don't exist.
+- Code markers MUST use a trailing colon (`BUG:` not `BUG,`/`BUG `) — editor
+  highlighting (todo-comments.nvim) requires it, no colon means no highlight.
+  Recognized keywords: `TODO:`, `BUG:` (alt `FIXME:`), `HOTFIX:`, `HACK:`,
+  `NOTE:`, `WARN:`, `OPTIMIZE:` (absorbs `PERF:`/`PERFORMANCE:`), `SECURITY:`,
+  `TEST:` (alt `TESTING:`/`PASSED:`/`FAILED:`). `HOTFIX:` SHOULD pair with a
+  `[CHORE]` or `[VERIFY]` TODOS.md entry — it marks a quick fix that still
+  needs hardening. This vocabulary is separate from TODOS.md's `[TAG]`
+  vocabulary — code markers point at a line, TODOS.md tags track task
+  lifecycle. No skill parses code markers programmatically.
 
 ### Hygiene
 - Errors MUST NOT be silently swallowed — handle, propagate, or log with context.
