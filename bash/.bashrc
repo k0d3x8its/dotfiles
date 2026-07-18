@@ -141,3 +141,6 @@ export PATH=$HOME/.opencode/bin:$PATH
 
 # local secrets (API keys — not in dotfiles)
 [ -f ~/.secrets.env ] && source ~/.secrets.env
+
+export PATH="$PATH:/home/k0d3x/.foundry/bin"
+export PATH="$PATH:/home/k0d3x/.luarocks/bin"
