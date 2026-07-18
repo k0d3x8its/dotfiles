@@ -44,7 +44,9 @@ here contradicts a repo's linter config, the linter config wins; flag the drift.
 - Comments MUST explain *why*, never restate *what* the next line does.
 - Commented-out code MUST NOT be committed — delete it; git remembers.
 - TODO comments in code MUST be mirrored as tagged items in `TODOS.md` or they
-  don't exist.
+  don't exist. This mirroring applies only to `TODO:` and `HOTFIX:` —
+  the other code markers below are inline-only and never need a `TODOS.md`
+  entry.
 - Code markers MUST use a trailing colon (`BUG:` not `BUG,`/`BUG `) — editor
   highlighting (todo-comments.nvim) requires it, no colon means no highlight.
   Recognized keywords: `TODO:`, `BUG:` (alt `FIXME:`), `HOTFIX:`, `HACK:`,
