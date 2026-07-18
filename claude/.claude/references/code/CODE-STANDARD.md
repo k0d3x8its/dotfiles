@@ -44,18 +44,19 @@ here contradicts a repo's linter config, the linter config wins; flag the drift.
 - Comments MUST explain *why*, never restate *what* the next line does.
 - Commented-out code MUST NOT be committed — delete it; git remembers.
 - TODO comments in code MUST be mirrored as tagged items in `TODOS.md` or they
-  don't exist. This mirroring applies only to `TODO:` and `HOTFIX:` —
-  the other code markers below are inline-only and never need a `TODOS.md`
-  entry.
+  don't exist. This mirroring applies to any marker below with a matching
+  `TODOS.md` annotation tag — `TODO:`, `BUG:` (`[BUG]`), `HOTFIX:` (`[CHORE]`
+  or `[VERIFY]`), `SECURITY:` (`[SECURITY]`), `TEST:` (`[TEST]`),
+  `PERFORMANCE:` (`[PERFORMANCE]`). `HACK:`, `NOTE:`, and `WARN:` have no
+  tag counterpart and are inline-only — they document current code state,
+  not a pending action item.
 - Code markers MUST use a trailing colon (`BUG:` not `BUG,`/`BUG `) — editor
   highlighting (todo-comments.nvim) requires it, no colon means no highlight.
   Recognized keywords: `TODO:`, `BUG:` (alt `FIXME:`), `HOTFIX:`, `HACK:`,
-  `NOTE:`, `WARN:`, `OPTIMIZE:` (absorbs `PERF:`/`PERFORMANCE:`), `SECURITY:`,
-  `TEST:` (alt `TESTING:`/`PASSED:`/`FAILED:`). `HOTFIX:` SHOULD pair with a
-  `[CHORE]` or `[VERIFY]` TODOS.md entry — it marks a quick fix that still
-  needs hardening. This vocabulary is separate from TODOS.md's `[TAG]`
-  vocabulary — code markers point at a line, TODOS.md tags track task
-  lifecycle. No skill parses code markers programmatically.
+  `NOTE:`, `WARN:`, `PERFORMANCE:` (absorbs `PERF:`/`OPTIMIZE:`), `SECURITY:`,
+  `TEST:` (alt `TESTING:`/`PASSED:`/`FAILED:`). This vocabulary is separate
+  from TODOS.md's `[TAG]` vocabulary — code markers point at a line, TODOS.md
+  tags track task lifecycle. No skill parses code markers programmatically.
 
 ### Hygiene
 - Errors MUST NOT be silently swallowed — handle, propagate, or log with context.
