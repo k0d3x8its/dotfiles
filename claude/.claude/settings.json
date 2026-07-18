@@ -1,6 +1,6 @@
 {
   "permissions": {
-    "defaultMode": "auto",
+    "defaultMode": "default",
     "deny": [
       "Read(~/.ssh/**)",
       "Read(~/.aws/**)",
@@ -88,6 +88,19 @@
           {
             "type": "command",
             "command": "python3 \"$HOME/.claude/hooks/bash_audit.py\" 2>/dev/null || true"
+          }
+        ]
+      },
+      {
+        "matcher": "Edit|Write|MultiEdit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 \"$HOME/.claude/hooks/code_formatter.py\" 2>/dev/null || true"
+          },
+          {
+            "type": "command",
+            "command": "python3 \"$HOME/.claude/hooks/code_standard_lint.py\" 2>/dev/null || true"
           }
         ]
       },
