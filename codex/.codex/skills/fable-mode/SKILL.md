@@ -90,24 +90,54 @@ Never design from memory of what a file, API, or dataset "probably" looks like. 
 
 ### Gate 3 — Reason adversarially
 
-Before committing to an answer, switch roles and try to kill it.
+Before committing to an answer, switch roles and try to kill it. Trivial work skips the
+five-gate loop, so reaching Gate 3 means an independent review with cold conversational
+context is the default, not an optional enhancement.
 
-- Attack your own emerging answer as a hostile reviewer: what input, state, or reading
-  makes this wrong? Actually test that case; don't just imagine it.
+- **Call `spawn_agent` on entering Gate 3.** Do not wait for the user to request the
+  attack. Pass `fork_turns: "none"` so the reviewer receives cold context rather than
+  the full conversation. Use a bounded reviewer task with the concrete failure
+  direction named first. For a file or diff where terse findings are enough, use a
+  fresh, unique task name prefixed `cavecrew_reviewer_` and request the cavecrew
+  reviewer output contract; never reuse a prior reviewer agent. For a design, claim,
+  or investigation, ask the reviewer to construct counterexamples or failure scenarios
+  rather than provide general feedback.
+- Give the reviewer a sanitized brief containing only the artifact or paths, neutral
+  scope, invariant constraints, and the failure direction to test. Do not pass the
+  intended fix, suspected bug, desired verdict, prior conclusions, or the `Done means`
+  and resolved-unknown contents from `.work/GATES.md`.
+- Cold context applies to conversation history, not the shared filesystem or governing
+  instructions. Tell the reviewer not to open conclusion-bearing plans, findings,
+  memory, or gate logs unless they are themselves the artifact under review. If
+  required context exposes prior conclusions, the reviewer must disclose that and the
+  main agent must record the contamination; describe the result as independent but
+  context-aware, not cold.
+- **Gate 3 has a completion barrier.** Do not advance to Gate 4 until one path finishes:
+  (a) the delegated reviewer returns a substantive review -- findings or an
+  evidence-backed already-solid verdict -- and every finding is dispositioned, or
+  (b) delegation is unavailable and an equally substantive inline attack is completed
+  and dispositioned. A zero-content or artifact-inaccessible review does not satisfy
+  the barrier. Accepted or modified findings must be addressed and rechecked; rejected
+  findings require concrete counterevidence and a recorded probe; deferral requires
+  explicit user authorization.
+- **Inline self-attack is fallback-only:** no collaboration slot is available, the
+  reviewer cannot access the artifact, or safety/policy prevents delegation. Record the
+  spawn or access failure in `.work/GATES.md`, name the failure direction, and
+  actually test it; do not merely reread the answer approvingly.
 - Then steelman what survives. If the answer holds under attack, commit with real
   confidence instead of hope.
 - Steelman the existing thing before changing it. Assume it was built that way for a
   reason and name the reason; if a plausible one exists, respect it.
-- When reviewing, finding nothing wrong is a legitimate result. "Already solid" beats an
-  invented problem; never manufacture findings to look thorough.
+- Finding nothing wrong is a legitimate result. "Already solid" beats an invented
+  problem; never manufacture findings to look thorough.
 - Re-decide after every result. Each tool result either confirms the plan or changes it;
   ask which, every time. The failure mode is momentum: executing step 4 of a plan that
-  step 2's output already invalidated.
+  step 2 already invalidated.
 - Two failed attempts at the same fix means the diagnosis is wrong. Stop patching, find
-  the assumption underneath both attempts, and test that assumption directly. If it's a
-  real bug hunt, escalate to the `/diagnose` loop.
-- **Harness routing:** `/code-review` attacks a diff; `/ante-mortem` attacks a design's
-  future failure modes; `/review-response` is this gate applied to incoming feedback.
+  the assumption underneath both attempts, and test that assumption directly. If it is
+  a real bug hunt, escalate to the `/diagnose` loop.
+- **Harness routing:** `/code-review` attacks a diff; `/ante-mortem` attacks future
+  failure modes in a design; `/review-response` applies this gate to incoming feedback.
 
 ### Gate 4 — Verify before declaring done
 
@@ -166,24 +196,6 @@ The report is part of the work, not an afterthought.
   Reasoning is for judgment; scripts are for repetition.
 - Preserve by default. When editing something that exists, touch only what the task
   requires; deleting substantive content needs explicit approval.
-
-## Consulting an advisor (when an advisor tool is available)
-
-The advisor cannot load this skill — it sees only the transcript. Steer it through
-the ask. When consulting while fable-mode is active:
-
-- Frame the ask by gate state, from `.work/GATES.md`, not from memory:
-  "At Gate <N>. Done means: <done-definition>. Check: <check>. Unresolved unknowns:
-  <list>. Attack <the specific thing> — what input, state, or reading makes it wrong?"
-- Ask the advisor to run the two gates a reviewer can run: Gate 3 (adversarial — try
-  to kill the approach before endorsing it; "already solid" is a legitimate verdict)
-  and Gate 5 (calibrated — separate what the transcript proves from what it assumes).
-- Consult at the gate boundaries where it pays most: after Gate 1 (before committing
-  to an approach) and at Gate 4/5 (before declaring done) — plus whenever stuck,
-  per the two-failed-attempts rule.
-- The advisor's advice feeds Gate 3 like any other evidence: if it conflicts with
-  something you verified first-hand, surface the conflict in one more consult instead
-  of silently picking a side. Log the resolution in GATES.md.
 
 ## Smells that mean a gate got skipped
 
