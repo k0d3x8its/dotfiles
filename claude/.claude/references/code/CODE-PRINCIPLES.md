@@ -7,18 +7,18 @@ files it delegates to.
 
 ## Precedence (collision heuristics — not a ranked lattice)
 
-These resolve *principle* collisions; they are not themselves totally ordered. When
+These resolve _principle_ collisions; they are not themselves totally ordered. When
 two of them conflict, **Surgical Scope is the outer gate**: no other rule may push an
 edit outside the current diff — file it as `[CHORE]` instead. (Example: your diff adds
-the *third* occurrence of a look-alike but the first two live in untouched files —
+the _third_ occurrence of a look-alike but the first two live in untouched files —
 rule of three does NOT license editing them; extract in-scope or file the `[CHORE]`.
 Forcing the cross-file edit is shotgun surgery, the smell below.)
 
 1. **Working beats elegant.** A verified, passing change outranks any cleanup. Never
    trade green tests for structure. Verify before claiming (see `/trust-but-verify`).
-2. **KISS/YAGNI beat DRY — for look-alike code only.** Repeated *actions* and repeated
-   *knowledge* always get extracted (that's what functions are for). But merging code
-   that merely *looks similar* waits for the *rule of three*: the third occurrence
+2. **KISS/YAGNI beat DRY — for look-alike code only.** Repeated _actions_ and repeated
+   _knowledge_ always get extracted (that's what functions are for). But merging code
+   that merely _looks similar_ waits for the _rule of three_: the third occurrence
    proves the pattern and reveals the abstraction's true shape. A wrong abstraction is
    costlier than duplication — especially for agents, which extend bad patterns
    confidently.
@@ -31,6 +31,7 @@ Forcing the cross-file edit is shotgun surgery, the smell below.)
 ## Committed principles
 
 ### TDD — main methodology
+
 - Loop is **red-green**, one vertical slice at a time. Red before green, always.
 - Refactoring is **not** part of the loop — it happens at the review stage
   (see Smells below). Do not overload implementation with restructuring.
@@ -38,34 +39,40 @@ Forcing the cross-file edit is shotgun surgery, the smell below.)
   do not restate its steps here or elsewhere.
 
 ### KISS — Keep It Simple
+
 - The primary failure mode of coding agents is over-engineering. Default to the
   simplest design that passes the tests.
 - No configuration options, parameters, or indirection that the current task
   does not exercise.
 
 ### YAGNI — You Aren't Gonna Need It
+
 - Build for the requirement in front of you, not the one you can imagine.
-- Speculative extension points are a smell (see *speculative generality*).
+- Speculative extension points are a smell (see _speculative generality_).
   Extensibility is earned by a second concrete consumer, not predicted.
 
 ### DRY — with the rule of three
+
 - Repeated actions become a function immediately — code exists to prevent repeat actions.
 - Knowledge (business rules, constants, formats) must have one authoritative home.
-- Code *shape* similarity alone is neither of the above. Extract look-alike code on the
+- Code _shape_ similarity alone is neither of the above. Extract look-alike code on the
   third occurrence, when the abstraction's real boundaries are visible.
 - When an existing abstraction fights a new case, prefer inlining it back over
   adding flags to it.
 
 ### Boy Scout Rule — scoped
-- Leave every file you *touch* cleaner than you found it: better name, dead code
+
+- Leave every file you _touch_ cleaner than you found it: better name, dead code
   removed, comment corrected — within the lines your change already visits.
 - Anything wider than the current diff: record as `[CHORE]`, move on.
 
 ### SRP — Single Responsibility (module-level)
+
 - Applies to modules/files/functions, not just classes: one reason to change each.
 - Test: describe the module in one sentence without "and". If you can't, split it.
 
 ### DIP — Dependency Inversion (seams)
+
 - Depend on seams, not concretions: pass collaborators in (the `wire{}` DI pattern
   in kodex-ide is the local idiom) rather than reaching out to globals or requiring
   deep into another module's internals.
@@ -75,7 +82,31 @@ Forcing the cross-file edit is shotgun surgery, the smell below.)
   **Link seam** — swap a module at load time via env or conditional import.
   **Preprocessing seam** — config/env changes behavior before code runs.
 
+### Error handling — judgment layer
+
+- Mechanical MUSTs (never swallow, log with context, boundary validation, no silent
+  no-ops) live in `CODE-STANDARD.md` — this is the judgment underneath them.
+- **Raise vs return-Result vs log-and-continue is a judgment call, not a rule**: raise/
+  throw when the caller cannot meaningfully continue (a truly exceptional, rare
+  condition); return a `Result`/`ok, err`/`nil, err`-shaped value when failure is a
+  normal, expected outcome the caller is expected to branch on (a file that might not
+  exist, a network call that might time out); log-and-continue only when the failure
+  is genuinely non-fatal to the caller's goal AND the user needs to know it happened
+  (this environment's own `watch()` no-op fixes are the local example — the caller
+  now sees the boolean and decides, rather than the module silently absorbing it).
+- Retries, timeouts, and circuit breakers are judgment, not a default to reach for.
+  Add a retry only where the failure is plausibly transient (network, external
+  service) — retrying a logic error just delays the same failure. A circuit breaker
+  is justified only once a dependency's failure mode is observed to be _sustained_,
+  not a one-off blip; building one speculatively is the same YAGNI violation as any
+  other unearned abstraction.
+- **Prefer the fix that makes a failure OBSERVABLE over the fix that guesses at
+  recovery.** When in doubt between "swallow and hope" and "surface it, let the
+  caller (or user) decide" — surface it. Recovery logic invented without evidence
+  the failure mode is real is speculative generality wearing a different hat.
+
 ### Depth — prefer deep modules
+
 - Small interface, large implementation: callers get leverage; they gain a lot of
   behavior for little interface complexity.
 - At review, flag shallow modules — if the interface is nearly as complex as the
@@ -121,5 +152,7 @@ Fowler smells by name. Naming the smell is the trigger — flag it, then fix or 
 - `karpathy-guidelines` skill — behavioral guardrails (surgical changes, surfaced
   assumptions); complements, does not duplicate, this file
 - `CODE-STANDARD.md` — mechanical rules + per-language delegation
+- `TESTING-STANDARD.md` — test-type decision layer; the error-handling judgment
+  above is what a test asserting on failure behavior should actually check
 - `CODE-REFERENCE.md` — vocabulary definitions (Ousterhout, Feathers), ADR format + gate, Quick-Check Questions
 - `ANTI-PATTERNS.md` — full Fowler/Brown/Meszaros anti-pattern catalogue
