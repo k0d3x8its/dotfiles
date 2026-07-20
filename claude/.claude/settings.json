@@ -1,6 +1,5 @@
 {
   "permissions": {
-    "defaultMode": "default",
     "deny": [
       "Read(~/.ssh/**)",
       "Read(~/.aws/**)",
@@ -18,7 +17,8 @@
       "Bash(ssh *)",
       "Bash(scp *)",
       "Bash(nc *)"
-    ]
+    ],
+    "defaultMode": "default"
   },
   "model": "sonnet",
   "hooks": {
@@ -101,6 +101,10 @@
           {
             "type": "command",
             "command": "python3 \"$HOME/.claude/hooks/code_standard_lint.py\" 2>/dev/null || true"
+          },
+          {
+            "type": "command",
+            "command": "python3 \"$HOME/.claude/hooks/gate3_skip_detector.py\""
           }
         ]
       },
@@ -162,8 +166,8 @@
       }
     }
   },
-  "effortLevel": "medium",
-  "theme": "dark",
-  "agentPushNotifEnabled": true,
-  "advisorModel": "opus"
+  "effortLevel": "high",
+  "advisorModel": "opus",
+  "theme": "auto",
+  "agentPushNotifEnabled": true
 }
