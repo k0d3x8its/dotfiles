@@ -2,9 +2,26 @@
 
 > Examples use Python/pytest. Patterns apply to any test runner.
 
+## Unit vs Integration — know which one you're writing
+
+"Good tests test through real interfaces, not mocks of internal parts" — that rule
+applies to BOTH unit and integration tests, but the two are not the same thing:
+
+- **Unit**: one function/module, in isolation, through its public interface. No real
+  file system, no real subprocess, no real network. Mock only at the boundaries
+  (`~/.claude/skills/tdd/mocking.md`).
+- **Integration**: two or more REAL collaborators wired together — real files, real
+  buffers, real subprocesses. Slower, proves the seams actually fit, not just that
+  the logic is right in isolation.
+
+Full decision layer (which type for which change, plus system/E2E, playtesting,
+compatibility, coverage strategy, and more): `~/.claude/references/code/
+TESTING-STANDARD.md`. This file only covers what makes any test — unit OR
+integration — good or bad.
+
 ## Good Tests
 
-Integration-style: test through real interfaces, not mocks of internal parts.
+Test through real interfaces, not mocks of internal parts.
 
 ```python
 # GOOD: tests observable behavior through public interface
@@ -16,6 +33,7 @@ def test_user_can_checkout_with_valid_cart():
 ```
 
 Characteristics:
+
 - Tests behavior callers care about
 - Uses public API only
 - Survives internal refactors
@@ -35,6 +53,7 @@ def test_checkout_calls_payment_service():
 ```
 
 Red flags:
+
 - Mocking internal collaborators
 - Testing private methods / functions with leading `_`
 - Asserting on call counts or call order
