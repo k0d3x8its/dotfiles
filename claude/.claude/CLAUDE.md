@@ -1,11 +1,13 @@
 # K0d3x Global Claude Config
 
 ## Skills Available
+
 The harness auto-lists every custom skill + its description each session — names below are the slash aliases, not re-described here. Tag routing lives in the TODO Tags table.
 `/handoff` `/handoff-return` `/close` `/checkpoint` `/changelog` `/dev-brief` `/release-notes` `/find-skills` `/diagnose` `/tdd` `/prototype` `/sync-trello` `/remember` `/recall` `/consolidate` `/brainstorm` `/grill-me` `/write-plan` `/trust-but-verify` `/review-response` `/threat-model`
 External (not auto-surfaced): `/ce-code-review` `/discover` `/write-prd`
 
 ## Session Rules
+
 - Track session start time. Warn me at 45 minutes to run /handoff (lean fork), /close (lightweight close), or /checkpoint (durable) depending on context.
 - Session tools — four, by job:
   - `/handoff` (push/fork): lean mid-session tangent. Emits reason-first re-entry prompt. NO SESSION-LOG narrative. ~400 tok. Use to spin off a side-issue with clean context; main session stays alive.
@@ -32,7 +34,7 @@ When writing TODOs to TODOS.md (via /handoff, /handoff-return, /checkpoint, or i
 | `[BROKEN]` | Something is broken right now — tool down, build failing, can't work | Critical |
 | `[BLOCKER]` | Must happen before other work can start | High |
 | `[TEST]` | Unverified test — always critical; use `/tdd` to close | Critical |
-| `[VERIFY]` | Claimed-but-unverified work — always critical; use `/trust-but-verify` to close | Critical |
+| `[VERIFY]` | Claimed-but-unverified work — always critical; use `/trust-but-verify` to close; lives in `.work/VERIFY.md`, not inline | Critical |
 | `[LOW]` | Not urgent — do soon but not this week | Low |
 | `[BACKLOG]` | Captured, deferred, no timeline | Backlog |
 
@@ -58,6 +60,7 @@ No priority tag = Medium (default). `[TEST]` and `[VERIFY]` override all other p
 | `[UX]` | Requires manual user verification of a flow or experience — can't be automated | Write a checklist of steps + success criteria, then hand off. Don't try to automate or simulate. |
 
 ## My Conventions
+
 - Commit messages: conventional commits format (feat:, fix:, docs:, chore:)
 - Commit granularity: when I say "commit changes", commit each changed file as its own separate commit with a brief conventional-commit message describing that file's change. One file per commit.
 - **Everything under `.work/` is encrypted, no exceptions.** Rule, not a per-file list: any file dropped in `.work/` (any repo) is private-by-convention and MUST be git-crypt'd — recon notes, checklists, archived gates, feature briefs, all of it. Enforce with a wildcard `.gitattributes` backstop, not one rule per filename: `/.work/**/* filter=git-crypt diff=git-crypt` (or `/.work/**/*.md` if the dir is markdown-only) — see `~/.claude/skills/encrypt/` for the setup flow. If a repo's `.work/` has plaintext files, that's a gap to fix, not a signal the rule doesn't apply.
@@ -68,6 +71,7 @@ No priority tag = Medium (default). `[TEST]` and `[VERIFY]` override all other p
 - Code comments: always explain the why, not just the what
 
 ## Trello Sync Rules
+
 When syncing `.work/PLAN.md` to Trello, always map as follows:
 - Goal       → Trello card (placed at the bottom of the "Back Log" list)
 - Micro-Goal → Trello checklist on that card
@@ -94,4 +98,5 @@ After creating a card, annotate the Goal in `.work/PLAN.md` with [trello:CARD_ID
 | Session narrative, decisions + why | `.memory/SESSION-LOG.md` |
 | Changelog-worthy changes (features, fixes) | `CHANGELOG.md` (via `/changelog`) |
 | Per-task scratch, investigation notes | `.work/FINDINGS.md` |
+| Unverified completion claims (`[VERIFY]` tag) | `.work/VERIFY.md` (git-crypt; open items only — created lazily per-repo on the first `[VERIFY]` item; pointer stub left at the origin) |
 | Claude's working scratchpad (preferences, corrections — auto-written, not committed) | `~/.claude/projects/<hash>/memory/` |
