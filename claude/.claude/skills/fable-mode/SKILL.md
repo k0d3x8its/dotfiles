@@ -26,13 +26,15 @@ only because its state lives **on disk**, not in attention. On activation:
 
    ```markdown
    # Gate State
+
    Task: <one line — what was asked>
    Done means: <what artifact exists + what must be true of it>
    Check: <the exact command or observation that proves it>
    Load-bearing unknowns:
+
    - [ ] <fact that, if wrong, changes the whole approach>
-   Current gate: 1
-   Gate log:
+         Current gate: 1
+         Gate log:
    - G1 <date>: <scope decision, one line>
    ```
 
@@ -107,6 +109,14 @@ context**, because the mind that wrote the answer shares the blind spots that pr
 it. Trivial work skips the five-gate loop, so reaching Gate 3 means delegate the attack
 automatically; do not wait for the user to request it. Grading your own homework is the
 weak form.
+
+For the attack technique itself — assumption violation, composition failures, cascade
+construction, abuse cases, and the anchored confidence rubric — see
+`~/.claude/skills/code-crit/references/ADVERSARIAL-TECHNIQUES.md`. That file is the
+shared, artifact-agnostic core; per that file's caller-policy section, this gate does
+not use a `verified`/`unverified` field and drops a ≤25/speculative finding rather than
+surfacing it — a speculative attack on a plan that isn't code yet is usually noise, and
+the gate's job is catching real gaps before building, not cataloging every hypothetical.
 
 - Before invoking a route, check user, governing, policy, and tool restrictions.
   Automatic delegation never overrides a higher-priority prohibition. Skip each
@@ -348,8 +358,8 @@ Any one of these: stop, re-read `.work/GATES.md`, go back to that gate.
   /ante-mortem, /review-response, /trust-but-verify, /verify). Those are the "how to
   check" tools; this is the discipline of when to reach for them. Never duplicate what
   they do — invoke them.
-- Stacks cleanly with caveman mode: caveman governs how you *speak*, fable-mode governs
-  how you *work*. Both can be active at once.
+- Stacks cleanly with caveman mode: caveman governs how you _speak_, fable-mode governs
+  how you _work_. Both can be active at once.
 - Don't apply it to trivial work. Forcing all five gates onto a two-minute edit is its
   own failure mode.
 - If a task keeps failing under this discipline, that's the signal to escalate to a
