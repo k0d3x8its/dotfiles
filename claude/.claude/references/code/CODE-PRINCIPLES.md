@@ -145,6 +145,19 @@ Fowler smells by name. Naming the smell is the trigger — flag it, then fix or 
 - **Speculative generality** — hooks/params/layers with no current caller (YAGNI breach)
 - **Dead code / commented-out code** — delete it; git remembers
 
+## Two-axis review — Standards vs Spec, never merged
+
+A review has two independent axes: **Standards** (does the diff follow the project's
+standards — `CODE-STANDARD.md` plus the Smells above) and **Spec** (does it do what the
+task actually asked).
+A change can pass one and fail the other:
+
+- Follows every standard, implements the wrong thing → **Standards pass, Spec fail.**
+- Does exactly what was asked, breaks conventions doing it → **Spec pass, Standards fail.**
+
+Report the two separately. Merging them lets one mask the other — clean code hides a
+missed requirement; a correct fix hides the mess it was written in.
+
 ## Related
 
 - `/tdd` — the methodology this file commits to
