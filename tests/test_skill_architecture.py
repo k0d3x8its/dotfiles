@@ -6,7 +6,6 @@ import filecmp
 from pathlib import Path
 import unittest
 
-
 ROOT = Path(__file__).resolve().parents[1]
 CLAUDE = ROOT / "claude" / ".claude" / "skills"
 CODEX = ROOT / "codex" / ".codex" / "skills"
@@ -49,7 +48,7 @@ RUNTIME_SPECIFIC = {
     "write-plan",
 }
 
-CLAUDE_ONLY = {"threat-model"}
+CLAUDE_ONLY = {"code-crit", "codebase-design", "threat-model"}
 
 
 def catalog(path: Path) -> set[str]:
