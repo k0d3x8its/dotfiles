@@ -24,7 +24,7 @@ description: Lightweight session close. Emits a resume-focused re-entry prompt (
 
 **1.** Execute immediately. No clarifying questions. Extract working context from the conversation.
 
-**2.** Light TODOS touch only. **Format detection (D12):** check
+**2.** Light TODOS touch only. **Format detection:** check
 `~/.claude/references/planning-format-detect.md` (`test -d .work/plan`) first.
 
 **FLAT-FORMAT** (no `.work/plan/` — today's behavior, unchanged):
@@ -34,9 +34,9 @@ description: Lightweight session close. Emits a resume-focused re-entry prompt (
 
 **NEW-FORMAT** (`.work/plan/` exists): sync against the `TODOS.md` index only,
 never `.work/archive/legacy-todos.md`. New open items → append an index line
-(`- [ ]` + tags + title + pointer); spill to `.work/todos/<slug>.md` only past
-~150 words (D10). Completed items → remove BOTH the index line and its detail
-file if one exists (D11). Do not leave `[x]` lines either format.
+(`- [ ]` + tags + title); spill to `.work/todos/<slug>.md`, pointer added, only past
+~150 words. Completed items → remove BOTH the index line and its detail
+file if one exists. Do not leave `[x]` lines either format.
 
 Do **not** write a SESSION-LOG narrative block. That is `/checkpoint`'s job.
 
