@@ -9,15 +9,15 @@ Ask the questions one at a time, waiting for feedback before continuing. (Firing
 
 Distinguish facts (answerable by exploring the codebase — do it) from decisions (requires user input — ask).
 
-**Format detection (D12):** check `~/.claude/references/planning-format-detect.md`
+**Format detection:** check `~/.claude/references/planning-format-detect.md`
 (`test -d .work/plan`) before writing.
 
 - **FLAT-FORMAT** (no `.work/plan/` — today's behavior, unchanged): append each
   resolved decision directly to `.work/FINDINGS.md`.
 - **NEW-FORMAT** (`.work/plan/` exists): append each resolved decision to
   `.work/findings/<cluster-slug>.md` — one file per grill-me session/decision-cluster,
-  slug is `<id>-<topic-slug>.md` (D3) — and add or update one index line in
-  `.work/FINDINGS.md`: `<status> — <cluster title> — <pointer>` (D2), status
+  slug is `<id>-<topic-slug>.md` — and add or update one index line in
+  `.work/FINDINGS.md`: `<status> — <cluster title> — <pointer>`, status
   `open`/`in-progress`/`done`.
 
 When all branches are resolved, confirm: "All open questions resolved. Ready to proceed to /write-plan?"
