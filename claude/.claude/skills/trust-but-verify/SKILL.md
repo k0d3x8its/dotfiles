@@ -46,6 +46,13 @@ Run the verify command FRESH, read the exit code, **before**:
 
   `[VERIFY]` is always Critical — an unverified "done" is a lie with a delay.
 
+  **Format detection:** check `~/.claude/references/planning-format-detect.md`
+  (`test -d .work/plan`) first. FLAT-FORMAT (no `.work/plan/` — today's behavior,
+  unchanged): append the `[VERIFY]` bullet above directly. NEW-FORMAT
+  (`.work/plan/` exists): append an index line (`- [ ]` + `[VERIFY]` + title) to
+  `TODOS.md`; spill to `.work/todos/<slug>.md` with a pointer only past ~150
+  words.
+
 - **Machine-unverifiable** (visual result, UX flow, external service) → do NOT mark done
   and do NOT loop on `[VERIFY]`. Write a `[UX]` checklist instead: steps + success
   criteria, hand off to the user.
