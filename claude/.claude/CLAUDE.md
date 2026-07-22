@@ -100,3 +100,14 @@ After creating a card, annotate the Goal in `.work/PLAN.md` with [trello:CARD_ID
 | Per-task scratch, investigation notes | `.work/FINDINGS.md` |
 | Unverified completion claims (`[VERIFY]` tag) | `.work/VERIFY.md` (git-crypt; open items only — created lazily per-repo on the first `[VERIFY]` item; pointer stub left at the origin) |
 | Claude's working scratchpad (preferences, corrections — auto-written, not committed) | `~/.claude/projects/<hash>/memory/` |
+
+> **Index+detail pilot (dotfiles only, started 2026-07-22):** TODOS.md/`.work/PLAN.md`/
+> `.work/FINDINGS.md` in this repo use a lean index + per-item detail-file split instead
+> of the flat format above — see `docs/brainstorm/planning-file-hierarchy-2026-07-21.md`
+> and `~/.claude/references/planning-format-detect.md`. Every touched skill
+> format-detects per repo and falls back to the flat behavior in this table elsewhere.
+> **Removal condition:** delete this note once the pilot graduates (rolled out
+> repo-wide, flat-format branches deleted from every touched skill) or reverts
+> (dotfiles back to flat, new-format branches deleted) — not permanent taxonomy debt.
+> **Kill criterion:** revert if index+detail doesn't measurably cut PLAN.md/FINDINGS.md
+> whole-file reads after a real usage period — not a vibes call.
