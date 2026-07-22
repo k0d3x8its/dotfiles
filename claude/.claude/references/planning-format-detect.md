@@ -10,10 +10,12 @@ Goal 29 / `.work/archive/legacy-plan.md` Goal 29 for the design).
 
 ```bash
 # single-repo skill (CWD = repo root) — write-plan, grill-me, sync-trello, fable-mode,
+
 # brainstorm, closing skills, TODOS.md-appenders
 test -d .work/plan && echo NEW-FORMAT || echo FLAT-FORMAT
 
 # cross-repo skill (dev-brief) — CWD is NOT one repo root, check each repo explicitly
+
 test -d "$repo/.work/plan" && echo NEW-FORMAT || echo FLAT-FORMAT
 ```
 
