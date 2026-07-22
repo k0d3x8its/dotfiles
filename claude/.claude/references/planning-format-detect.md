@@ -9,8 +9,18 @@ Goal 29 / `.work/archive/legacy-plan.md` Goal 29 for the design).
 ## Detect
 
 ```bash
+# single-repo skill (CWD = repo root) — write-plan, grill-me, sync-trello, fable-mode,
+# brainstorm, closing skills, TODOS.md-appenders
 test -d .work/plan && echo NEW-FORMAT || echo FLAT-FORMAT
+
+# cross-repo skill (dev-brief) — CWD is NOT one repo root, check each repo explicitly
+test -d "$repo/.work/plan" && echo NEW-FORMAT || echo FLAT-FORMAT
 ```
+
+Run the check per repo, with `.work/plan` resolved relative to that repo's root —
+never assume CWD. dev-brief sweeps all of `~/dev` in one pass, so it must test each
+repo it visits individually; running the bare CWD-relative form once and applying
+the result to every repo mis-detects all but one.
 
 `.work/plan/` existing is the sole marker. Its presence means `TODOS.md`,
 `.work/PLAN.md`, `.work/FINDINGS.md` are lean indexes (checkbox/status + title +
