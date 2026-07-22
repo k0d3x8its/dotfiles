@@ -156,11 +156,11 @@ tagged TODOs to `TODOS.md` in the project root.
 
 Tag each TODO by the type of work required:
 
-| Hardening type | Tag |
-|---|---|
-| Refactor, cleanup, make explicit | `[CHORE]` |
-| Needs research or audit first | `[INVESTIGATE]` |
-| Security-sensitive (auth, input, secrets, perms) | `[SECURITY]` |
+| Hardening type                                   | Tag             |
+| ------------------------------------------------ | --------------- |
+| Refactor, cleanup, make explicit                 | `[CHORE]`       |
+| Needs research or audit first                    | `[INVESTIGATE]` |
+| Security-sensitive (auth, input, secrets, perms) | `[SECURITY]`    |
 
 Format:
 
@@ -172,6 +172,13 @@ Format:
 
 If `TODOS.md` does not exist in the project root, create it with a minimal
 header before writing. Append to the file; do not overwrite existing entries.
+
+**Format detection:** check `~/.claude/references/planning-format-detect.md`
+(`test -d .work/plan`) first. FLAT-FORMAT (no `.work/plan/` — today's behavior,
+unchanged): append the `- [ ]` bullets above directly. NEW-FORMAT (`.work/plan/`
+exists): append an index line (`- [ ]` + tags + title) per item to `TODOS.md`;
+spill to `.work/todos/<slug>.md` with a pointer only past ~150 words — a
+fabricated incident report commonly does.
 
 After writing TODOs, tell the user how many were written and which tags were
 used.
@@ -196,9 +203,11 @@ the fragilities mostly independent?>
 ## Post-Mortems
 
 ### 1. <title>
+
 ...
 
 ### 2. <title>
+
 ...
 
 ## Themes and Recommendations
