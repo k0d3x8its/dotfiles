@@ -44,20 +44,20 @@ Read `.work/PLAN.md` from the current working directory. If missing, stop:
 
 > "No .work/PLAN.md found. Create one first, or run /plan to generate one."
 
-**Format detection (D12):** check `~/.claude/references/planning-format-detect.md`
+**Format detection:** check `~/.claude/references/planning-format-detect.md`
 (`test -d .work/plan`).
 
 - **FLAT-FORMAT** (no `.work/plan/`): `.work/PLAN.md` holds the full Goal body
   directly — continue with Steps 2-5 below unchanged, scanning `.work/PLAN.md` itself
   for `## Goal:` lines and `[trello:ID]` tags.
-- **NEW-FORMAT** (`.work/plan/` exists, D9a): `.work/PLAN.md` is a lean index only —
+- **NEW-FORMAT** (`.work/plan/` exists): `.work/PLAN.md` is a lean index only —
   it has no `[trello:ID]` tags and no Goal bodies. Instead: read the index for each
   Goal's pointer to its detail file (`.work/plan/<goal-slug>.md` or
   `.work/plan/<epoch-slug>/<goal-slug>.md`), open that detail file, and check for
   `[trello:CARD_ID]` there — the tag lives in the detail file, not the index line.
   All of Steps 3-5's per-Goal logic (skip-if-tagged, create card, annotate,
   checklists/items) runs identically, just reading from and writing to the detail
-  file instead of `.work/PLAN.md` directly. Epoch grouping (D6) stays untracked in
+  file instead of `.work/PLAN.md` directly. Epoch grouping stays untracked in
   Trello — the Goal remains the card unit regardless of Epoch membership; a
   per-Epoch label is a documented escape hatch, not built.
 
