@@ -27,19 +27,29 @@ Active = has `TODOS.md`, `.memory/SESSION-LOG.md`, or `session-log.md`. None = o
 
 Also check `~/dev/.memory/SESSION-LOG.md` / `~/dev/session-log.md` → treat as `[machine]` (no git state, show first).
 
+**Format detection (per project, not once):** dev-brief sweeps every repo in
+`~/dev`, and each repo can independently be flat or new-format. Check
+`~/.claude/references/planning-format-detect.md`'s cross-repo form —
+`test -d ~/dev/<project>/.work/plan` — for EACH project during discovery, never
+once for the whole sweep. As of the pilot, dotfiles is the only new-format repo;
+the dominant path across `~/dev` is FLAT.
+
 ### Step 2 — Per project: cache gate → data
 
 **Cache gate (mtime read-skip):**
+
 ```bash
 live=$(stat -c %Y "$log" 2>/dev/null)
 cached=$(awk -v want="$proj" '/^## /{cur=substr($0,4);next} /^mtime:/&&cur==want{sub(/^mtime:[[:space:]]*/,"");print;exit}' ~/dev/.triage-cache 2>/dev/null)
 ```
+
 - `live` empty → **GONE**: drop project's cache block, omit from brief
 - `cached` empty → **READ** (cold)
 - `live > cached` → **READ** (changed)
 - `live <= cached` → **HIT**: load open-TODO lines from `.triage-cache` block; skip log read
 
 **Cache format** (`~/dev/.triage-cache`):
+
 ```
 ## [machine]        ← pointer format (TODOS.md project)
 mtime: 1780324513
@@ -51,28 +61,37 @@ mtime: 1780189650
 ```
 
 **On READ:**
+
 - **First, per file: apply `~/.claude/references/git-crypt-lock-check.md`.** A git-crypt-locked planning file is ciphertext — skip + flag it, never parse it as content. One locked repo skips only its own files; the rest of the sweep proceeds.
-- `TODOS.md` exists: read `- [ ]` lines for TODOs; read session-log latest block for date, Gotchas, Decisions, Re-Entry Prompt.
+- `TODOS.md` exists, FLAT-FORMAT project: read `- [ ]` lines for TODOs; read session-log latest block for date, Gotchas, Decisions, Re-Entry Prompt.
+- `TODOS.md` exists, NEW-FORMAT project: read `- [ ]` index lines for TODOs (title + tags only — do not open `.work/todos/<slug>.md` detail files during the sweep; that expansion is deep-dive-only, see Re-Entry Prompt splice below). Session-log read is unchanged either format.
 - No `TODOS.md`: parse session-log latest block for all of the above.
 - Latest block = highest date in `## Session Handoff/Checkpoint — {date}` headers — never assume position (machine log newest-at-top; kos newest-at-bottom).
 - Re-Entry Prompt: stored as prose + pointer to TODOS.md. **Splice on render** (deep-dive only): expand that pointer — inline every `- [ ]` item so the pasted prompt is self-contained.
 
 **After READ — refresh cache (mandatory, including triage mode):**
+
 - TODOS.md project: `update-cache <project> <todos_path>`
-- Legacy project: rewrite `## {project}` block with verbatim open-TODO lines + fresh `mtime:` = `stat -c %Y` taken *after* any Step 3 self-heal write.
+- Legacy project: rewrite `## {project}` block with verbatim open-TODO lines + fresh `mtime:` = `stat -c %Y` taken _after_ any Step 3 self-heal write.
 - Re-`stat` to confirm written mtime == live. Unrefreshed block re-reads forever.
 
 **Git (run in parallel):**
+
 ```bash
 git -C ~/dev/<project> branch --show-current 2>/dev/null
 git -C ~/dev/<project> status --short 2>/dev/null | wc -l
 git -C ~/dev/<project> log @{u}.. --oneline 2>/dev/null | wc -l
 ```
+
 Not a git repo → `not a git repo`. No upstream → `no upstream`.
 
 **Release pending:** `[ -s ~/dev/<project>/RELEASE-NOTES.md ] && echo "RELEASE PENDING"`
 
-**`.work/PLAN.md`:** if present, merge `- [ ]` items into TODOs labeled `[plan]`.
+**`.work/PLAN.md`:** if present, FLAT-FORMAT project: merge `- [ ]` items into
+TODOs labeled `[plan]`. NEW-FORMAT project: `.work/PLAN.md` index lines use
+`<status> — Goal <N>: <title>` (no `- [ ]` checkbox — see
+`~/.claude/references/planning-format-detect.md`), so merge `open`/`in-progress`
+status lines into TODOs labeled `[plan]` instead; skip `done` lines.
 
 **KNOWLEDGE.md (deep-dive only):** if `KNOWLEDGE.md` exists in the project root, read it. Surface entries under a `### Knowledge` section in the deep-dive output, before the TODOs tiers.
 
@@ -82,19 +101,21 @@ Git always live (never cached). Compare open TODOs (from cache on HIT, from log 
 
 **Auto-resolve:**
 
-| Git condition | TODO text matches | Action |
-|---|---|---|
-| `git log @{u}..` = 0 commits | `push`, `unpushed`, `commits ahead`, `push to remote`, `ahead of origin` | Auto-resolve |
+| Git condition                  | TODO text matches                                                                 | Action       |
+| ------------------------------ | --------------------------------------------------------------------------------- | ------------ |
+| `git log @{u}..` = 0 commits   | `push`, `unpushed`, `commits ahead`, `push to remote`, `ahead of origin`          | Auto-resolve |
 | `git status --short` = 0 files | `uncommitted`, `not yet committed`, `stage`, `dirty`, `git add`, `commit changes` | Auto-resolve |
 
-Auto-resolve = remove from `TODOS.md` (or mark `[x]` in session-log + append ` *(auto-resolved by dev-brief {YYYY-MM-DD})*`). Show `✓` in output. Skip ambiguous intent. Only touch latest session block. Refresh cache with post-write mtime immediately after.
+Auto-resolve = remove from `TODOS.md` (or mark `[x]` in session-log + append ` *(auto-resolved by dev-brief {YYYY-MM-DD})*`). NEW-FORMAT project: remove BOTH the index line and its `.work/todos/<slug>.md` detail file if one exists. Show `✓` in output. Skip ambiguous intent. Only touch latest session block. Refresh cache with post-write mtime immediately after.
 
 **Step 3b — Fix-commit flags (advisory only, never written):**
 
 For open `[BUG]`/`[FEAT]`/`[RELEASE]` TODOs in latest block:
+
 ```bash
 git -C ~/dev/<repo> log --since="<block-date>" --no-merges --pretty='%h %s' --name-only 2>/dev/null
 ```
+
 `[machine]` TODOs: scan `~/dev/dotfiles` (+ any repo named in TODO text) — config/skill work lands there.
 
 Flag on high-signal match only: filename from TODO in commit's changed paths, OR ≥2 distinctive content words shared between TODO and commit subject. Prefix with `⚑`, append ` — possibly resolved by <hash>(<repo>) — verify`. Report flag count separately from auto-resolved count. Skip `[DECISION]`/`[INVESTIGATE]`/`[CHORE]`/`[DOCS]` — don't close via code commit.
@@ -117,13 +138,13 @@ Tiers recomputed fresh every run (never cached). Tag-first, keyword fallback for
 
 **Keyword fallback (untagged TODOs only):**
 
-| Tier | Condition |
-|---|---|
-| Critical | ⚠-flagged AND text has: `broken`, `failing`, `can't work`, `not working`, `crashed`, `down` |
-| High | ⚠-flagged (not Critical) · OR text has: `blocker`, `blocks`, `blocked`, `critical` · OR `[STALE]` project with open TODOs |
-| Low | text has: `consider`, `evaluate`, `low priority`, `nice to have`, `when ready`, `no rush` |
-| Backlog | text has: `someday`, `eventually`, `future`, `parked`, `long-term`, `backlog` |
-| Medium | everything else |
+| Tier     | Condition                                                                                                                 |
+| -------- | ------------------------------------------------------------------------------------------------------------------------- |
+| Critical | ⚠-flagged AND text has: `broken`, `failing`, `can't work`, `not working`, `crashed`, `down`                               |
+| High     | ⚠-flagged (not Critical) · OR text has: `blocker`, `blocks`, `blocked`, `critical` · OR `[STALE]` project with open TODOs |
+| Low      | text has: `consider`, `evaluate`, `low priority`, `nice to have`, `when ready`, `no rush`                                 |
+| Backlog  | text has: `someday`, `eventually`, `future`, `parked`, `long-term`, `backlog`                                             |
+| Medium   | everything else                                                                                                           |
 
 **Line format:** `  [project]  {annotation tags} {todo text — 70 chars max, truncate with …}`
 Strip priority tags from displayed text (tier already shows it). Sort within tier: ⚠/`[BROKEN]` first, then alpha by project. Omit empty tiers. Omit `✓` auto-resolved items.
