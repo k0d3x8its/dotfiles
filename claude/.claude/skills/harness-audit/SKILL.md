@@ -20,14 +20,14 @@ must be unambiguous.
 
 ## Threat model (why each phase exists)
 
-| Surface | Threat |
-|---|---|
-| Hooks | Arbitrary code, every session/tool-call — highest privilege. Exfil of transcripts (they contain everything you've typed + file contents), env harvesting |
-| Skills/plugins | Prompt-injection supply chain: third-party instructions loaded into context; hidden-unicode payloads invisible in review |
-| MCP servers | Tool supply chain with network reach; auto-approval multiplies it |
-| settings.json | `ANTHROPIC_BASE_URL` redirects the model itself; permissive allow-lists silently widen the blast radius of everything above |
-| Memory / CLAUDE.md | Persistent instruction injection — one poisoned line executes every session forever |
-| Transcripts on disk | Secrets sink: anything a tool ever printed lives in `~/.claude/projects/*/` plaintext |
+| Surface             | Threat                                                                                                                                                   |
+| ------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Hooks               | Arbitrary code, every session/tool-call — highest privilege. Exfil of transcripts (they contain everything you've typed + file contents), env harvesting |
+| Skills/plugins      | Prompt-injection supply chain: third-party instructions loaded into context; hidden-unicode payloads invisible in review                                 |
+| MCP servers         | Tool supply chain with network reach; auto-approval multiplies it                                                                                        |
+| settings.json       | `ANTHROPIC_BASE_URL` redirects the model itself; permissive allow-lists silently widen the blast radius of everything above                              |
+| Memory / CLAUDE.md  | Persistent instruction injection — one poisoned line executes every session forever                                                                      |
+| Transcripts on disk | Secrets sink: anything a tool ever printed lives in `~/.claude/projects/*/` plaintext                                                                    |
 
 ## Audit phases (run all, in order)
 
@@ -143,7 +143,15 @@ memory line is persistent compromise. Any hit gets read in full context.
    - [ ] Every plugin/marketplace recognized + version-pinned; unused ones flagged for removal
    - [ ] MCP servers enumerated with transport + reach stated (or none)
    - [ ] `claude --version` at or above CVE floor
-2. **Findings** → `dotfiles/TODOS.md` as `[SECURITY]`-tagged items (confirm before writing). Zero findings in a phase = say so explicitly.
+2. **Findings** → `~/dev/dotfiles/TODOS.md` as `[SECURITY]`-tagged items (confirm before writing). Zero findings in a phase = say so explicitly.
+   **Format detection:** check `~/.claude/references/planning-format-detect.md`,
+   testing `~/dev/dotfiles/.work/plan` — NOT the bare CWD-relative form.
+   harness-audit's write target is fixed at dotfiles regardless of where it's
+   invoked from, so the detection base must match the write base. FLAT-FORMAT
+   (no `~/dev/dotfiles/.work/plan/` — today's behavior, unchanged): append the
+   `- [ ]` bullet directly. NEW-FORMAT (exists): append an index line
+   (`- [ ]` + `[SECURITY]` + title) to `~/dev/dotfiles/TODOS.md`; spill to
+   `~/dev/dotfiles/.work/todos/<slug>.md` with a pointer only past ~150 words.
 3. Offer follow-ups: `/code-sec` on dotfiles itself, plugin uninstall for flagged surface.
 
 ## Close-out
