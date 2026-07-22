@@ -22,7 +22,9 @@ import os
 import re
 import sys
 
-GATE_LINE_RE = re.compile(r"^\s*-\s*G([3-9]|\d{2,})\b")
+GATE_LINE_RE = re.compile(
+    r"gate\s*[3-9]\d*\b.*\bclosed\b|current gate:\s*[3-9]\d*\b", re.IGNORECASE
+)
 # Names as they actually appear in transcript tool_use blocks. advisor confirmed
 # live 2026-07-20 (see gate.md TASK 9 G6) as name "advisor". "Agent"/"Task" are
 # both included since the subagent tool's transcript name wasn't confirmed live
@@ -57,7 +59,7 @@ def added_text(tool_name, tool_input):
 
 
 def has_new_gate3_plus(text):
-    return any(GATE_LINE_RE.match(line) for line in text.splitlines())
+    return any(GATE_LINE_RE.search(line) for line in text.splitlines())
 
 
 RECENT_TOOL_USE_WINDOW = 40
