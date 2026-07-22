@@ -86,7 +86,7 @@ No `### Incomplete / Next Steps` block — open work lives in `TODOS.md` only.
   ---
   ```
 
-**3.** Update `TODOS.md` in-place. **Format detection (D12):** check
+**3.** Update `TODOS.md` in-place. **Format detection:** check
 `~/.claude/references/planning-format-detect.md` (`test -d .work/plan`) first.
 
 **FLAT-FORMAT** (no `.work/plan/` — today's behavior, unchanged):
@@ -99,11 +99,11 @@ No `### Incomplete / Next Steps` block — open work lives in `TODOS.md` only.
 **NEW-FORMAT** (`.work/plan/` exists): `TODOS.md` is a lean index — sync against
 it, never against `.work/archive/legacy-todos.md` (that's the archived pre-cutover
 state, not live). Items **completed this session** → remove BOTH the index line
-and its detail file in `.work/todos/` if one exists (D11 — mirrors this same
+and its detail file in `.work/todos/` if one exists (mirrors this same
 remove-not-mark rule already in place today); add to `### Completed` with `[x]`.
 **New open items** → append an index line (`- [ ]` + tags + title + pointer);
 if the item's body exceeds ~150 words, write the full body to
-`.work/todos/<slug>.md` and point the index line at it (D10 — conditional spill,
+`.work/todos/<slug>.md` and point the index line at it (conditional spill,
 shorter items stay inline with no detail file). All other items → leave verbatim.
 
 **4.** For **Decisions Made**: capture the _why_, not just the _what_.
