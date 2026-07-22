@@ -85,12 +85,12 @@ declined for non-secret PII).
 
 ### 2. Dependency audit — auto-detect the stack
 
-| Marker file | Command |
-|---|---|
-| `package.json` | `npm audit --audit-level=moderate` (or `pnpm audit`/`yarn audit` per lockfile) |
+| Marker file                            | Command                                                                                                                      |
+| -------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------- |
+| `package.json`                         | `npm audit --audit-level=moderate` (or `pnpm audit`/`yarn audit` per lockfile)                                               |
 | `requirements*.txt` / `pyproject.toml` | `pip-audit` if installed, else `osv-scanner -r .` if installed, else note "no Python auditor installed" as a `[LOW]` finding |
-| `Cargo.toml` | `cargo audit` (if installed) |
-| `go.mod` | `govulncheck ./...` (if installed) |
+| `Cargo.toml`                           | `cargo audit` (if installed)                                                                                                 |
+| `go.mod`                               | `govulncheck ./...` (if installed)                                                                                           |
 
 Report vulnerable package → advisory ID → fixed version. Do NOT auto-upgrade.
 
@@ -239,6 +239,12 @@ rg -n '[\x{200B}-\x{200F}\x{202A}-\x{202E}\x{2066}-\x{2069}]' claude/.claude/ski
 1. **Findings report** in the session (grouped by phase, severity-first). Each finding: what, where (file:line / commit), confidence tier (CONFIRMED/TRACED/CANDIDATE), taint trace for injection-class hits, why it matters, suggested remediation.
 2. **Mini threat model** — close the report with the top 3 exploits an attacker would try against this repo as it stands: most likely, highest impact, most subtle. One sentence each + the mitigation. Forces prioritization even when individual findings are all `[LOW]`.
 3. **Append to `TODOS.md`** — one tagged item per actionable finding, `[SECURITY]` + severity + phase context. Confirm with the user before writing.
+   **Format detection:** check `~/.claude/references/planning-format-detect.md`
+   (`test -d .work/plan`) first. FLAT-FORMAT (no `.work/plan/` — today's behavior,
+   unchanged): append the `- [ ]` bullet directly. NEW-FORMAT (`.work/plan/`
+   exists): append an index line (`- [ ]` + tags + title) to `TODOS.md`; spill to
+   `.work/todos/<slug>.md` with a pointer only past ~150 words — a finding with
+   taint-trace detail commonly does.
 4. If zero findings in a phase, say so explicitly — silence is not a clean bill.
 
 ## Close-out
