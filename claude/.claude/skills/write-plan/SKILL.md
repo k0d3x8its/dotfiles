@@ -24,7 +24,7 @@ description: Convert a grilled design doc plus .work/FINDINGS.md into .work/PLAN
 
 ## Step 2 — Emit .work/PLAN.md
 
-**Format detection (D12):** check `~/.claude/references/planning-format-detect.md`
+**Format detection:** check `~/.claude/references/planning-format-detect.md`
 (`test -d .work/plan`) before emitting. NEW-FORMAT and FLAT-FORMAT paths below are
 mutually exclusive per repo — never mix.
 
@@ -65,7 +65,7 @@ rules as FLAT-FORMAT above) moves to a per-Goal detail file.
 - **Detail file:** `.work/plan/<goal-slug>.md` (flat) holding the full
   `## Goal: ... / ### Micro-Goal: ... / - [ ] Task ... / - verify: ...` body — same
   hierarchy `/sync-trello` parses, just relocated. Slug is `<id>-<topic-slug>.md`.
-- **Epoch grouping (D4/D5/D7):** if this write-plan pass produces 2+ Goals tracing to
+- **Epoch grouping:** if this write-plan pass produces 2+ Goals tracing to
   the same design doc / initiative, recommend grouping them into an Epoch — never
   auto-decide. If accepted: nest detail files at
   `.work/plan/<epoch-slug>/<goal-slug>.md` and add the Epoch tag to each Goal's index
