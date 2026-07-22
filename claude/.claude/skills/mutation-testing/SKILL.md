@@ -34,7 +34,7 @@ Before mutating anything:
    commit or stash first. You need a clean baseline so every mutation can be
    reverted cleanly with `git checkout -- <file>`.
 2. **Find the test runner.** Look for: `pytest.ini`, `pyproject.toml
-   [tool.pytest]`, `setup.cfg [tool:pytest]`, `tox.ini`, `package.json`
+[tool.pytest]`, `setup.cfg [tool:pytest]`, `tox.ini`, `package.json`
    (scripts.test), `Makefile` test target, `go.mod`, `Cargo.toml`, a `tests/`
    or `spec/` directory, or any CI config that reveals the test command. Ask
    the user if you can't determine how to run tests. Confirm that the test suite
@@ -56,18 +56,18 @@ Work through the files in scope one at a time. For each file:
 
 2. **Apply, test, revert.** For each mutation:
    a. Apply the mutation using `Edit`. Change as little as possible — usually a
-      single line.
+   single line.
    b. Run the test suite (or the relevant subset if the suite is large). Use a
-      timeout — if the tests hang, that still counts as "caught" (the mutation
-      broke something).
+   timeout — if the tests hang, that still counts as "caught" (the mutation
+   broke something).
    c. Record the result:
-      - **Killed** — a test failed. Note which test, and briefly assess how
-        helpful the failure message is. Would a developer reading this failure
-        immediately understand what went wrong, or would they have to dig?
-      - **Survived** — no test failed. This is a gap. Note what behaviour is
-        untested.
-   d. Revert the mutation: `git checkout -- <file>`. Confirm the file is back
-      to its original state before moving on.
+   - **Killed** — a test failed. Note which test, and briefly assess how
+     helpful the failure message is. Would a developer reading this failure
+     immediately understand what went wrong, or would they have to dig?
+   - **Survived** — no test failed. This is a gap. Note what behaviour is
+     untested.
+     d. Revert the mutation: `git checkout -- <file>`. Confirm the file is back
+     to its original state before moving on.
 
 3. **Never leave a mutation in place.** After each test run, revert immediately.
    If something goes wrong and you're unsure of the file state, run
@@ -235,6 +235,13 @@ Format each entry:
 
 If `TODOS.md` does not exist in the project root, create it with a minimal
 header before writing. Append to the file; do not overwrite existing entries.
+
+**Format detection:** check `~/.claude/references/planning-format-detect.md`
+(`test -d .work/plan`) first. FLAT-FORMAT (no `.work/plan/` — today's behavior,
+unchanged): append the `- [ ]` bullet above directly. NEW-FORMAT (`.work/plan/`
+exists): append an index line (`- [ ]` + tags + title) to `TODOS.md`; spill to
+`.work/todos/<slug>.md` with a pointer only if the entry exceeds ~150 words
+(unlikely for a one-line survivor description, but possible for a batch report).
 
 After writing the TODOs, tell the user: "Survived mutations written to TODOS.md
 as [TEST] items. Use /tdd to close them."
