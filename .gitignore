@@ -51,6 +51,10 @@ RELEASE-NOTES.md
 /.work/.fable-active
 /.work/GATES.md
 
+# code-crit Sonnet-mega-spawn scratch output — no wildcard git-crypt backstop in this repo,
+# so a plain ignore line is sufficient (nothing to carve out of).
+/.work/scratch/
+
 # General
 .DS_Store
 *.swp
