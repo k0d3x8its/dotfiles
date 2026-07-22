@@ -98,8 +98,17 @@ Never design from memory of what a file, API, or dataset "probably" looks like. 
 - **Harness routing:** the live plan lives in the `.work/` trio — `.work/PLAN.md`
   (structure, via `/write-plan`), `.work/FINDINGS.md` (evidence and resolved unknowns),
   `.work/PROGRESS.md` (what's done / what's next; update it as steps land so a fresh
-  session can resume cold). For locating code cheaply, spawn `cavecrew-investigator`
-  instead of burning main context.
+  session can resume cold). **Format detection:** check
+  `~/.claude/references/planning-format-detect.md` (`test -d .work/plan`) before
+  reading PLAN.md/FINDINGS.md only. FLAT-FORMAT (no `.work/plan/` — today's
+  behavior, unchanged): read both files directly, full content. NEW-FORMAT
+  (`.work/plan/` exists): both are lean indexes — read the index first, open a
+  Goal's `.work/plan/<goal-slug>.md` or a cluster's
+  `.work/findings/<cluster-slug>.md` detail file only when that Goal/cluster's
+  full content is actually needed for the current gate. `.work/PROGRESS.md` is
+  NOT part of this split — always read it directly, unchanged, either format. For
+  locating code cheaply, spawn `cavecrew-investigator` instead of burning main
+  context.
 
 ### Gate 3 — Reason adversarially
 
