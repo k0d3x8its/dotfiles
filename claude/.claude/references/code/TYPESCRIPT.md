@@ -6,13 +6,13 @@ Appendix below covers HTML / CSS / JSON / YAML.
 
 ## Naming & casing
 
-| Kind | Casing | Example |
-|---|---|---|
-| variables / functions | `camelCase` | `resolveBoardId` |
-| constants (true immutables) | `UPPER_SNAKE` | `DEFAULT_LIST_ORDER` |
-| classes / types / interfaces / enums | `PascalCase` | `ChecklistItem` |
-| files | `kebab-case.ts` | `board-sync.ts` |
-| type params | descriptive `PascalCase` | `TCard` acceptable, bare `T` is AVOID |
+| Kind                                 | Casing                   | Example                               |
+| ------------------------------------ | ------------------------ | ------------------------------------- |
+| variables / functions                | `camelCase`              | `resolveBoardId`                      |
+| constants (true immutables)          | `UPPER_SNAKE`            | `DEFAULT_LIST_ORDER`                  |
+| classes / types / interfaces / enums | `PascalCase`             | `ChecklistItem`                       |
+| files                                | `kebab-case.ts`          | `board-sync.ts`                       |
+| type params                          | descriptive `PascalCase` | `TCard` acceptable, bare `T` is AVOID |
 
 - Interfaces MUST NOT carry an `I` prefix (`Card`, not `ICard`).
 
@@ -47,6 +47,7 @@ Appendix below covers HTML / CSS / JSON / YAML.
 6. Event listeners / wiring / registration (DOM listeners, command registration,
    plugin `onload` bindings) — the "main" lives at the bottom, after everything
    it references exists
+
 - Export at the declaration site (`export function …`) — no export block at the
   bottom, no `export default`.
 - Hoisting note: `function` declarations hoist (order is free); `const` arrow
@@ -86,6 +87,13 @@ before creating directories.
 - prettier + eslint NOT yet configured in trello-cli — `[CHORE]` candidate.
   Until then: 2-space indent, semicolons, single quotes, match the file you're in.
 - `tsc --noEmit` is the cheap verify gate; run it before claiming done.
+- ESLint: real projects SHOULD own a project-local `eslint.config.js` — flat
+  config's ancestor-directory search resolves the nearest one first, so a
+  project config always wins over the global fallback with zero setup. The
+  global `~/dev/eslint.config.js` exists only to catch loose scratch files
+  under `~/dev` that have no project of their own; it is not a substitute for
+  a project deciding its own rules (react rules firing on a non-react repo,
+  wrong parser version, etc. are the failure mode of relying on it long-term).
 
 ## Appendix — HTML / CSS / JSON / YAML (thin rules)
 
