@@ -40,15 +40,15 @@ allowed-tools:
 File bodies live in `templates/` next to this skill. Steps below say which template to
 write where. Read the template, substitute these tokens, write to the destination:
 
-| Token | Value |
-|---|---|
-| `{{PROJECT_NAME}}` | Step 2 |
-| `{{DESCRIPTION}}` | Step 3 |
-| `{{TYPE}}` | Step 4 |
-| `{{STACK}}` | Step 5 |
-| `{{DIRS_WITH_DESCRIPTIONS}}` | Step 6 dirs, one-line each |
-| `{{BOARD}}` | Step 10 board name, or `not configured — run /sync-trello to set up` |
-| `{{DATE}}` | today |
+| Token                        | Value                                                                |
+| ---------------------------- | -------------------------------------------------------------------- |
+| `{{PROJECT_NAME}}`           | Step 2                                                               |
+| `{{DESCRIPTION}}`            | Step 3                                                               |
+| `{{TYPE}}`                   | Step 4                                                               |
+| `{{STACK}}`                  | Step 5                                                               |
+| `{{DIRS_WITH_DESCRIPTIONS}}` | Step 6 dirs, one-line each                                           |
+| `{{BOARD}}`                  | Step 10 board name, or `not configured — run /sync-trello to set up` |
+| `{{DATE}}`                   | today                                                                |
 
 Static templates (`settings.json`, `SESSION-LOG.md` (written to `.memory/`), `CHANGELOG.md`, `gitignore.core`)
 have no tokens — copy verbatim.
@@ -64,6 +64,7 @@ Ask **one question at a time**. Each step shows a default — user accepts or ov
 ### Step 1: Confirm project root
 
 Show current directory:
+
 > "Setting up project in: `[cwd]`
 > Correct root? (yes / provide different path)"
 
@@ -84,6 +85,7 @@ Used in README and CLAUDE.md.
 ### Step 4: Project type
 
 > "Project type?"
+>
 > 1. Web app (frontend / fullstack)
 > 2. CLI / backend service
 > 3. Library / SDK
@@ -103,23 +105,47 @@ Record — used for folder scaffold and .gitignore.
 
 Based on project type, create these directories (skip any that already exist):
 
-| Type | Directories |
-|---|---|
-| Web app | `src/`, `public/`, `docs/` |
-| CLI / backend | `src/`, `tests/`, `docs/`, `docs/adr/` |
-| Library / SDK | `src/`, `tests/`, `docs/`, `docs/adr/`, `examples/` |
-| Script / automation | `scripts/`, `docs/` |
-| Other | Ask: "Which directories should I create?" |
+| Type                | Directories                                         |
+| ------------------- | --------------------------------------------------- |
+| Web app             | `src/`, `public/`, `docs/`                          |
+| CLI / backend       | `src/`, `tests/`, `docs/`, `docs/adr/`              |
+| Library / SDK       | `src/`, `tests/`, `docs/`, `docs/adr/`, `examples/` |
+| Script / automation | `scripts/`, `docs/`                                 |
+| Other               | Ask: "Which directories should I create?"           |
 
 Place a `.gitkeep` in each empty directory so they appear in git.
 
 For CLI/backend and Library/SDK projects, note after scaffolding:
+
 > "`docs/adr/` is active. Record any decision that meets the three-condition ADR gate
 > (cost of change is meaningful + future reader would wonder why + alternatives were
 > considered). Format: `docs/adr/ADR-0001-short-title.md`. Full schema in
 > `~/.claude/references/code/CODE-REFERENCE.md`."
 
 Print what was created.
+
+---
+
+### Step 6a: eslint config (JS/TS projects only)
+
+Skip this step entirely if Step 5's stack answer doesn't mention JavaScript/TypeScript.
+
+Check if `eslint.config.js` already exists in the project root — if so, skip silently.
+
+Otherwise ask:
+
+> "Add a project-local `eslint.config.js`? Recommended — it wins automatically over
+> any global fallback config once present, and lets this project's lint rules diverge
+> from other projects (react rules on a non-react repo, wrong parser, etc. are the
+> failure mode of relying on a shared global config long-term)."
+> Option to skip.
+
+If yes: copy `~/dev/eslint.config.js` (the global fallback, if it exists) to
+`./eslint.config.js` as a starting point — the project is then free to diverge from it.
+If no global fallback exists at that path, write `templates/eslint.config.js` instead.
+
+Print `✓ eslint.config.js created (project-local)` if written, skip silently if declined
+or already present.
 
 ---
 
@@ -146,6 +172,7 @@ Copy `templates/settings.json` (static — pre-approves common read-only/low-ris
 they don't prompt every session) to `.claude/settings.json`.
 
 Tell the user:
+
 > "Add more permissions anytime with `/update-config` or by editing `.claude/settings.json` directly."
 
 ---
@@ -169,13 +196,13 @@ For each missing file, write the matching `templates/<name>` (no prompt — alwa
 
 Create `.work/` with `mkdir -p .work` before writing files there.
 
-| Template | Destination | Tokens to substitute |
-|---|---|---|
-| `task_plan.md` | `.work/PLAN.md` | `{{PROJECT_NAME}}` |
-| `findings.md` | `.work/FINDINGS.md` | `{{PROJECT_NAME}}`, `{{DATE}}` |
-| `progress.md` | `.work/PROGRESS.md` | `{{PROJECT_NAME}}`, `{{DATE}}` |
-| `SESSION-LOG.md` | `.memory/SESSION-LOG.md` | none (static) |
-| `CHANGELOG.md` | `CHANGELOG.md` | none (static) |
+| Template         | Destination              | Tokens to substitute           |
+| ---------------- | ------------------------ | ------------------------------ |
+| `task_plan.md`   | `.work/PLAN.md`          | `{{PROJECT_NAME}}`             |
+| `findings.md`    | `.work/FINDINGS.md`      | `{{PROJECT_NAME}}`, `{{DATE}}` |
+| `progress.md`    | `.work/PROGRESS.md`      | `{{PROJECT_NAME}}`, `{{DATE}}` |
+| `SESSION-LOG.md` | `.memory/SESSION-LOG.md` | none (static)                  |
+| `CHANGELOG.md`   | `CHANGELOG.md`           | none (static)                  |
 
 Create `.memory/` if it does not exist (`mkdir -p .memory`) before writing `SESSION-LOG.md` there.
 
@@ -197,12 +224,12 @@ Print `✓ KNOWLEDGE.md created` if written, skip silently if it already exists.
 
 The required entry set = `templates/gitignore.core` (static) **plus** the type-specific block below:
 
-| Type | Additional entries |
-|---|---|
-| Web app | `node_modules/`, `dist/`, `.next/`, `build/`, `coverage/` |
-| CLI / backend | `node_modules/`, `dist/`, `build/`, `__pycache__/`, `*.pyc`, `venv/`, `.venv/` |
-| Library / SDK | `node_modules/`, `dist/`, `coverage/`, `*.egg-info/` |
-| Script / automation | `__pycache__/`, `*.pyc`, `venv/`, `.venv/`, `*.log` |
+| Type                | Additional entries                                                             |
+| ------------------- | ------------------------------------------------------------------------------ |
+| Web app             | `node_modules/`, `dist/`, `.next/`, `build/`, `coverage/`                      |
+| CLI / backend       | `node_modules/`, `dist/`, `build/`, `__pycache__/`, `*.pyc`, `venv/`, `.venv/` |
+| Library / SDK       | `node_modules/`, `dist/`, `coverage/`, `*.egg-info/`                           |
+| Script / automation | `__pycache__/`, `*.pyc`, `venv/`, `.venv/`, `*.log`                            |
 
 **Apply by whether `.gitignore` already exists — never overwrite, never skip wholesale:**
 
@@ -231,8 +258,9 @@ Run `git status`.
 
 - **Repo exists:** print "✓ Git initialized" and show current branch.
 - **No repo:** ask:
+
   > "No git repo detected. Run `git init`? (yes / skip)"
-  
+
   If yes: run `git init`, set `main` as default branch (`git init -b main`).
 
 ---
@@ -240,16 +268,19 @@ Run `git status`.
 ### Step 15: git-crypt
 
 Check if `git-crypt` is installed (`which git-crypt`). If not:
+
 > "git-crypt not found. Install it (`brew install git-crypt` / `apt install git-crypt`) then re-run this step, or skip."
 > Option to skip.
 
 If installed, check if `.gitattributes` already exists with `filter=git-crypt` entries — if so, print "✓ git-crypt already configured" and skip.
 
 Otherwise ask:
+
 > "Initialize git-crypt to encrypt planning/session files? (yes / skip)"
 > "These files will be encrypted at rest: KNOWLEDGE.md, TODOS.md, .memory/SESSION-LOG.md, .work/FINDINGS.md, .work/PROGRESS.md, .work/PLAN.md"
 
 If yes:
+
 1. Run `git-crypt init`
 2. Write `templates/gitattributes` to `.gitattributes` (append-if-missing if file exists — never overwrite other rules)
 3. Append the following negation block to `.gitignore` (global gitignore ignores these files by default; local negation re-includes them so git-crypt can encrypt them):
@@ -283,8 +314,8 @@ If yes:
    - Section name: `git-crypt`
    - Field name: `key`, type: `hidden`, value: `$(git-crypt export-key - | base64 -w 0)`
    - Command: `pass-cli item create custom --vault-name "Personal" --from-template <json>`
-4. Delete temp key file immediately after storing
-5. Print: "✓ git-crypt initialized. Key stored in Proton Pass Personal vault as `<repo-name>-gitcrypt`."
+5. Delete temp key file immediately after storing
+6. Print: "✓ git-crypt initialized. Key stored in Proton Pass Personal vault as `<repo-name>-gitcrypt`."
 
 **Important:** `.gitattributes` is committed source — do NOT add it to `.gitignore`.
 
@@ -293,19 +324,24 @@ If yes:
 ### Step 16: GitHub repo setup
 
 Ask:
+
 > "Create a GitHub repo for this project? Requires `gh` CLI."
 
 If yes, ask:
+
 > "Visibility?"
+>
 > 1. Private
 > 2. Public
 
 Run:
+
 ```bash
 gh repo create [project-name] --[private|public] --source=. --remote=origin --push
 ```
 
 If `gh` is not installed or not authenticated, print:
+
 > "`gh` not found or not authenticated. Run `gh auth login` first, then create the repo manually with:
 > `gh repo create [project-name] --private --source=. --remote=origin --push`"
 
@@ -316,6 +352,7 @@ If skipped: note in summary.
 ### Step 17: Remind about /ce-setup
 
 Always print — regardless of other choices:
+
 ```
 ─────────────────────────────────────────────
  Next: run /ce-setup in this project
@@ -340,6 +377,7 @@ Created:
   .claude/settings.json
   .claude/trello-board → "[board]"  (or: not configured)
   .work/PLAN.md, .work/FINDINGS.md, .work/PROGRESS.md, .memory/SESSION-LOG.md, CHANGELOG.md
+  eslint.config.js  (JS/TS projects only — omit line if Step 6a skipped/declined)
   KNOWLEDGE.md
   .gitignore
   .gitattributes (git-crypt)
