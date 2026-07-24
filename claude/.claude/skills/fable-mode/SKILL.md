@@ -13,6 +13,21 @@ A hard task is anything where the first idea might be wrong: multi-step builds, 
 research with claims, anything touching data you haven't looked at yet. For a one-file
 edit or a simple lookup, skip the gates and just do the work.
 
+## Status check (always, before answering or acting on activation state)
+
+Whether fable-mode is active is a **filesystem fact, not a conversational one.**
+`.work/.fable-active` can outlive the session that created it — a fresh session, a
+resumed one, or one that never itself ran Activation can all inherit an existing
+marker. Before answering "is fable-mode on?" or acting on "turn fable-mode off":
+
+1. Check `.work/.fable-active` on disk. That file's presence IS the answer — never
+   answer from memory of whether _this conversation_ turned it on.
+2. If asked to deactivate and the file exists (even if you don't recall activating
+   it), delete it and append a deactivation line to `.work/GATES.md` if present.
+   Do not reply "fable-mode not active" without having checked the file first.
+3. If asked to deactivate and the file does not exist, say so plainly — that's the
+   one case where "not active" is correct.
+
 ## Activation (do this first, before any task work)
 
 Weaker models lose method discipline as context grows. This skill survives long sessions
