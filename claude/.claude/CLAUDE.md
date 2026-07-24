@@ -22,6 +22,7 @@ External (not auto-surfaced): `/ce-code-review` `/discover` `/write-prd`
 - When I paste a re-entry prompt: treat decisions, background context, and architectural choices as authoritative. Reconcile task state (completed/open/in-progress) against current files (`.work/PLAN.md`, `.work/PROGRESS.md`, `git log --oneline -5`) before acting — file state wins on conflicts.
 - CHANGELOG: use `/changelog` manually when a session produces changelog-worthy changes. Works for any project (including dotfiles). Do not auto-update changelogs inline.
 - Trust-but-verify reflex: before any done/works/fixed claim, `git push`, PR, or handoff (/close, /checkpoint, /handoff, /handoff-return, subagent) — run the project's verify command FRESH (resolve via `~/.claude/skills/trust-but-verify/detect.md`) and read its exit code. Not before commits. Unproven claim → `[VERIFY]` TODO; machine-unverifiable → `[UX]` checklist.
+- New feature work defaults to `/tdd` (test-first) unless I've explicitly scoped tests out for the task. Bug fixes are unaffected — they still route to `/diagnose` per the TODO Tags table below, not this line.
 
 ## TODO Tags
 
