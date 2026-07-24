@@ -71,6 +71,23 @@ Forcing the cross-file edit is shotgun surgery, the smell below.)
 - Applies to modules/files/functions, not just classes: one reason to change each.
 - Test: describe the module in one sentence without "and". If you can't, split it.
 
+### SoC — Separation of Concerns (layer-level, cuts across modules)
+
+- Distinct from SRP: SRP asks "does this one module have one reason to change";
+  SoC asks whether _unrelated kinds of concern_ — IO/persistence, presentation,
+  validation, policy-vs-mechanism — are sharing a layer at all, even inside a
+  module small enough to still pass the SRP test.
+- Config vs code is the recurring local instance: a global fallback config
+  (env-wide default, e.g. `~/dev/eslint.config.js`) and a project's own config
+  (project-specific policy) are different concerns and MUST NOT be collapsed
+  into one file just because both are "eslint config" — see `TYPESCRIPT.md`.
+- Policy (what rule applies) SHOULD be separable from mechanism (how the rule
+  is enforced/executed) — the same discriminating question as the eslint case,
+  generalized: can the _what_ change without touching the _how_, and vice versa?
+- Not a license to split prematurely — a two-line script mixing IO and logic
+  is not a violation until a second concern actually shows up (YAGNI still
+  gates this, same as DRY's rule of three).
+
 ### DIP — Dependency Inversion (seams)
 
 - Depend on seams, not concretions: pass collaborators in (the `wire{}` DI pattern
