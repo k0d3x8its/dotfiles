@@ -144,7 +144,7 @@ Forcing the cross-file edit is shotgun surgery, the smell below.)
 
 ## Smells — the review-stage refactoring vocabulary
 
-At review (`/code-review` after green, per TDD above), check the diff against these
+At review (`/code-crit` after green, per TDD above), check the diff against these
 Fowler smells by name. Naming the smell is the trigger — flag it, then fix or file it.
 
 - **Mysterious name** — name doesn't reveal intent (single-letter identifiers are
