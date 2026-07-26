@@ -25,7 +25,7 @@ prose needs tightening. That division is the design.
 - **Five gates (macro discipline).** Every hard task passes Scope → Evidence →
   Adversarial reasoning → Verification → Calibrated report, in order. Each gate
   routes to the harness tool that enforces it (`/grill-me`, `/write-plan`,
-  `/code-review`, `/ante-mortem`, `/trust-but-verify`, `/verify`, `/diagnose`) —
+  `/code-crit`, `/ante-mortem`, `/trust-but-verify`, `/verify`, `/diagnose`) —
   fable-mode is the dispatcher, not a replacement.
 - **The inner loop (micro discipline).** `REASON → ACT → OBSERVE → RE-EVALUATE`
   on every non-trivial beat: state a one-line hypothesis before the first tool
