@@ -162,7 +162,7 @@ the gate's job is catching real gaps before building, not cataloging every hypot
      available; otherwise use a known valid general-purpose type and put the
      adversarial-reviewer persona in the prompt to CONSTRUCT failure scenarios ("what
      input makes this produce the wrong result"). Never invent a subagent type.
-     For a diff, when the `/code-review` skill is available, it is an alternate
+     For a diff, when the `/code-crit` skill is available, it is an alternate
      delegated route through its own mechanism. Do not pass the skill name as an
      `Agent` persona. Treat unavailable, failed, artifact-inaccessible, or
      non-substantive execution as a route failure and continue through the remaining
@@ -219,7 +219,7 @@ the gate's job is catching real gaps before building, not cataloging every hypot
 - Two failed attempts at the same fix means the diagnosis is wrong. Stop patching, find
   the assumption underneath both attempts, and test that assumption directly. If it is a
   real bug hunt, escalate to the `/diagnose` loop.
-- **Harness routing:** `/code-review` attacks a diff; `/ante-mortem` attacks future
+- **Harness routing:** `/code-crit` attacks a diff; `/ante-mortem` attacks future
   failure modes in a design; `/review-response` is this gate applied to incoming
   feedback. The delegated-attacker options above feed all three.
 
@@ -378,7 +378,7 @@ Any one of these: stop, re-read `.work/GATES.md`, go back to that gate.
   `scripts/fetch-fable-traces.py` re-downloads the public trace dataset for local
   analysis (AGPL-3.0 — analyse locally, never commit or redistribute the data).
 - It is the **dispatcher layer** over the task-specific skills named in the gate
-  routings (/grill-me, /write-plan, planning-with-files, /diagnose, /code-review,
+  routings (/grill-me, /write-plan, planning-with-files, /diagnose, /code-crit,
   /ante-mortem, /review-response, /trust-but-verify, /verify). Those are the "how to
   check" tools; this is the discipline of when to reach for them. Never duplicate what
   they do — invoke them.
