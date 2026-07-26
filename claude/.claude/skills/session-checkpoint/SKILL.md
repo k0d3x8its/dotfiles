@@ -146,7 +146,7 @@ If candidates remain:
 
 **8.** Refresh the triage pipeline (only for logs under `~/dev/`):
 
-- Project name = `[machine]` if log is `~/dev/.memory/SESSION-LOG.md`; else `basename` of the log's grandparent dir (since log is now at `<root>/.memory/SESSION-LOG.md`)
+- Project name = `basename` of the log's grandparent dir (log lives at `<root>/.memory/SESSION-LOG.md`)
 - TODOS path = `{log_dir}/../TODOS.md` (TODOS.md stays at project root, not in .memory/)
 
 ```bash
