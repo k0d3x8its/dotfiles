@@ -136,7 +136,7 @@ context is the default, not an optional enhancement.
 - Two failed attempts at the same fix means the diagnosis is wrong. Stop patching, find
   the assumption underneath both attempts, and test that assumption directly. If it is
   a real bug hunt, escalate to the `/diagnose` loop.
-- **Harness routing:** `/code-review` attacks a diff; `/ante-mortem` attacks future
+- **Harness routing:** `/code-crit` attacks a diff; `/ante-mortem` attacks future
   failure modes in a design; `/review-response` applies this gate to incoming feedback.
 
 ### Gate 4 — Verify before declaring done
@@ -218,7 +218,7 @@ Any one of these: stop, re-read `.work/GATES.md`, go back to that gate.
 - This is a method skill, not a workflow. It changes how you execute the current task;
   its only artifacts are the marker file and GATES.md.
 - It is the **dispatcher layer** over the task-specific skills named in the gate
-  routings (/grill-me, /write-plan, planning-with-files, /diagnose, /code-review,
+  routings (/grill-me, /write-plan, planning-with-files, /diagnose, /code-crit,
   /ante-mortem, /review-response, /trust-but-verify, /verify). Those are the "how to
   check" tools; this is the discipline of when to reach for them. Never duplicate what
   they do — invoke them.
