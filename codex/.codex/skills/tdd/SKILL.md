@@ -98,7 +98,7 @@ Rules:
 
 ### 4. Review
 
-After all tests pass, run `/code-review` to surface cleanup candidates. See `~/.codex/skills/tdd/refactoring.md` for refactoring patterns.
+After all tests pass, run `/code-crit` to surface cleanup candidates. See `~/.codex/skills/tdd/refactoring.md` for refactoring patterns.
 
 ## Checklist Per Cycle
 
