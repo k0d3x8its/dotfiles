@@ -174,8 +174,7 @@ def parse_cache(path: Path) -> dict:
 def release_pending(projects: dict) -> list:
     return sorted(
         p for p in projects
-        if p != "[machine]"
-        and (rn := DEV / p / "RELEASE-NOTES.md").exists()
+        if (rn := DEV / p / "RELEASE-NOTES.md").exists()
         and rn.stat().st_size > 0
     )
 
