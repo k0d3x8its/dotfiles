@@ -25,8 +25,6 @@ find ~/dev -mindepth 1 -maxdepth 1 -type d -printf '%f\n' | sort
 
 Active = has `TODOS.md`, `.memory/SESSION-LOG.md`, or `session-log.md`. None = orphan.
 
-Also check `~/dev/.memory/SESSION-LOG.md` / `~/dev/session-log.md` → treat as `[machine]` (no git state, show first).
-
 **Format detection (per project, not once):** dev-brief sweeps every repo in
 `~/dev`, and each repo can independently be flat or new-format. Check
 `~/.claude/references/planning-format-detect.md`'s cross-repo form —
@@ -51,9 +49,9 @@ cached=$(awk -v want="$proj" '/^## /{cur=substr($0,4);next} /^mtime:/&&cur==want
 **Cache format** (`~/dev/.triage-cache`):
 
 ```
-## [machine]        ← pointer format (TODOS.md project)
+## [dotfiles]       ← pointer format (TODOS.md project)
 mtime: 1780324513
-path: /home/k0d3x/dev/TODOS.md
+path: /home/k0d3x/dev/dotfiles/TODOS.md
 
 ## batctrl          ← legacy format (session-log project)
 mtime: 1780189650
@@ -66,7 +64,7 @@ mtime: 1780189650
 - `TODOS.md` exists, FLAT-FORMAT project: read `- [ ]` lines for TODOs; read session-log latest block for date, Gotchas, Decisions, Re-Entry Prompt.
 - `TODOS.md` exists, NEW-FORMAT project: read `- [ ]` index lines for TODOs (title + tags only — do not open `.work/todos/<slug>.md` detail files during the sweep; that expansion is deep-dive-only, see Re-Entry Prompt splice below). Session-log read is unchanged either format.
 - No `TODOS.md`: parse session-log latest block for all of the above.
-- Latest block = highest date in `## Session Handoff/Checkpoint — {date}` headers — never assume position (machine log newest-at-top; kos newest-at-bottom).
+- Latest block = highest date in `## Session Handoff/Checkpoint — {date}` headers — never assume position (kos is newest-at-bottom; others vary).
 - Re-Entry Prompt: stored as prose + pointer to TODOS.md. **Splice on render** (deep-dive only): expand that pointer — inline every `- [ ]` item so the pasted prompt is self-contained.
 
 **After READ — refresh cache (mandatory, including triage mode):**
@@ -116,7 +114,7 @@ For open `[BUG]`/`[FEAT]`/`[RELEASE]` TODOs in latest block:
 git -C ~/dev/<repo> log --since="<block-date>" --no-merges --pretty='%h %s' --name-only 2>/dev/null
 ```
 
-`[machine]` TODOs: scan `~/dev/dotfiles` (+ any repo named in TODO text) — config/skill work lands there.
+`[dotfiles]` TODOs: also scan any repo named in the TODO text — dotfiles items frequently describe work that lands in another repo.
 
 Flag on high-signal match only: filename from TODO in commit's changed paths, OR ≥2 distinctive content words shared between TODO and commit subject. Prefix with `⚑`, append ` — possibly resolved by <hash>(<repo>) — verify`. Report flag count separately from auto-resolved count. Skip `[DECISION]`/`[INVESTIGATE]`/`[CHORE]`/`[DOCS]` — don't close via code commit.
 
@@ -166,7 +164,7 @@ Strip priority tags from displayed text (tier already shows it). Sort within tie
 1. Execute immediately — no clarifying questions.
 2. Cache gate before every log read. Refresh after every READ is mandatory — unrefreshed block re-reads forever. Deep-dive always READs its single target (skip gate).
 3. Latest session = highest date in block headers; never assume by position.
-4. Orphans = directories only. Root files never listed (except `~/dev/.memory/SESSION-LOG.md` → `[machine]`).
+4. Orphans = directories only. Root files are never listed — `~/dev` itself is not a project.
 5. Output: plain markdown, no code-block wrapper.
 6. Fix-commit flags (Step 3b): advisory only — never written, never auto-closed, recomputed each run.
 7. Triage Block: default mode only, after orphans list. Deep-dive skips it.
