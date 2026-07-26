@@ -20,7 +20,7 @@
     ],
     "defaultMode": "default"
   },
-  "model": "opus",
+  "model": "sonnet",
   "hooks": {
     "SessionStart": [
       {
@@ -79,6 +79,15 @@
             "command": "python3 \"$HOME/.claude/hooks/secret_guard.py\""
           }
         ]
+      },
+      {
+        "matcher": "Edit|Write|MultiEdit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "[ -f \"$HOME/.claude/hooks/standards_guard.py\" ] && python3 \"$HOME/.claude/hooks/standards_guard.py\" pre; [ \"$?\" = 2 ] && exit 2 || exit 0"
+          }
+        ]
       }
     ],
     "PostToolUse": [
@@ -88,6 +97,15 @@
           {
             "type": "command",
             "command": "python3 \"$HOME/.claude/hooks/bash_audit.py\" 2>/dev/null || true"
+          }
+        ]
+      },
+      {
+        "matcher": "Read",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 \"$HOME/.claude/hooks/standards_guard.py\" post 2>/dev/null || true"
           }
         ]
       },
