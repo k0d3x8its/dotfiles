@@ -8,13 +8,13 @@ model) so it costs zero model tokens. All output is suppressed — emitting
 to stdout would inject text back into the model context and defeat that.
 
 Flow on a TODOS.md edit:
-  1. derive project name from path (~/dev/TODOS.md -> "machine";
-     ~/dev/<proj>/TODOS.md -> "<proj>")
+  1. derive project name from path (~/dev/<proj>/TODOS.md -> "<proj>")
   2. update-cache <project> <path>   (bumps mtime pointer in .triage-cache
      so /dev-brief's read-skip sees the change)
   3. update-triage                   (re-renders .memory/TRIAGE-BLOCK.md from the
      live TODOS.md content the cache points at)
 """
+
 import json
 import os
 import subprocess
@@ -41,8 +41,11 @@ def main() -> None:
     if os.path.commonpath([abspath, DEV]) != DEV:
         return
 
-    # ~/dev/TODOS.md is the [machine] project; subdir is named by its folder.
-    project = "machine" if parent == DEV else os.path.basename(parent)
+    # ~/dev itself is not a project — only its subdirectories are.
+    if parent == DEV:
+        return
+
+    project = os.path.basename(parent)
 
     devnull = subprocess.DEVNULL
     subprocess.run(["update-cache", project, path], stdout=devnull, stderr=devnull)
