@@ -1,7 +1,9 @@
 # CODE-PRINCIPLES
 
-Language-agnostic principles this environment has committed to. Read before writing or
-reviewing code. This file selects and locally interprets principles — it does not teach
+Language-agnostic principles this environment has committed to. Read at review
+(`/code-crit`), not per-line writing — `CODE-STANDARD.md:112` and global `CLAUDE.md`
+scope the write path to `CODE-STANDARD.md` + one language file only. This file selects
+and locally interprets principles — it does not teach
 them (they're in your priors). Per-language mechanics live in `CODE-STANDARD.md` and the
 files it delegates to.
 
