@@ -19,6 +19,11 @@ description: Convert a grilled design doc plus .work/FINDINGS.md into .work/PLAN
   skips the tradeoff work.
 - **`.work/FINDINGS.md`:** read if present. Resolved decisions there override the design doc
   (they're newer).
+- **`docs/REQUIREMENTS.md` and `docs/ARCHITECTURE.md`:** read if present — same
+  precedence rule as FINDINGS.md, newer overrides older. When `docs/ARCHITECTURE.md`
+  exists it's the primary planning input (the design doc is 3 pipeline stages stale by
+  that point); slice tasks from its Components/Interfaces, cite `FR-NN`/`NFR-NN` from
+  `docs/REQUIREMENTS.md` directly on the tasks that satisfy them.
 - If the design doc still has unanswered **Open questions**, stop: recommend `/grill-me`
   first — every open question becomes a wrong guess baked into the plan.
 
