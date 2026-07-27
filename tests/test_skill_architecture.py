@@ -48,7 +48,7 @@ RUNTIME_SPECIFIC = {
     "write-plan",
 }
 
-CLAUDE_ONLY = {"code-crit", "codebase-design", "threat-model"}
+CLAUDE_ONLY = {"code-crit", "codebase-design", "requirements", "threat-model"}
 
 
 def catalog(path: Path) -> set[str]:
