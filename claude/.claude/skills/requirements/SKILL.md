@@ -17,8 +17,14 @@ description: Formalize a resolved design into a numbered, testable FR/NFR spec a
 Read, don't ask, whatever these already answer:
 
 - **`docs/brainstorm/*.md`** (newest file) — the WHAT.
-- **`.work/FINDINGS.md`** (+ detail files) — resolved decisions from `/grill-me`. These
-  override the brainstorm doc where they conflict (they're newer).
+- **`.work/FINDINGS.md`** — resolved decisions from `/grill-me`. These override the
+  brainstorm doc where they conflict (they're newer). **Format detection:** check
+  `~/.claude/references/planning-format-detect.md` (`test -d .work/plan`) first.
+  FLAT-FORMAT (no `.work/plan/`): read `.work/FINDINGS.md` directly. NEW-FORMAT
+  (`.work/plan/` exists): `.work/FINDINGS.md` is a lean index — read it, then open the
+  specific `.work/findings/<cluster-slug>.md` detail file(s) relevant to this feature,
+  not just the index line. Skipping the detail file re-asks what grill-me already
+  resolved — the exact failure this step exists to prevent.
 - **`docs/REQUIREMENTS.md`**, if it already exists — read every `FR-NN`/`NFR-NN` present
   to find the current max number. New requirements continue from next free — never
   restart at 1, never renumber or reuse a retired number.
@@ -52,11 +58,18 @@ never re-ask something brainstorm or grill-me already resolved.
 
 Use `~/.claude/skills/requirements/templates/REQUIREMENTS.md`, substituting `{{DATE}}`.
 
-- **File doesn't exist:** write it fresh from the template.
+- **Overview / Problem Statement / Users are PROJECT-scoped, not feature-scoped** — they
+  describe the whole thing this repo builds, not whichever feature triggered this run.
+  FR-NN/NFR-NN are the feature-scoped part. Writing an Overview that only describes the
+  triggering feature bakes a wrong permanent header into an append-only file.
+- **File doesn't exist:** write it fresh from the template. If the project itself has no
+  single obvious identity yet (e.g. a tooling collection, not one product), say so in
+  Overview rather than substituting the triggering feature's description.
 - **File exists:** append new FRs/NFRs at next free number under the existing
-  `<requirements>`/`<nfr>` blocks. Update the `Last updated:` line. Never touch existing
-  entries' numbers or text — a superseded requirement gets `[deprecated]` in its status
-  field, the number itself is never reused.
+  `<requirements>`/`<nfr>` blocks. Revise Overview/Problem Statement/Users **only if the
+  project itself changed**, never to reflect the new feature. Update the `Last updated:`
+  line. Never touch existing FR/NFR entries' numbers or text — a superseded requirement
+  gets `[deprecated]` in its status field, the number itself is never reused.
 - Every FR/NFR carries: number, `[active]`/`[deprecated]` status, the requirement text,
   and a `— verify:` clause (a command or a concretely observable check).
 - `<requirements>`/`<nfr>` XML-style tags are load-bearing — `/architecture`'s
