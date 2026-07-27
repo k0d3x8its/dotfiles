@@ -8,7 +8,8 @@ description: Convert a grilled design doc plus .work/FINDINGS.md into .work/PLAN
 **Trigger:** `/write-plan [design-doc path]`
 **Purpose:** Design doc + resolved decisions in, executable `.work/PLAN.md` out.
 
-**Pipeline:** `/brainstorm` → `/grill-me` → `/write-plan` → build.
+**Pipeline:** `/brainstorm` → `/grill-me` → `/requirements` → `/architecture` →
+`/write-plan` → build.
 
 ---
 
