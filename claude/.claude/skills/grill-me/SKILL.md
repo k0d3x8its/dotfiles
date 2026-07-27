@@ -20,4 +20,4 @@ Distinguish facts (answerable by exploring the codebase — do it) from decision
   `.work/FINDINGS.md`: `<status> — <cluster title> — <pointer>`, status
   `open`/`in-progress`/`done`.
 
-When all branches are resolved, confirm: "All open questions resolved. Ready to proceed to /write-plan?"
+When all branches are resolved, confirm: "All open questions resolved. Ready to proceed to /requirements?"
