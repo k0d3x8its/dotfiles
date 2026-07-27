@@ -13,4 +13,9 @@ claude/.claude/KNOWLEDGE.md filter=git-crypt diff=git-crypt
 # Threat model + its DFD source are attacker roadmaps — encrypt (SVG is derived, gitignored).
 /docs/threat-model.md filter=git-crypt diff=git-crypt
 /docs/threat-model.dfd.mmd filter=git-crypt diff=git-crypt
+# Requirements/architecture specs — encrypted per user decision 2026-07-26.
+/docs/REQUIREMENTS.md filter=git-crypt diff=git-crypt
+/docs/ARCHITECTURE.md filter=git-crypt diff=git-crypt
+# Ante-mortem is a fragility/attacker-surface map, same class as threat-model.md.
+/ANTE-MORTEM.md filter=git-crypt diff=git-crypt
 /.memory/SESSION-LOG.md filter=git-crypt diff=git-crypt
