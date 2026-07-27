@@ -49,10 +49,34 @@ Problem Statement / Users from scratch. Not a hard dependency on earlier stages.
 Diff what Step 1 already answered against the template's sections. Ask about gaps only —
 never re-ask something brainstorm or grill-me already resolved.
 
+- **Hard gate — do not proceed to Step 4 until this is satisfied:** for each of
+  Overview, Problem Statement, and Users, either (a) point to the specific line in
+  Step 1's inputs that already answers it, (b) ask at least one question about it and
+  get an answer, or (c) on an append run (`docs/REQUIREMENTS.md` already exists), confirm
+  the project itself hasn't changed since the last write — Step 4's append rule already
+  says these three sections are revised only then, so "unchanged, confirmed" satisfies
+  the gate without an interview. Silently inventing a section from context without doing
+  (a), (b), or (c) is the failure this gate exists to close — it happened on this
+  skill's first live run.
 - One question at a time, recommended answer + one-line why first (matches
   brainstorm/grill-me style — never a flat Q&A dump).
 - Every FR/NFR must be phrased **observably** — if it can't be phrased as a check someone
-  could run or observe, it's not ready to number yet. Keep asking until it can.
+  could run or observe, it's not ready to number yet. Keep asking until it can. Two
+  observability shapes are both valid — don't force the second into the first:
+  - **Behavioral FR** — verify = run the system, or a command/output someone can check
+    now.
+  - **Process-gate FR** — verify = a design artifact (e.g. `/prototype` notes) shows the
+    empirical work was done, for a value deliberately deferred rather than guessed at
+    spec time. Not weaker than a behavioral FR — it commits to a method now and a number
+    later, which is stronger than baking in an unverified guess.
+- **Scope check, one rule for both directions:** an FR/NFR may only assert what the
+  artifact being specified actually controls — never a property of an arbitrary target
+  repo/environment it's pointed at, and never a literal value a downstream `/prototype`
+  step was explicitly left to determine. If a draft does either, rewrite it to assert the
+  artifact's own behavior/method before numbering it. (Caught twice on this skill's first
+  live run: a hardcoded formula that was supposed to be `/prototype`-derived, and an NFR
+  asserting a target repo's `.gitattributes` state instead of the tool's own output
+  behavior.)
 
 ## Step 4 — Write/append `docs/REQUIREMENTS.md`
 
@@ -79,9 +103,13 @@ Use `~/.claude/skills/requirements/templates/REQUIREMENTS.md`, substituting `{{D
 
 > `docs/REQUIREMENTS.md` written: [N] new FR(s), [M] new NFR(s). Next: `/architecture` —
 > it designs the system that satisfies this spec and traces every FR/NFR to a component.
+> If any new FR/NFR describes work not yet built, add a `[FEAT]` line for it in
+> `TODOS.md` — this skill doesn't write TODOS.md itself, so it won't happen unless
+> flagged here.
 
 Prose pointer, not an auto-invocation — `/architecture` may not exist yet in a repo mid
-rollout of this pipeline.
+rollout of this pipeline. The TODOS.md line is a reminder, not a write this skill
+performs — keeps this skill's write surface to `docs/REQUIREMENTS.md` only.
 
 ---
 
