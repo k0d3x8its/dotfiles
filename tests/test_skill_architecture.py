@@ -51,6 +51,7 @@ RUNTIME_SPECIFIC = {
 CLAUDE_ONLY = {
     "architecture",
     "code-crit",
+    "code-decay",
     "codebase-design",
     "requirements",
     "threat-model",
