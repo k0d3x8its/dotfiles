@@ -7,8 +7,30 @@ Never adds or checks a git-crypt pattern — a hotspot report isn't sensitive
 
 from __future__ import annotations
 
+import importlib.machinery
+import importlib.util
+import sys
 from datetime import datetime
 from pathlib import Path
+
+_SCRIPTS_DIR = Path(__file__).parent
+
+
+def _load_sibling(module_name: str, file_name: str):
+    loader = importlib.machinery.SourceFileLoader(
+        f"code_decay_{module_name}", str(_SCRIPTS_DIR / file_name)
+    )
+    spec = importlib.util.spec_from_loader(loader.name, loader)
+    module = importlib.util.module_from_spec(spec)
+    sys.modules[loader.name] = module
+    loader.exec_module(module)
+    return module
+
+
+# Score comes from the Scorer, not a second copy of `churn * cx` — FR-08
+# traces to one implementation, and the report must show what that
+# implementation actually produces.
+scorer = _load_sibling("scorer", "scorer.py")
 
 TABLE_HEADER = ("File", "Churn", "Cx", "Score", "Label")
 
@@ -19,24 +41,37 @@ def render_report(
     labels: dict[str, str | None],
     report_date: str | None = None,
     interpreted_paths: list[str] | None = None,
+    shallow_warning: bool = False,
 ) -> Path:
     """rows: path -> (churn, cx). labels: path -> label or None.
     `interpreted_paths`: the paths `select_for_interpretation` chose for the
     `--interpret` model pass, or None when `--interpret` wasn't used. States
     the actual count sent — never implies N were sent when fewer cleared the
-    floor (FR-10). Returns the path written."""
+    floor (FR-10). `shallow_warning`: True when `shallow_guard.is_shallow`
+    detected a truncated clone — surfaced IN the report, not only at the
+    terminal, since a report read later has no access to that run's stdout
+    (FR-05). Returns the path written."""
     resolved_date = report_date or datetime.now().strftime("%Y-%m-%d")
     repo_name = Path(repo_path).name
     output_dir = Path(repo_path) / "docs" / "code-decay"
     output_dir.mkdir(parents=True, exist_ok=True)
     output_path = output_dir / f"{repo_name}-{resolved_date}.md"
 
-    scores = {path: churn * cx for path, (churn, cx) in rows.items()}
+    scores = scorer.score_files(rows)
     ranked_paths = sorted(rows, key=lambda path: (-scores[path], path))
 
     lines = [
         f"# code-decay report: {repo_name} ({resolved_date})",
         "",
+    ]
+    if shallow_warning:
+        lines.append(
+            "**Warning: shallow clone detected.** Churn numbers reflect only "
+            "the truncated history available in this clone and may "
+            "understate real hotspots."
+        )
+        lines.append("")
+    lines += [
         f"| {' | '.join(TABLE_HEADER)} |",
         f"|{'---|' * len(TABLE_HEADER)}",
     ]
