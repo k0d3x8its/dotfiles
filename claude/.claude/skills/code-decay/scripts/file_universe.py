@@ -31,6 +31,9 @@ DEFAULT_DENY_PATTERNS: tuple[str, ...] = (
     "*.generated.*",
     "__pycache__/*",
     "*.pyc",
+    # Prose: proxy backend counts branch keywords, so a .md with "if" scores as code.
+    "*.md",
+    ".work/*",
 )
 
 
