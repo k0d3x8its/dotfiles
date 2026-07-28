@@ -93,7 +93,30 @@ Use `~/.claude/skills/architecture/templates/ARCHITECTURE.md`, substituting `{{D
   deploy target.
 - Key Decisions: only where a real tradeoff was debated — omit rather than pad.
 
-## Step 5 — Hand off
+## Step 5 — Security gate (conditional offer)
+
+Components/interfaces are settled by this point but no code exists yet — the last
+cheap moment to catch a design-level security hole. `/threat-model` is
+deliberate-trigger-only, so this is an **offer, never an auto-run**, and only when
+the design has a security surface.
+
+- **Fire the offer only if** `docs/ARCHITECTURE.md` (this write/revision) names either:
+  an HTTP / network-reachable component (server, API, endpoint, webhook, listener), OR
+  a component handling user / sensitive / regulated data (auth, PII, payments,
+  credentials, tokens). Repo-local tooling with none of these → **skip silently**, no
+  prompt.
+- **When it fires:**
+
+  > This design exposes a security surface ([one-line why — e.g. "Components table
+  > adds an authenticated HTTP endpoint touching user records"]). Recommend
+  > `/threat-model --design docs/ARCHITECTURE.md` before `/write-plan` — plan-level
+  > STRIDE review while a fix is still an edit to a doc, not code. Skip if the surface
+  > is already covered by an existing `docs/threat-model.md`.
+
+- Never run `/threat-model` unprompted — surface the recommendation and let the user
+  call it.
+
+## Step 6 — Hand off
 
 > `docs/ARCHITECTURE.md` [written|revised]: [N] component(s), [M] `FR`/`NFR` row(s)
 > traced. Traceability gate: [pass|N orphan(s) — list]. Next: `/write-plan` — it slices
