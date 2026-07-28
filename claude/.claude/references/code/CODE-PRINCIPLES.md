@@ -24,6 +24,18 @@ Forcing the cross-file edit is shotgun surgery, the smell below.)
    proves the pattern and reveals the abstraction's true shape. A wrong abstraction is
    costlier than duplication — especially for agents, which extend bad patterns
    confidently.
+   - **Test for which bucket you're in:** could both call sites cite the _same name_
+     for what they're doing, independent of the code — "compute a percentile,"
+     "resolve a rename chain," "parse this header" — a name a domain expert would
+     recognize without reading either implementation? That's _knowledge_: extract
+     now, no wait, even at occurrence two. If the honest description is instead
+     "these two blocks happen to do a similar-shaped thing" — same control flow,
+     different domain purpose, or same shape today but no reason to expect they'd
+     change together — that's a _look-alike_: hold for the third occurrence.
+   - This is a judgment call, not a mechanical count — don't reach for whichever
+     bucket happens to justify the extraction (or the duplication) you already
+     wanted. If the honest test above is genuinely ambiguous, that ambiguity
+     itself is the signal to wait for a third occurrence, not a coin flip.
 3. **Surgical scope beats Boy Scout (outer gate).** Clean only what the current change
    already touches. Cleanups outside the diff become `[CHORE]` TODOs, not drive-by
    edits — this gate overrides the other three when they would reach outside the diff.
