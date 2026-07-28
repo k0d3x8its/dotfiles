@@ -179,14 +179,12 @@ implementation detail within Hybrid.
   says "the primary failure mode of coding agents is over-engineering." Let grill-me
   weigh, per mechanism, whether a simpler binary confidence flag (verified / unverified)
   gets 80% of the benefit at a fraction of the build+maintenance cost.
-- **Security-persona territory vs. existing security tooling.** This environment
-  already has `code-sec` (repo-wide sweep), `bounty-hunter` (reachability triage),
-  `threat-model` (design-level STRIDE). Adding a `/code-review` security persona is a
-  FIFTH security surface. The research explicitly flagged ce's own
-  security-sentinel↔security-reviewer redundancy as "how not to do it" — draw this
-  persona's territory boundary against the other three explicitly (e.g. "diff-local
-  exploit patterns only, defers repo-wide sweep to code-sec") or drop it and route
-  security-relevant diffs to `code-sec`/`bounty-hunter` instead.
+- **Security-persona territory vs. existing security tooling — RESOLVED, shipped.**
+  `code-crit/personas/SECURITY.md` (§ Territory) draws the boundary explicitly:
+  diff-local exploit/regression only, not "is this repo secure" (`/code-sec`), not
+  reachability (`/bounty-hunter`), not design-level STRIDE (`/threat-model`) — those
+  three routed to as follow-ups, not substitutes. All 12 `code-crit/personas/*.md`
+  ship a `## Territory` section on the same pattern.
 - Persona set: confirm final list. Always-on = correctness, maintainability, testing,
   project-standards, spec-compliance (5, pending the adversarial-placement and
   security-territory questions above). Conditional = security (pending territory
