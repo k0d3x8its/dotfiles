@@ -155,6 +155,68 @@ class RenderReportTests(unittest.TestCase):
             self.assertIn("3 files", content)
             self.assertNotIn("10 files", content)
 
+    def test_score_column_comes_from_the_real_scorer_not_a_second_formula(
+        self,
+    ) -> None:
+        # FR-08 traces to one Scorer implementation. If report_renderer ever
+        # grows its own inline `churn * cx`, this test still passes on
+        # ordinary input (both formulas agree) but fails the moment
+        # scorer.score_files is patched to something else — proving the
+        # report actually calls it rather than merely agreeing with it by
+        # coincidence.
+        original = report_renderer.scorer.score_files
+        report_renderer.scorer.score_files = lambda rows: {path: 999 for path in rows}
+        try:
+            with tempfile.TemporaryDirectory() as tmp:
+                repo = Path(tmp) / "some-repo"
+                repo.mkdir()
+
+                output_path = render_report(
+                    str(repo),
+                    {"a.py": (10, 5)},
+                    {"a.py": None},
+                    report_date="2026-07-27",
+                )
+                content = output_path.read_text()
+
+                self.assertIn("999", content)
+        finally:
+            report_renderer.scorer.score_files = original
+
+    def test_shallow_warning_visible_in_report_when_true(self) -> None:
+        # FR-05: a shallow-clone warning must be visible in the report
+        # output, not just printed to stdout during the run.
+        with tempfile.TemporaryDirectory() as tmp:
+            repo = Path(tmp) / "some-repo"
+            repo.mkdir()
+
+            output_path = render_report(
+                str(repo),
+                {"a.py": (1, 1)},
+                {"a.py": None},
+                report_date="2026-07-27",
+                shallow_warning=True,
+            )
+            content = output_path.read_text()
+
+            self.assertIn("shallow", content.lower())
+
+    def test_no_shallow_warning_line_when_false(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            repo = Path(tmp) / "some-repo"
+            repo.mkdir()
+
+            output_path = render_report(
+                str(repo),
+                {"a.py": (1, 1)},
+                {"a.py": None},
+                report_date="2026-07-27",
+                shallow_warning=False,
+            )
+            content = output_path.read_text()
+
+            self.assertNotIn("shallow", content.lower())
+
     def test_no_interpret_line_when_interpret_pass_was_not_used(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             repo = Path(tmp) / "some-repo"
