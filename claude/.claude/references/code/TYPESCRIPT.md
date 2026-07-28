@@ -2,7 +2,7 @@
 
 Scope: TypeScript and JavaScript (trello-cli pnpm workspace, kos-portal Obsidian
 plugin, web work). Strength vocabulary per `CODE-STANDARD.md`.
-Appendix below covers HTML / CSS / JSON / YAML.
+Appendix below covers HTML / CSS.
 
 ## Naming & casing
 
