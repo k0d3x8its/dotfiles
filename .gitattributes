@@ -19,3 +19,5 @@ claude/.claude/KNOWLEDGE.md filter=git-crypt diff=git-crypt
 # Ante-mortem is a fragility/attacker-surface map, same class as threat-model.md.
 /ANTE-MORTEM.md filter=git-crypt diff=git-crypt
 /.memory/SESSION-LOG.md filter=git-crypt diff=git-crypt
+# Post-mortems narrate internal architecture + the exact vulnerable code path.
+/docs/post-mortems/** filter=git-crypt diff=git-crypt
