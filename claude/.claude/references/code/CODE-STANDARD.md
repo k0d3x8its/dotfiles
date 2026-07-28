@@ -99,15 +99,20 @@ here contradicts a repo's linter config, the linter config wins; flag the drift.
 
 ## Delegation table
 
-| Language                 | File                                            | Authoritative tooling (when present in repo) |
-| ------------------------ | ----------------------------------------------- | -------------------------------------------- |
-| Lua (Neovim)             | `LUA.md`                                        | stylua; luacheck                             |
-| Python                   | `PYTHON.md`                                     | ruff (format + lint); pyright                |
-| TypeScript / JS          | `TYPESCRIPT.md`                                 | prettier; eslint; tsc strict                 |
-| Solidity                 | `SOLIDITY.md`                                   | solhint; forge fmt                           |
-| Bash                     | `BASH.md`                                       | shellcheck; shfmt                            |
-| Arduino / C++            | `ARDUINO.md`                                    | clang-format; arduino-lint                   |
-| HTML / CSS / JSON / YAML | (thin — rules live in `TYPESCRIPT.md` appendix) | prettier; yamllint                           |
+| Language        | File            | Authoritative tooling (when present in repo) |
+| --------------- | --------------- | -------------------------------------------- |
+| Lua (Neovim)    | `LUA.md`        | stylua; luacheck                             |
+| Python          | `PYTHON.md`     | ruff (format + lint); pyright                |
+| TypeScript / JS | `TYPESCRIPT.md` | prettier; eslint; tsc strict                 |
+| Solidity        | `SOLIDITY.md`   | solhint; forge fmt                           |
+| Bash            | `BASH.md`       | shellcheck; shfmt                            |
+| Arduino / C++   | `ARDUINO.md`    | clang-format; arduino-lint                   |
+| Swift           | `SWIFT.md`      | swift-format; SwiftLint                      |
+| HTML            | `HTML.md`       | prettier; html-validate                      |
+| HTMX            | `HTMX.md`       | prettier (markup); no htmx-specific linter   |
+| CSS             | `CSS.md`        | prettier; stylelint                          |
+| JSON            | `JSON.md`       | jq                                           |
+| YAML            | `YAML.md`       | yamllint                                     |
 
 Reading protocol for agents: load _only_ this file + the one language file matching the
 code being written. Do not load the whole directory. When the task involves writing or
