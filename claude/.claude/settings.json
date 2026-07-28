@@ -85,7 +85,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "[ -f \"$HOME/.claude/hooks/standards_guard.py\" ] && python3 \"$HOME/.claude/hooks/standards_guard.py\" pre; [ \"$?\" = 2 ] && exit 2 || exit 0"
+            "command": "python3 \"$HOME/.claude/hooks/standards_guard.py\" pre"
           }
         ]
       }
