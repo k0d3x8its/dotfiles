@@ -23,11 +23,58 @@ SHELLS = r"(?:ba|z|da|k|fi)?sh"
 # Filesystem roots where a recursive force-delete is never a sane
 # agent action. $HOME/~ included: losing the home dir is unrecoverable.
 DANGEROUS_RM_TARGETS = (
-    r"/(?:\s|$|\*)",          # rm -rf /  or  /*
-    r"~/?(?:\s|$|\*)",        # rm -rf ~  or  ~/*
-    r"\$HOME\b/?(?:\s|$|\*)", # rm -rf $HOME
+    r"/(?:\s|$|\*)",  # rm -rf /  or  /*
+    r"~/?(?:\s|$|\*)",  # rm -rf ~  or  ~/*
+    r"\$HOME\b/?(?:\s|$|\*)",  # rm -rf $HOME
     r"/(?:home|etc|usr|var|boot|bin|sbin|lib(?:64)?|opt|root|srv|sys|proc|dev)\b/?(?:\s|$|\*)",
 )
+
+# A heredoc redirect: `<<[-]DELIM`, optionally quoted (quoting only disables
+# variable expansion inside, doesn't change body detection here).
+HEREDOC_START = re.compile(r"<<-?\s*([\"']?)([A-Za-z_][A-Za-z0-9_]*)\1")
+
+
+def _strip_heredoc_bodies(command: str) -> str:
+    """Blank out heredoc BODIES before rule matching — a body is data the
+    shell never executes as a command, so patterns appearing only in a body
+    (e.g. this file's own docstring pasted into a `cat >> log <<EOF` entry)
+    must not trigger a rule meant for executed text. Exception: if the
+    command reading the heredoc is itself a shell (`bash <<EOF ... EOF`),
+    the body IS executed — don't strip it."""
+    spans = []
+    for match in HEREDOC_START.finditer(command):
+        line_start = command.rfind("\n", 0, match.start()) + 1
+        prefix = command[line_start : match.start()]
+        segment = re.split(r"[;&|]+", prefix)[-1].strip()
+        cmd_name = segment.split()[0].rsplit("/", 1)[-1] if segment else ""
+        if re.fullmatch(SHELLS, cmd_name):
+            continue  # heredoc body is real, executed shell input
+
+        body_line_start = command.find("\n", match.end())
+        if body_line_start == -1:
+            continue  # malformed (no body/terminator) — leave untouched
+        body_line_start += 1
+
+        delimiter = match.group(2)
+        terminator = re.compile(rf"^[ \t]*{re.escape(delimiter)}[ \t]*$", re.MULTILINE)
+        end_match = terminator.search(command, body_line_start)
+        if not end_match:
+            continue  # unterminated heredoc — leave untouched
+
+        spans.append((body_line_start, end_match.start()))
+
+    if not spans:
+        return command
+
+    result = []
+    cursor = 0
+    for start, end in spans:
+        result.append(command[cursor:start])
+        result.append("<heredoc-body-stripped>")
+        cursor = end
+    result.append(command[cursor:])
+    return "".join(result)
+
 
 RULES = [
     (
@@ -76,8 +123,10 @@ def main() -> int:
     if not isinstance(command, str) or not command:
         return 0
 
+    scannable = _strip_heredoc_bodies(command)
+
     for pattern, reason in RULES:
-        if pattern.search(command):
+        if pattern.search(scannable):
             print(f"command-guard: {reason}. Command: {command!r}", file=sys.stderr)
             return 2
 
