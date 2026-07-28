@@ -124,12 +124,10 @@ def run_pre() -> int:
     if not missing:
         return 0
 
-    missing_paths = ", ".join(str(REFS_DIR / f) for f in sorted(missing))
-    print(
-        f"standards-guard: read the code standard(s) before editing this file — "
-        f"{missing_paths}",
-        file=sys.stderr,
-    )
+    lines = [f"standards-guard: read before editing {path.name}:"]
+    for f in sorted(missing):
+        lines.append(f"  Read {REFS_DIR / f}")
+    print("\n".join(lines), file=sys.stderr)
     return 2
 
 
