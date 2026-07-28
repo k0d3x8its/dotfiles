@@ -187,8 +187,8 @@ implementation detail within Hybrid.
   ship a `## Territory` section on the same pattern.
 - Persona set: confirm final list. Always-on = correctness, maintainability, testing,
   project-standards, spec-compliance (5, pending the adversarial-placement and
-  security-territory questions above). Conditional = security (pending territory
-  question), performance, reliability, api-contract, data-migration (5, all have clear
+  security-territory questions above). Conditional = security (territory
+  question resolved above), performance, reliability, api-contract, data-migration (5, all have clear
   local drivers). Drop entirely for now (no local driver, confirmed by grep across all
   of `~/dev`, zero Swift/Stimulus files): frontend-races, swift-ios. Also drop or fold:
   deployment-verification-agent (migration-gated, maybe fold into data-migration
