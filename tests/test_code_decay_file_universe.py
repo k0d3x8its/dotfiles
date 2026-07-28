@@ -91,6 +91,24 @@ class ResolveFilesTests(unittest.TestCase):
 
             self.assertEqual(resolve_files(str(repo)), ["app.py"])
 
+    def test_excludes_denied_prose_file(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            repo = Path(tmp)
+            init_repo(repo)
+            write_and_commit(repo, "app.py", "print(1)\n", "add app.py")
+            write_and_commit(repo, "NOTES.md", "if this then that\n", "add notes")
+
+            self.assertEqual(resolve_files(str(repo)), ["app.py"])
+
+    def test_excludes_denied_work_dir(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            repo = Path(tmp)
+            init_repo(repo)
+            write_and_commit(repo, "app.py", "print(1)\n", "add app.py")
+            write_and_commit(repo, ".work/plan.txt", "if x then y\n", "add work file")
+
+            self.assertEqual(resolve_files(str(repo)), ["app.py"])
+
     def test_returns_sorted_order(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             repo = Path(tmp)
