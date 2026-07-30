@@ -23,6 +23,8 @@ External (not auto-surfaced): `/ce-code-review` `/discover` `/write-prd`
 - CHANGELOG: use `/changelog` manually when a session produces changelog-worthy changes. Works for any project (including dotfiles). Do not auto-update changelogs inline.
 - Trust-but-verify reflex: before any done/works/fixed claim, `git push`, PR, or handoff (/close, /checkpoint, /handoff, /handoff-return, subagent) — run the project's verify command FRESH (resolve via `~/.claude/skills/trust-but-verify/detect.md`) and read its exit code. Not before commits. Unproven claim → `[VERIFY]` TODO; machine-unverifiable → `[UX]` checklist.
 - New feature work defaults to `/tdd` (test-first) unless I've explicitly scoped tests out for the task. Bug fixes are unaffected — they still route to `/diagnose` per the TODO Tags table below, not this line.
+- Before implementing anything ambiguous: state assumptions explicitly. Multiple valid interpretations exist → present them, don't pick silently. Simpler approach exists → say so, push back. Something unclear → stop, name confusion, ask.
+- Transform vague asks into verifiable goals before starting ("fix the bug" → "write failing test, make it pass"). Multi-step task → state a brief step→verify plan first.
 
 ## TODO Tags
 
