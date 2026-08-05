@@ -49,7 +49,7 @@ No priority tag = Medium (default). `[TEST]` and `[VERIFY]` override all other p
 |---|---|---|
 | `[BUG]` | Fix a broken thing | Use `/diagnose` — feedback loop → RCA → fix → post-mortem |
 | `[FEAT]` | New feature or capability | Design/build mode |
-| `[CHORE]` | Cleanup, refactor, maintenance | Low-energy batching candidate |
+| `[CHORE]` | Cleanup, refactor, maintenance | Use `/code-refactor` when the TODO names a code smell — behavior-preserving micro-refactors under a test gate; otherwise low-energy batching |
 | `[TEST]` | Write or fix tests | Use `/tdd` — red-green vertical slices |
 | `[VERIFY]` | Claimed-but-unverified work — needs fresh evidence before closing | Use `/trust-but-verify` — run detected verify command fresh, read exit code, then close or keep open |
 | `[RELEASE]` | Publish/ship related | Release workflow mode |
@@ -64,7 +64,7 @@ No priority tag = Medium (default). `[TEST]` and `[VERIFY]` override all other p
 
 ## My Conventions
 
-- Commit messages: conventional commits format (feat:, fix:, docs:, chore:)
+- Commit messages: conventional commits format (feat:, fix:, docs:, chore:, refactor:)
 - Commit granularity: when I say "commit changes", commit each changed file as its own separate commit with a brief conventional-commit message describing that file's change. One file per commit.
 - **Everything under `.work/` is encrypted, no exceptions.** Rule, not a per-file list: any file dropped in `.work/` (any repo) is private-by-convention and MUST be git-crypt'd — recon notes, checklists, archived gates, feature briefs, all of it. Enforce with a wildcard `.gitattributes` backstop, not one rule per filename: `/.work/**/* filter=git-crypt diff=git-crypt` (or `/.work/**/*.md` if the dir is markdown-only) — see `~/.claude/skills/encrypt/` for the setup flow. If a repo's `.work/` has plaintext files, that's a gap to fix, not a signal the rule doesn't apply.
 - **git-crypt files**: commit message must ONLY be `"updated <filename>"` — where `<filename>` is the BASENAME only, never the directory path (`updated KNOWLEDGE.md`, not `updated claude/.claude/KNOWLEDGE.md`) — and never describe contents. Encrypted files (per `.gitattributes`): `KNOWLEDGE.md`, `TODOS.md`, `.memory/SESSION-LOG.md`, everything under `.work/` (see rule above), `claude/.claude/KNOWLEDGE.md`, `docs/GDD-*.md`, `docs/PRD-*.md`, `docs/ARD-*.md`, `docs/REQUIREMENTS.md`, `docs/ARCHITECTURE.md`, `docs/post-mortems/*` (when the repo encrypts that dir). Describing contents leaks plaintext metadata into public git history even when the blob is encrypted.
