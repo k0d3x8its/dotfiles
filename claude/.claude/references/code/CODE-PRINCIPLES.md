@@ -165,6 +165,9 @@ Fowler smells by name. Naming the smell is the trigger — flag it, then fix or 
   banned outright in this environment; see CODE-STANDARD.md)
 - **Duplicated code** — same knowledge in two homes (apply rule of three before extracting)
 - **Long function / large module** — can't be described without "and"
+- **Long parameter list** — more than 3-4 params; usually a missing object or wrong boundary
+- **Boolean blindness** — call site reads `foo(true, false, true)`, flags opaque without the signature
+- **Complex / nested conditional** — deep `if`/`else` nesting or a sprawling boolean expression
 - **Data clumps** — same 3+ values traveling together; they want to be a structure
 - **Primitive obsession** — domain concept passed around as bare string/number
 - **Repeated switches** — same discriminator switched on in multiple places
@@ -200,3 +203,6 @@ missed requirement; a correct fix hides the mess it was written in.
   above is what a test asserting on failure behavior should actually check
 - `CODE-REFERENCE.md` — vocabulary definitions (Ousterhout, Feathers), ADR format + gate, Quick-Check Questions
 - `ANTI-PATTERNS.md` — full Fowler/Brown/Meszaros anti-pattern catalogue
+- `codebase-design` skill — module/interface/depth/seam vocabulary; a module that
+  forces callers to know its internals to use correctly (leaky abstraction) is
+  that skill's smell to name, not a new row here
