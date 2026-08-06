@@ -143,7 +143,6 @@
   },
   "enabledPlugins": {
     "caveman@caveman": true,
-    "planning-with-files@planning-with-files": false,
     "compound-engineering@compound-engineering-plugin": true,
     "pm-toolkit@pm-skills": false,
     "pm-product-strategy@pm-skills": false,
