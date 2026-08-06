@@ -11,16 +11,6 @@
         "gitCommitSha": "ef6050c5e1848b6880ff47c32ade1a608a64f85e"
       }
     ],
-    "andrej-karpathy-skills@karpathy-skills": [
-      {
-        "scope": "user",
-        "installPath": "/home/k0d3x/.claude/plugins/cache/karpathy-skills/andrej-karpathy-skills/1.0.0",
-        "version": "1.0.0",
-        "installedAt": "2026-05-23T02:45:19.482Z",
-        "lastUpdated": "2026-05-23T02:45:19.482Z",
-        "gitCommitSha": "2c606141936f1eeef17fa3043a72095b4765b9c2"
-      }
-    ],
     "planning-with-files@planning-with-files": [
       {
         "scope": "user",
