@@ -40,18 +40,17 @@ Pass `--packages` to also install apt packages from `packages.txt`.
 
 ```bash
 # Caveman (terse response mode) — active, heavy daily use
+
 /plugin marketplace add JuliusBrussee/caveman
 /plugin install caveman@caveman
 
 # Compound engineering (code review agents) — active use
+
 /plugin marketplace add EveryInc/compound-engineering-plugin
 /plugin install compound-engineering@compound-engineering-plugin
 
-# Planning with files (persistent mid-session memory) — active, low use
-/plugin marketplace add OthmanAdi/planning-with-files
-/plugin install planning-with-files@planning-with-files
-
 # PM skills (5 plugins, one marketplace) — installed but currently DISABLED (unused)
+
 /plugin marketplace add phuryn/pm-skills
 /plugin install pm-toolkit@pm-skills
 /plugin install pm-product-strategy@pm-skills
@@ -110,6 +109,199 @@ Idea → shippable plan, in order. Each stage hands off to the next; skip stages
 | `/sync-trello`  | `.work/PLAN.md`                      | Trello cards/checklists/items                                                          | A Goal is ready to track on the board                                                 |
 
 `/write-plan` offers a `/threat-model` design review mid-flow when the plan has a security surface, then offers `/sync-trello` at the end.
+
+---
+
+### Build & Verify Pipeline
+
+Plan → shipped code, in order. Operates on a scoped Task from `.work/PLAN.md` — everything here assumes planning already happened. Splinters trigger off named conditions and either rejoin the spine or, when the output is unscoped signal rather than a scoped fix, exit to `/write-plan` instead.
+
+**Pre-loop entries** — feed into `/write-plan`, before the spine starts:
+
+```
+                              ┌─────────────────────┐
+┌───────────────────────┐     │     /prototype      │
+│       /zoom-out       │     │ (spike UI look/feel │
+│ (map unfamiliar code) │     │   or data model)    │
+└───────────────────────┘     └─────────────────────┘
+            │                            │
+            └─────────────┬──────────────┘
+                          │
+                          ▼
+                   ┌─────────────┐
+                   │ /write-plan │
+                   └─────────────┘
+```
+
+**The spine** — a scoped Task runs straight through, left to right. Splinters (below) attach and rejoin at `/tdd`:
+
+```
+┌─────────────┐     ┌───────────────┐     ┌─────────────────┐     ┌─────────────────────┐     ┌─────────────┐     ┌───────────────────┐
+│    /tdd     │     │  /code-crit   │     │  /code-refactor │     │  /trust-but-verify  │     │ commit / PR │     │ /review-response  │
+│ (red-green, │ ──► │ (review only, │ ──► │  (fix smells,   │ ──► │  (fresh verify-cmd, │ ──► │             │ ──► │ (incoming PR/CI   │
+│  per Task)  │     │   no edits)   │     │  test-gated)    │     │  exit code checked) │     │             │     │  feedback)        │
+└─────────────┘     └───────────────┘     └─────────────────┘     └─────────────────────┘     └─────────────┘     └───────────────────┘
+       ▲
+       │  splinters below attach and rejoin here
+```
+
+**Splinter: `/diagnose`** — rejoins the spine at `/tdd`:
+
+```
+     ┌────────────────────────────┐
+     │            /tdd            │
+     │ (red-green loop, per Task) │
+     └────────────────────────────┘
+                    │  red test won't resolve,
+                    │  or a [BUG] TODO
+                    ▼
+┌───────────────────────────────────────┐
+│               /diagnose               │
+│     (reproduce -> hypothesise ->      │
+│ instrument -> fix -> regression test) │
+└───────────────────────────────────────┘
+                    │  regression test written
+                    ▼
+     ┌────────────────────────────┐
+     │   /tdd  <-- rejoins here   │
+     │ (red-green loop, per Task) │
+     └────────────────────────────┘
+```
+
+**Splinter: `/mutation-testing`** — rejoins the spine at `/tdd`:
+
+```
+      ┌────────────────────────────┐
+      │            /tdd            │
+      │ (red-green loop, per Task) │
+      └────────────────────────────┘
+                     │  test suite goes green
+                     ▼
+         ┌──────────────────────┐
+         │  /mutation-testing   │
+         │ (introduces mutants, │
+         │   finds survivors)   │
+         └──────────────────────┘
+                     │  emits [TEST] TODOs,
+                     │  one per surviving mutation
+                     ▼
+┌──────────────────────────────────────────┐
+│ /tdd  <-- rejoins here, fixes survivors  │
+│       (red-green loop, per Task)         │
+└──────────────────────────────────────────┘
+```
+
+**Splinter: `/code-decay` + `/ante-mortem`** — do NOT rejoin this loop. They trigger off shipped code, not off an in-flight Task, and their output is unscoped signal that needs a fresh planning pass:
+
+```
+               ┌───────────────────┐
+               │    commit / PR    │
+               │  (shipped code —  │
+               │ periodic trigger, │
+               │   not per-Task)   │
+               └───────────────────┘
+                         │
+           ┌─────────────┴──────────────┐
+           │                            │
+┌─────────────────────┐      ┌─────────────────────┐
+│     /code-decay     │      │    /ante-mortem     │
+│ (churn x complexity │      │    (hypothetical    │
+│  hotspot ranking)   │      │    post-mortems,    │
+└─────────────────────┘      │ hardening findings) │
+                              └─────────────────────┘
+           │                            │
+           └─────────────┬──────────────┘
+                         │ unscoped signal,
+                         │ needs triage
+                         ▼
+            ┌─────────────────────────┐
+            │       /write-plan       │
+            │    (new Goal/Task —     │
+            │ starts a NEW spine run) │
+            └─────────────────────────┘
+```
+
+| Skill               | Input                                                              | Output                                              | Use when                                                                                       |
+| ------------------- | ------------------------------------------------------------------ | --------------------------------------------------- | ---------------------------------------------------------------------------------------------- |
+| `/zoom-out`         | unfamiliar file/module                                             | module map + caller graph                           | dropped into code you didn't write or haven't touched in a while — skip if you already know it |
+| `/prototype`        | design question (logic OR UI look/feel)                            | throwaway spike, `_`-prefixed                       | unsure which data model or UI direction to commit to                                           |
+| `/tdd`              | a Task from `.work/PLAN.md`                                        | failing test → passing code, red-green loop         | any `[TEST]` TODO or feature work needing coverage first                                       |
+| `/diagnose`         | red test or `[BUG]` TODO                                           | root cause + fix + regression test                  | splinters from a failure; rejoins at `/tdd`                                                    |
+| `/mutation-testing` | green test suite                                                   | `[TEST]` TODOs for surviving mutations              | after green, to verify coverage is meaningful not just present; rejoins at `/tdd`              |
+| `/code-crit`        | a diff/branch/PR                                                   | Spec-vs-Standards severity report, no edits         | before merging non-trivial changes                                                             |
+| `/code-refactor`    | a named smell (from `/code-crit`, a `[CHORE]` TODO, or direct ask) | one micro-refactor per commit, verify-gated         | "refactor this", "clean this up"                                                               |
+| `/trust-but-verify` | a done/works/fixed claim                                           | fresh verify-command run, exit code checked         | automatic reflex before any completion claim, push, or PR                                      |
+| `/review-response`  | incoming PR/CI feedback                                            | verified, judged, fixed or pushed back with reasons | handling review comments or CI failures                                                        |
+| `/code-decay`       | git log + repo                                                     | churn × complexity hotspot ranking                  | prioritizing where to invest refactor effort; does not rejoin — feeds a future `/write-plan`   |
+| `/ante-mortem`      | a file/module                                                      | hypothetical post-mortems, hardening TODOs          | pre-release or post-refactor audit; does not rejoin — feeds a future `/write-plan`             |
+
+**Reads, not stages** — loaded _within_ a stage, never drawn as a box: `codebase-design` (deep-module vocabulary), `~/.claude/references/code/CODE-STANDARD.md` + the one matching language file, `CODE-PRINCIPLES.md` (judgment calls at `/code-crit` time), `TESTING-STANDARD.md`.
+
+---
+
+### Security Touchpoints
+
+Not a parallel pipeline — three tools attach to the spine and planning table at different points, plus one that's out of scope for project work entirely.
+
+**`/threat-model` — attaches at the planning table, before code exists:**
+
+```
+        ┌─────────────┐
+        │ /write-plan │
+        └─────────────┘
+               │  security surface?
+               │  offered mid-flow
+               ▼
+┌─────────────────────────────┐
+│        /threat-model        │
+│ (design-time STRIDE review, │
+│     before code exists)     │
+└─────────────────────────────┘
+```
+
+**`/code-sec` → `/bounty-hunter` — periodic / pre-release, re-enters the spine:**
+
+```
+┌────────────────────────────┐
+│         /code-sec          │
+│ (repo-wide sweep: secrets, │
+│ deps, git-crypt coverage)  │
+└────────────────────────────┘
+               │  findings
+               ▼
+ ┌───────────────────────────┐
+ │      /bounty-hunter       │
+ │ (reachability filter over │
+ │     /code-sec output)     │
+ └───────────────────────────┘
+               │  confirmed externally
+               │  reachable subset
+               ▼
+┌────────────────────────────┐
+│      [SECURITY] TODO       │
+│ re-enters as a scoped Task │
+│   -> back into THE SPINE   │
+└────────────────────────────┘
+```
+
+**`/harness-audit` — excluded entirely, no arrows in or out:**
+
+```
+┌────────────────────────────────────┐
+│           /harness-audit           │
+│ excluded — audits ~/.claude itself │
+│  (hooks, plugins, MCP, settings),  │
+│   not a project repo. Never part   │
+│         of this pipeline.          │
+└────────────────────────────────────┘
+```
+
+| Skill            | Attaches at                                                               | Use when                                                                  |
+| ---------------- | ------------------------------------------------------------------------- | ------------------------------------------------------------------------- |
+| `/threat-model`  | planning table, offered by `/write-plan`                                  | plan has a security surface, before code exists                           |
+| `/code-sec`      | periodic + pre-release, findings re-enter the spine as `[SECURITY]` TODOs | routine hygiene sweep — secrets, deps, git-crypt coverage                 |
+| `/bounty-hunter` | after `/code-sec`, filters its output                                     | narrowing to what's actually externally reachable                         |
+| `/harness-audit` | —                                                                         | never for project code; audits the harness that runs Claude, not the repo |
 
 ---
 
@@ -174,10 +366,15 @@ When to use: end of day, or any session where real decisions were made that a fu
 ## Session Checkpoint — {YYYY-MM-DD hh:MM AM/PM}
 
 ### Goal
+
 ### Completed
+
 ### Decisions Made
+
 ### Files Touched
+
 ### Gotchas / Notes
+
 ### Re-Entry Prompt
 ---
 ```
@@ -657,27 +854,33 @@ Example `.memory/SESSION-LOG.md` block:
 ## Session Checkpoint — 2026-05-26 02:32 PM
 
 ### Goal
+
 Implement the `search` subcommand for kos-cli with fuzzy matching against notes.db.
 
 ### Completed
+
 - [x] Scaffolded CLI entrypoint in src/cli.py
 - [x] Implemented `search` subcommand with argparse
 - [x] Fuzzy match logic against notes.db via rapidfuzz
 
 ### Decisions Made
+
 - **Used rapidfuzz over fuzz** — 10x faster on large note sets, same API
 - **SQLite FTS5 rejected** — overkill for current note volume, revisit at 10k+ notes
 
 ### Files Touched
+
 - `src/cli.py` — added search subcommand and argparse wiring
 - `src/search.py` — new file, fuzzy match core logic
 - `requirements.txt` — added rapidfuzz
 
 ### Gotchas / Notes
+
 - notes.db path is currently hardcoded to ~/.kos/notes.db — needs env var or config file
 - rapidfuzz returns float scores — don't compare with == 100
 
 ### Re-Entry Prompt
+
 > "kos-cli: implemented search subcommand with fuzzy match via rapidfuzz.
 > Read .memory/SESSION-LOG.md and TODOS.md. For what's next, read .memory/TRIAGE-BLOCK.md.
 > First action: add --tag filter flag."
