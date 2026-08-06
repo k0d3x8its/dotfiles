@@ -15,14 +15,6 @@
     "installLocation": "/home/k0d3x/.claude/plugins/marketplaces/caveman",
     "lastUpdated": "2026-05-05T14:58:52.562Z"
   },
-  "karpathy-skills": {
-    "source": {
-      "source": "github",
-      "repo": "forrestchang/andrej-karpathy-skills"
-    },
-    "installLocation": "/home/k0d3x/.claude/plugins/marketplaces/karpathy-skills",
-    "lastUpdated": "2026-05-23T02:42:20.828Z"
-  },
   "planning-with-files": {
     "source": {
       "source": "github",
