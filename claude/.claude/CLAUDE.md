@@ -4,7 +4,7 @@
 
 The harness auto-lists every custom skill + its description each session — names below are the slash aliases, not re-described here. Tag routing lives in the TODO Tags table.
 `/handoff` `/handoff-return` `/close` `/checkpoint` `/changelog` `/dev-brief` `/release-notes` `/find-skills` `/diagnose` `/tdd` `/prototype` `/sync-trello` `/remember` `/recall` `/consolidate` `/brainstorm` `/grill-me` `/write-plan` `/trust-but-verify` `/review-response` `/threat-model` `/code-crit`
-External (not auto-surfaced): `/ce-code-review` `/discover` `/write-prd`
+External (not auto-surfaced): `/discover` `/write-prd`
 
 ## Session Rules
 
@@ -72,17 +72,6 @@ No priority tag = Medium (default). `[TEST]` and `[VERIFY]` override all other p
 - NEVER add `Co-Authored-By` lines to any commit message.
 - All Trello boards use a six-column Kanban: Back Log → To Do → Doing → Review → Testing → Done
 - Code comments: always explain the why, not just the what
-
-## Trello Sync Rules
-
-When syncing `.work/PLAN.md` to Trello, always map as follows:
-- Goal       → Trello card (placed at the bottom of the "Back Log" list)
-- Micro-Goal → Trello checklist on that card
-- Task       → Trello checklist item
-
-Always create in order: card first, checklist second, items third.
-Before creating, check if a [trello:ID] tag exists on the Goal — if so, skip it.
-After creating a card, annotate the Goal in `.work/PLAN.md` with [trello:CARD_ID].
 
 ## File Taxonomy (What Goes Where)
 
