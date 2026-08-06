@@ -196,13 +196,13 @@ missed requirement; a correct fix hides the mess it was written in.
 
 - `/tdd` — the methodology this file commits to
 - `/trust-but-verify` — the evidence gate behind precedence rule 1
-- `karpathy-guidelines` skill — behavioral guardrails (surgical changes, surfaced
-  assumptions); complements, does not duplicate, this file
 - `CODE-STANDARD.md` — mechanical rules + per-language delegation
 - `TESTING-STANDARD.md` — test-type decision layer; the error-handling judgment
   above is what a test asserting on failure behavior should actually check
 - `CODE-REFERENCE.md` — vocabulary definitions (Ousterhout, Feathers), ADR format + gate, Quick-Check Questions
 - `ANTI-PATTERNS.md` — full Fowler/Brown/Meszaros anti-pattern catalogue
+- `/code-refactor` skill — acts on the smells this file names; code-crit reports,
+  code-refactor fixes (deliberate split, no overlap)
 - `codebase-design` skill — module/interface/depth/seam vocabulary; a module that
   forces callers to know its internals to use correctly (leaky abstraction) is
   that skill's smell to name, not a new row here
