@@ -95,11 +95,8 @@ before creating directories.
   a project deciding its own rules (react rules firing on a non-react repo,
   wrong parser version, etc. are the failure mode of relying on it long-term).
 
-## Appendix — HTML / CSS / JSON / YAML (thin rules)
+## Appendix — HTML / CSS (thin rules)
 
 - HTML: semantic elements over `div` soup; every `img` has `alt`; forms have labels.
 - CSS: class naming `kebab-case`; SHOULD use custom properties for repeated values
   (DRY knowledge rule); AVOID `!important`.
-- JSON: no comments, no trailing commas (it's data, not config prose); 2-space indent.
-- YAML: 2-space indent, never tabs; quote strings that look like other types
-  (`"no"`, `"3.10"`, `"08:00"`); anchors/aliases are AVOID (unreadable to reviewers).
