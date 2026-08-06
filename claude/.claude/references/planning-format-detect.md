@@ -1,10 +1,12 @@
 # Planning-file format detection
 
 Before a skill reads or writes `TODOS.md`, `.work/PLAN.md`, or `.work/FINDINGS.md`,
-determine which format the current repo uses. Two formats coexist across `~/dev`
-during the index+detail pilot (dotfiles-only as of 2026-07-22 — see
+determine which format the current repo uses. Two formats coexist across `~/dev` —
+the index+detail format graduated 2026-07-23 to a standing lazy per-repo rollout
+(migrate a repo only when already working there and its tree is clean, not a
+big-bang conversion). Migrated so far: `dotfiles`, `kodex-ide` (2026-07-23). See
 `docs/brainstorm/planning-file-hierarchy-2026-07-21.md` and dotfiles `.work/PLAN.md`
-Goal 29 / `.work/archive/legacy-plan.md` Goal 29 for the design).
+Goal 29 / `.work/archive/legacy-plan.md` Goal 29 for the design.
 
 ## Detect
 
