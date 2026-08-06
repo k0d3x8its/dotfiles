@@ -130,3 +130,5 @@ For each smell being addressed:
 - `/mutation-testing` — suite-strength confirmation after the loop
 - `CODE-PRINCIPLES.md` / `ANTI-PATTERNS.md` — smell vocabulary this skill fixes
 - `TESTING-STANDARD.md` — coverage stance behind the exercised-check gate
+- `CODE-REFERENCE.md` — defines "seam" (Feathers), used by the Circular
+  Dependency row above
