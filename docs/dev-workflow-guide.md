@@ -1,4 +1,5 @@
 # K0d3x Dev Workflow Guide
+
 > Claude Code · Session Management · Project Efficiency
 
 ---
@@ -15,6 +16,7 @@ chmod +x install.sh
 ```
 
 This wires:
+
 - `bash/.bashrc` → `~/.bashrc`
 - `git/.gitconfig`, `git/.gitignore_global` → `~/.gitconfig`, `~/.gitignore_global`
 - `claude/.claude/CLAUDE.md`, `settings.json`, `hooks/`, `references/` → `~/.claude/`
@@ -27,33 +29,29 @@ Pass `--packages` to also install apt packages from `packages.txt`.
 
 ### 2. Manual steps after install
 
-| Step | Command |
-|------|---------|
-| kos skills | `npx skills install kos` |
-| Particle CLI | `npm install -g particle-cli && particle login` |
-| Antigravity | Has its own CLI installer — see https://antigravity.dev |
+| Step            | Command                                                       |
+| --------------- | ------------------------------------------------------------- |
+| kos skills      | `npx skills install kos`                                      |
+| Particle CLI    | `npm install -g particle-cli && particle login`               |
+| Antigravity     | Has its own CLI installer — see https://antigravity.dev       |
 | Ghostty sidebar | `sudo nala install xdotool` (required for window positioning) |
 
 ### 3. Plugins (inside a Claude Code session)
 
 ```bash
-# Caveman (terse response mode)
+# Caveman (terse response mode) — active, heavy daily use
 /plugin marketplace add JuliusBrussee/caveman
 /plugin install caveman@caveman
 
-# Karpathy engineering principles
-/plugin marketplace add forrestchang/andrej-karpathy-skills
-/plugin install andrej-karpathy-skills@karpathy-skills
-
-# Planning with files (persistent mid-session memory)
-/plugin marketplace add OthmanAdi/planning-with-files
-/plugin install planning-with-files@planning-with-files
-
-# Compound engineering (code review agents)
+# Compound engineering (code review agents) — active use
 /plugin marketplace add EveryInc/compound-engineering-plugin
 /plugin install compound-engineering@compound-engineering-plugin
 
-# PM skills (5 plugins, one marketplace)
+# Planning with files (persistent mid-session memory) — active, low use
+/plugin marketplace add OthmanAdi/planning-with-files
+/plugin install planning-with-files@planning-with-files
+
+# PM skills (5 plugins, one marketplace) — installed but currently DISABLED (unused)
 /plugin marketplace add phuryn/pm-skills
 /plugin install pm-toolkit@pm-skills
 /plugin install pm-product-strategy@pm-skills
@@ -64,82 +62,67 @@ Pass `--packages` to also install apt packages from `packages.txt`.
 
 ### 4. Status Bar
 
-`combined-statusline.sh` is already wired in `settings.json`. It outputs three lines on every response:
+`combined-statusline.sh` is already wired in `settings.json`. It outputs two lines on every response:
 
 ```
-🤖 Sonnet 4.6 | 💰 $0.12 session / $0.84 today | 🔥 $0.08/hr | 🧠 18k (9%)
-[CAVEMAN full]
-⏱  23m
+🤖 Sonnet 5 | 💰 $0.12 session / $0.84 today | 🔥 $0.08/hr | 🧠 18k (9%)
+[CAVEMAN full] ⏱  23m   5hr ███░░░░░░░ 32%  wk ██░░░░░░░░ 18%
 ```
 
-Line 1: live cost/burn/context from ccusage  
-Line 2: current caveman mode (or blank if off)  
-Line 3: session elapsed time — flips to `⚠️ 45m` at 45 min, `🚨 55m` at 55 min
+Line 1: live cost/burn/context from ccusage
+Line 2: caveman badge (blank if off) + session elapsed timer + 5hr/weekly rate-limit
+bars, all on one row — timer flips to `⚠️ 45m — run /handoff soon` at 45 min,
+`🚨 55m — /handoff NOW (cache TTL ~5m)` at 55 min
 
 ---
 
 ## Part 2 — Global CLAUDE.md
 
-Lives at `~/.claude/CLAUDE.md` (symlinked from dotfiles). Loaded every session globally. Edit the dotfiles source — changes sync automatically.
+Lives at `~/.claude/CLAUDE.md` (symlinked from `claude/.claude/CLAUDE.md` in this repo). Loaded every session globally. Edit the dotfiles source — changes sync automatically.
 
-```markdown
-# K0d3x Global Claude Config
+Sections it carries (read the file itself for current content — reproducing it here would just drift again):
 
-## Who I Am
-Solo developer. Maker. Ubuntu 24.04 (Noble). Tools: Neovim, Nala, Git.
-KOS (Kodex OS) is my personal knowledge management system.
+- **Skills Available** — slash-alias index; full descriptions come from the harness's own per-session skill listing, not restated here
+- **Session Rules** — session-timer/handoff-tool routing, standing read-first rules (`.work/PLAN.md`, `.work/FINDINGS.md`, `.work/PROGRESS.md`, `KNOWLEDGE.md`), code-quality read-before-writing rule, trust-but-verify reflex, TDD-by-default for new features, ambiguity-handling rules
+- **TODO Tags** — Priority tags (tier routing) + Annotation tags (which skill/mode a tag routes to)
+- **My Conventions** — commit format/granularity, git-crypt commit-message rule, branch naming, Trello Kanban columns, comment policy
+- **File Taxonomy** — the canonical "what fact goes where" table, including the index+detail planning-format note (see Part 4)
 
-## Skills Available
-The harness auto-lists every custom skill + its description each session — names below are the slash aliases, not re-described here. Tag routing lives in the TODO Tags table.
-`/handoff` `/handoff-return` `/close` `/checkpoint` `/changelog` `/dev-brief` `/planning-with-files` `/release-notes` `/find-skills` `/diagnose` `/tdd` `/prototype` `/sync-trello`
-External (not auto-surfaced): `/ce-code-review` `/discover` `/write-prd`
-
-## Session Rules
-- Track session start time. Warn me at 45 minutes to run /handoff (lean fork), /close
-  (lightweight close), or /checkpoint (durable) depending on context.
-- Session tools — four, by job:
-  - `/handoff` (push/fork): lean mid-session tangent. Emits reason-first re-entry prompt.
-    NO SESSION-LOG narrative. ~400 tok.
-  - `/handoff-return` (pop/merge): close a tangent, auto-sync its findings to TODOS.md,
-    print paste-back block for the still-alive main session. ~400 tok.
-  - `/close` (close+resume): lightweight session close. Emits resume-focused re-entry
-    prompt. NO SESSION-LOG. ~400 tok.
-  - `/checkpoint` (durable): end-of-work-session close. Writes SESSION-LOG narrative +
-    rotate-log + triage. ~2K tok. Use when real decisions were made.
-- Always read `.work/PLAN.md`, `.work/FINDINGS.md`, and `.work/PROGRESS.md` if they exist.
-- When I paste a re-entry prompt: treat decisions and architectural choices as authoritative.
-  File state wins on task-state conflicts.
-- CHANGELOG: use `/changelog` manually when a session produces changelog-worthy changes.
-  Do not auto-update changelogs inline.
-
-## TODO Tags
-[... see CLAUDE.md for full tag table — Priority tags + Annotation tags ...]
-
-## My Conventions
-- Commit messages: conventional commits format (feat:, fix:, docs:, chore:)
-- Commit granularity: one file per commit with a brief conventional-commit message.
-- Branch naming: feature/, fix/, docs/, chore/
-- NEVER add `Co-Authored-By` lines to any commit message.
-- All Trello boards use a six-column Kanban: Back Log → To Do → Doing → Review → Testing → Done
-- Code comments: always explain the why, not just the what
-```
+(Trello Sync Rules used to live here too — moved into `sync-trello/SKILL.md` 2026-08, so it's no longer one of this file's sections.)
 
 ---
 
 ## Part 3 — Skills Reference
 
-All custom skills live in `~/.claude/skills/` (symlinked from dotfiles). KOS-specific skills are installed separately via `npx skills install kos`.
+Custom skills are authored under `dotfiles/claude/.claude/skills/<name>/` and symlinked to `~/.claude/skills/<name>/` by `install.sh` — a skill created loose under `~/.claude/skills/` directly is untracked and gets lost on reinstall. KOS-specific skills are installed separately via `npx skills install kos`.
+
+### Design & Planning Pipeline
+
+Idea → shippable plan, in order. Each stage hands off to the next; skip stages for small work.
+
+| Skill           | Input                                | Output                                                                                 | Use when                                                                              |
+| --------------- | ------------------------------------ | -------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------- |
+| `/brainstorm`   | rough idea                           | `docs/brainstorm/<topic>-YYYY-MM-DD.md` (2-3 approaches + tradeoffs + recommendation)  | Starting a feature from a vague idea; need to explore approaches before committing    |
+| `/grill-me`     | a plan or design doc                 | resolved decisions in `.work/FINDINGS.md`                                              | Stress-testing a plan before building — resolves open branches one at a time          |
+| `/requirements` | resolved design                      | numbered, testable FR/NFR spec at `docs/REQUIREMENTS.md` (git-crypt)                   | Formalizing a resolved design into a spec before architecture/planning                |
+| `/architecture` | `docs/REQUIREMENTS.md`               | living `docs/ARCHITECTURE.md` (components, interfaces, data flow, FR/NFR traceability) | System needs a design doc before `/write-plan`; edited in place as the system evolves |
+| `/write-plan`   | grilled design + `.work/FINDINGS.md` | `.work/PLAN.md` (Goal/Micro-Goal/Task, every Task carries a verify command)            | Turning a resolved design into an executable plan                                     |
+| `/sync-trello`  | `.work/PLAN.md`                      | Trello cards/checklists/items                                                          | A Goal is ready to track on the board                                                 |
+
+`/write-plan` offers a `/threat-model` design review mid-flow when the plan has a security surface, then offers `/sync-trello` at the end.
+
+---
 
 ### Session Tools
 
 These four skills manage context across sessions. Pick the right one based on what just happened.
 
-| Skill | Trigger | Weight | Use when |
-|---|---|---|---|
-| `/handoff` | `/handoff` | ~400 tok | Spinning off a side-issue mid-session; main session stays alive |
-| `/handoff-return` | `/handoff-return` | ~400 tok | Finishing a tangent; merging findings back into main session |
-| `/close` | `/close` | ~400 tok | Done for now; no major decisions made |
-| `/checkpoint` | `/checkpoint` | ~2K tok | End of work session; real decisions were made |
+| Skill             | Trigger           | Weight   | Use when                                                        |
+| ----------------- | ----------------- | -------- | --------------------------------------------------------------- |
+| `/handoff`        | `/handoff`        | ~400 tok | Spinning off a side-issue mid-session; main session stays alive |
+| `/handoff-return` | `/handoff-return` | ~400 tok | Finishing a tangent; merging findings back into main session    |
+| `/close`          | `/close`          | ~400 tok | Done for now; no major decisions made                           |
+| `/checkpoint`     | `/checkpoint`     | ~2K tok  | End of work session; real decisions were made                   |
 
 ---
 
@@ -150,6 +133,7 @@ Forks the current session into a focused tangent. Emits a reason-first re-entry 
 When to use: a side-issue surfaces mid-session that needs clean context to chase. Open a fresh session, paste the prompt, work the tangent, then `/handoff-return` to merge findings back.
 
 Output:
+
 ```
 ── Tangent fork ──────────────────────────────
 Reason: {why this forked}
@@ -184,6 +168,7 @@ Full end-of-work-session wrap-up. Writes a narrative block to `.memory/SESSION-L
 When to use: end of day, or any session where real decisions were made that a future session must not re-litigate.
 
 `.memory/SESSION-LOG.md` block format:
+
 ```markdown
 ---
 ## Session Checkpoint — {YYYY-MM-DD hh:MM AM/PM}
@@ -253,6 +238,54 @@ When to use: after writing a feature to verify test coverage is meaningful, not 
 
 ---
 
+#### `/code-crit` — Structured code review
+
+Parallel Agent-spawn persona review of a diff/branch/PR. Binary verified/unverified confidence, Spec-vs-Standards severity report. Fast mode (default) or thorough mode (every persona fully isolated). Report-only — never edits.
+
+When to use: "review this diff/branch/PR", before merging non-trivial changes.
+
+---
+
+#### `/code-refactor` — Behavior-preserving restructuring
+
+Applies a named fix (Extract Method, Rename, Decompose Conditional, etc.) to a named smell — from a `/code-crit` finding, a `[CHORE]` TODO, or a direct ask. One micro-refactor at a time, fresh verify-command run between each, per-file `refactor:` commits. Not `/code-crit` — that names smells, this fixes them.
+
+When to use: "refactor this", "clean this up", or picking up a `[CHORE]` TODO that names a code smell.
+
+---
+
+#### `/code-decay` — Hotspot ranking
+
+Ranks files by churn (git log) × complexity (ast-grep or a proxy metric) into a dated Markdown report inside the target repo. Zero model calls outside `--interpret`.
+
+When to use: "find hotspots", "which files are decaying" — prioritizing where to invest refactor effort.
+
+---
+
+#### `/trust-but-verify` — Evidence gate
+
+Before any done/works/fixed claim, `git push`, PR, or session close — runs the project's verify command fresh and reads the exit code. Unproven claims become `[VERIFY]` TODOs in `.work/VERIFY.md`.
+
+When to use: automatically, per the global CLAUDE.md reflex — not opt-in. Run before claiming completion, not before every commit.
+
+---
+
+#### `/review-response` — Incoming feedback discipline
+
+Counterpart to `/code-crit` (which gives review) — for receiving it. Reads all PR/CI feedback without reacting, restates it, verifies each claim against the actual code, judges fit for this codebase, then fixes or pushes back with reasons. No performative agreement.
+
+When to use: handling PR review comments or CI failures.
+
+---
+
+#### `/threat-model` — STRIDE design review
+
+Top-down threat model: DFD element table → STRIDE per element → likelihood×impact risk grid → mitigation map, written to `docs/threat-model.md` (git-crypt). Update mode re-verifies mitigations on changed elements; design-review mode runs against a planning doc before code exists. Sibling of `/code-sec` (bottom-up hygiene sweep) and `/bounty-hunter` (reachability filter).
+
+When to use: pre-launch or new-system security design review, or when `/write-plan` flags a security surface. Deliberate trigger only — never auto-run.
+
+---
+
 ### Project Skills
 
 #### `/dev-setup` — Per-project wizard
@@ -311,13 +344,69 @@ When to use: ad-hoc board operations outside the `/sync-trello` flow — moving 
 
 Captures a single fact into `KNOWLEDGE.md` (local or global) without running a full `/checkpoint`. Runs the 4-test promotion bar (SETTLED · NON-OBVIOUS · NOT A RULE · DURABLE), deduplicates semantically, and confirms on write. If a fact fails the bar, explains why and suggests the correct destination.
 
-| Flag | Effect |
-|---|---|
-| `/remember <fact>` | Auto-route + bar check |
+| Flag                        | Effect                                |
+| --------------------------- | ------------------------------------- |
+| `/remember <fact>`          | Auto-route + bar check                |
 | `/remember --global <fact>` | Force global `~/.claude/KNOWLEDGE.md` |
-| `/remember --force <fact>` | Bypass bar, write regardless |
+| `/remember --force <fact>`  | Bypass bar, write regardless          |
 
 When to use: mid-session fact worth preserving that doesn't need a full `/checkpoint`.
+
+---
+
+#### `/recall` — Progressive memory retrieval
+
+Greps `.memory/EPISODIC-INDEX.md` and `KNOWLEDGE.md` tiers for cheap Layer-1 hits, then expands on request rather than dumping everything. `/recall <query>` scopes to the current project; `/recall --deep <query>` fans out across all of `~/dev` (never auto-expands in fan-out mode).
+
+When to use: searching past sessions, decisions, or facts.
+
+---
+
+#### `/consolidate` — Episodic-to-semantic promotion
+
+The "sleep" phase — sweeps `.memory/SESSION-LOG.md`/`.memory/EPISODIC-INDEX.md` entries since the last consolidation marker, runs the same 4-test promotion bar as `/remember`, and routes approved facts into `KNOWLEDGE.md`. Never auto-writes.
+
+When to use: periodically, or when reviewing a scheduled-run `.memory/CONSOLIDATION-INBOX.md`.
+
+---
+
+#### `/encrypt` — git-crypt setup
+
+Inits git-crypt on a repo, writes the root-anchored `.gitattributes` backstop for `KNOWLEDGE.md`/`TODOS.md`/`.memory/SESSION-LOG.md`/`.work/*`, adds `.gitignore` negations, and stores the binary key as base64 in Proton Pass.
+
+When to use: setting up encryption for a new repo, or fixing a repo with plaintext session/planning files that should be encrypted.
+
+---
+
+#### `/diagram` — Diagram generation
+
+Generates a diagram image (Mermaid flowchart by default; PlantUML UML activity diagram or Shostack/SDL data-flow diagram on request) as SVG/PNG/PDF, no editor dependency. `/threat-model` uses the DFD mode internally.
+
+When to use: asked to draw a flowchart, decision tree, UML activity diagram, or DFD.
+
+---
+
+#### `/fable-mode` — Working-discipline loader
+
+Loads a five-gate task loop + standing habits for any session, especially useful on tasks with many dependent steps or unknowns that could change approach mid-flight. Not a skill you "finish" — it's a mode; say "fable mode off" to deactivate.
+
+When to use: a task keeps failing/stalling, or you want deliberate gated verification before a multi-step change lands.
+
+---
+
+#### `/create-gdd` — Game Design Document
+
+Creates or reviews a Game Design Document for any game type — digital, physical, hybrid, Web3, mobile, board/card game, tabletop RPG.
+
+When to use: speccing a game system or documenting mechanics.
+
+---
+
+#### `codebase-design` — Deep-module vocabulary
+
+Not a slash command — shared vocabulary (module, interface, depth, seam, adapter, leverage, locality) that other skills reference rather than re-deriving. `CODE-PRINCIPLES.md` points here for "is this a leaky abstraction" judgment calls — a module that forces callers to know its internals is this skill's smell to name, not a new catalogue row.
+
+When to use: designing or improving a module's interface, deciding where a seam goes, or when another skill needs this vocabulary — invoked implicitly more often than by name.
 
 ---
 
@@ -341,14 +430,14 @@ When to use: building a new custom skill.
 
 Installed via `npx skills install kos`. Not tracked in dotfiles — reinstall after any `install.sh` run.
 
-| Skill | What it does |
-|---|---|
+| Skill          | What it does                                                    |
+| -------------- | --------------------------------------------------------------- |
 | `/find-skills` | Discover and install agent skills via `npx skills find [query]` |
-| `/kos-ingest` | Ingest new notes/transcripts into the KOS vault |
-| `/kos-query` | Query the KOS vault |
-| `/kos-capture` | Capture a new KOS note |
-| `/kos-lint` | Lint KOS vault entries |
-| `/kos-archive` | Archive KOS vault entries |
+| `/kos-ingest`  | Ingest new notes/transcripts into the KOS vault                 |
+| `/kos-query`   | Query the KOS vault                                             |
+| `/kos-capture` | Capture a new KOS note                                          |
+| `/kos-lint`    | Lint KOS vault entries                                          |
+| `/kos-archive` | Archive KOS vault entries                                       |
 
 ---
 
@@ -360,20 +449,21 @@ Run once when starting any new project:
 /dev-setup
 ```
 
-| Step | What it does |
-|---|---|
-| Project name + description | Used in README and CLAUDE.md |
-| Project type + stack | Determines folder structure and .gitignore additions |
-| Folder scaffold | Creates `src/`, `docs/`, `tests/` etc. based on type |
-| `README.md` | Minimal stub with name, description, structure |
-| `.claude/CLAUDE.md` | Project-level Claude config from template |
-| `.claude/settings.json` | Baseline permission allowlist |
-| `.claude/trello-board` | Board name for `/sync-trello` auto-resolution |
-| Planning files | `.work/PLAN.md`, `.work/FINDINGS.md`, `.work/PROGRESS.md`, `.memory/SESSION-LOG.md`, `TODOS.md`, `CHANGELOG.md`, `RELEASE-NOTES.md` |
-| `.gitignore` | Covers secrets, Claude artifacts, planning files, OS noise |
-| Git init | Checks for repo, offers `git init -b main` if missing |
-| GitHub repo | Offers `gh repo create` with visibility choice |
-| `/ce-setup` reminder | Printed at end — run manually after |
+| Step                       | What it does                                                                                                                                                              |
+| -------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Project name + description | Used in README and CLAUDE.md                                                                                                                                              |
+| Project type + stack       | Determines folder structure and .gitignore additions                                                                                                                      |
+| Folder scaffold            | Creates `src/`, `docs/`, `tests/` etc. based on type                                                                                                                      |
+| `README.md`                | Minimal stub with name, description, structure                                                                                                                            |
+| `.claude/CLAUDE.md`        | Project-level Claude config from template                                                                                                                                 |
+| `.claude/settings.json`    | Baseline permission allowlist                                                                                                                                             |
+| `.claude/trello-board`     | Board name for `/sync-trello` auto-resolution                                                                                                                             |
+| Planning files             | `.work/PLAN.md`, `.work/FINDINGS.md`, `.work/PROGRESS.md`, `.memory/SESSION-LOG.md`, `TODOS.md`, `CHANGELOG.md`, `RELEASE-NOTES.md`                                       |
+| `.gitignore`               | Covers secrets, Claude artifacts, OS noise; gitignores planning files by default (`.work/*`, `.memory/SESSION-LOG.md`, `TODOS.md`)                                        |
+| `git-crypt` (Step 15)      | Opt-in — offered separately after `.gitignore`. Accept it and those same planning files flip from gitignored to tracked+encrypted via a `.gitattributes` negation instead |
+| Git init                   | Checks for repo, offers `git init -b main` if missing                                                                                                                     |
+| GitHub repo                | Offers `gh repo create` with visibility choice                                                                                                                            |
+| `/ce-setup` reminder       | Printed at end — run manually after                                                                                                                                       |
 
 > `/dev-setup` is safe to re-run. It checks before overwriting any file.
 
@@ -387,49 +477,81 @@ Run once when starting any new project:
 ## Goal: [Goal name] [trello:CARD_ID after first sync]
 
 ### Micro-Goal: [Micro-Goal name]
+
 - [ ] Task one
 - [x] Task two (done — still synced as checklist item)
 
 ### Micro-Goal: [Another name]
+
 - [ ] Task three
 ```
 
-| Level | Markdown | Trello |
-|---|---|---|
-| Goal | `## Goal:` | Card in "Back Log" |
-| Micro-Goal | `### Micro-Goal:` | Checklist on that card |
-| Task | `- [ ]` or `- [x]` | Checklist item |
+| Level      | Markdown           | Trello                 |
+| ---------- | ------------------ | ---------------------- |
+| Goal       | `## Goal:`         | Card in "Back Log"     |
+| Micro-Goal | `### Micro-Goal:`  | Checklist on that card |
+| Task       | `- [ ]` or `- [x]` | Checklist item         |
 
 Rules:
+
 - Goals tagged `[trello:CARD_ID]` are skipped on next sync — idempotent
 - Tasks outside any Micro-Goal are ignored
 - Plain `##` headers are organization-only and not synced
+
+The format above is **FLAT-FORMAT** — the original shape, still the default for
+most repos. A second **NEW-FORMAT** (index+detail) exists for `TODOS.md`,
+`.work/PLAN.md`, and `.work/FINDINGS.md`: each becomes a lean index of pointers,
+with real content living in per-item detail files (`.work/plan/<goal-slug>.md`,
+etc.). It graduated 2026-07-23 to a standing lazy per-repo rollout — migrate a
+repo only when already working there with a clean tree, never as a big-bang
+conversion. Migrated so far: `dotfiles`, `kodex-ide`. Every skill that touches
+these files format-detects per repo (`test -d .work/plan`) and falls back to
+flat-format automatically — see `claude/.claude/references/planning-format-detect.md`
+for the shared detection logic every skill defers to.
 
 ---
 
 ## Part 5 — The Full Workflow (Example Project)
 
 ### Scenario
+
 You're building a CLI tool called `kos-cli` — a command-line interface for querying KOS notes from the terminal.
 
 ---
 
 ### Step 1: Scope the project
 
-Before touching any code, open Claude Code in the project root and run:
+Before touching any code, open Claude Code in the project root and run the design pipeline:
+
+```
+/brainstorm
+```
+
+Explores 2-3 approaches with tradeoffs and a recommendation. Writes `docs/brainstorm/<topic>-YYYY-MM-DD.md`. Skip this step for small, unambiguous work.
 
 ```
 /grill-me
 ```
 
-Resolves every design decision — data model, architecture, scope — before building starts. Outputs to `.work/FINDINGS.md`.
+Resolves every design decision — data model, architecture, scope — one branch at a time before building starts. Outputs to `.work/FINDINGS.md`.
 
-Then generate a lightweight spec:
 ```
-/write-prd
+/requirements
 ```
 
-Produces: goals, non-goals, user stories, success metrics. Save as `docs/prd.md` and commit.
+Formalizes the resolved design into a numbered, testable FR/NFR spec at `docs/REQUIREMENTS.md`.
+
+```
+/architecture
+```
+
+Designs the system that satisfies those requirements — components, interfaces, data flow — as a living `docs/ARCHITECTURE.md` with FR/NFR traceability. Skip for work with no real system-design surface.
+
+```
+/write-plan
+```
+
+Converts the grilled design + `.work/FINDINGS.md` into `.work/PLAN.md` (Goal/Micro-Goal/Task, every Task carries a verify command). Offers a `/threat-model` review if the plan has a security surface, then offers `/sync-trello` at the end.
 
 ---
 
@@ -468,10 +590,10 @@ Claude reads `.work/PLAN.md`, creates cards/checklists/items for all Goals witho
 ### Step 5: Code review before committing
 
 ```
-/ce-code-review
+/code-crit
 ```
 
-Parallel sub-agents review logic, edge cases, naming, efficiency, test coverage. For anything touching auth, file I/O, or external input, run the security suite:
+Parallel Agent-spawn personas review logic, edge cases, naming, efficiency, test coverage — Spec-vs-Standards severity report, report-only. Findings that name a smell go to `/code-refactor` to fix; a finding this environment already tracks as `[CHORE]` does too. For anything touching auth, file I/O, or external input, run the security suite:
 
 ```
 /code-sec         # broad hygiene sweep
@@ -486,6 +608,7 @@ See [docs/security/README.md](security/README.md) for the full suite and skill c
 ### Step 6: 45-minute mark
 
 Status bar flips:
+
 ```
 ⚠️  45m — run /handoff soon
 ```
@@ -493,9 +616,11 @@ Status bar flips:
 Reach a stopping point, then choose the right session tool:
 
 **Lean fork — side-issue surfaced mid-session:**
+
 ```
 /handoff
 ```
+
 Emits a reason-first re-entry prompt. No narrative written. Saves to `/tmp/handoff-{timestamp}.md`. Open a fresh session and paste.
 
 ```
@@ -510,18 +635,23 @@ Suggested skills: /diagnose, /tdd
 When done with the tangent, run `/handoff-return` to merge findings back into the main session.
 
 **Lightweight close — done for now, no major decisions:**
+
 ```
 /close
 ```
+
 Emits a resume-focused re-entry prompt. No narrative. Run `/clear` after.
 
 **Durable close — end of work session or real decisions made:**
+
 ```
 /checkpoint
 ```
+
 Writes a full narrative block to `.memory/SESSION-LOG.md`, syncs open work to `TODOS.md`, runs the triage pipeline, prints a re-entry prompt. Run `/clear` after. ~2K tokens.
 
 Example `.memory/SESSION-LOG.md` block:
+
 ```markdown
 ---
 ## Session Checkpoint — 2026-05-26 02:32 PM
@@ -567,42 +697,54 @@ New session opens. Paste the re-entry prompt. Claude reads `.memory/SESSION-LOG.
 
 ## Part 6 — Quick Reference
 
-| When | What |
-|---|---|
-| Starting a new project | `/dev-setup` → `/grill-me` → `/write-prd` |
-| Continuing a session | Paste re-entry prompt |
-| Status (cost/burn/time) | Glance at status bar (always visible) |
-| Goal is ready to track | `/sync-trello` |
-| Before committing code | `/ce-code-review` |
-| Anything touching security | `/code-sec` · `/bounty-hunter` · `/harness-audit` · `/threat-model` |
-| 45-minute timer fires, side-issue | `/handoff` (lean fork) |
-| 45-minute timer fires, wrapping up | `/close` (lightweight close) |
-| End of work session | `/checkpoint` (durable — writes narrative + triage) |
-| After tangent session done | `/handoff-return` (merges findings to TODOS.md) |
-| Returning after a break | Open `.memory/SESSION-LOG.md` → copy re-entry prompt |
-| What's highest priority now | Read `~/dev/.memory/TRIAGE-BLOCK.md` |
-| Session produced changes | `/changelog` (manual — do not auto-update inline) |
-| Cutting a release | `/changelog` → `/release-notes` → post to GitHub |
-| Bug or failure | `/diagnose` |
-| Need test coverage | `/tdd` |
-| Unsure about a design | `/grill-me` or `/prototype` |
-| Pre-release fragility audit | `/ante-mortem` |
-| Verify test suite is meaningful | `/mutation-testing` |
-| Unfamiliar code section | `/zoom-out` |
-| Need a new skill | `/find-skills [query]` or `/write-a-skill` |
+| When                               | What                                                                                           |
+| ---------------------------------- | ---------------------------------------------------------------------------------------------- |
+| Starting a new project             | `/dev-setup` → `/brainstorm` → `/grill-me` → `/requirements` → `/architecture` → `/write-plan` |
+| Continuing a session               | Paste re-entry prompt                                                                          |
+| Status (cost/burn/time)            | Glance at status bar (always visible)                                                          |
+| Goal is ready to track             | `/sync-trello`                                                                                 |
+| Before committing code             | `/code-crit`                                                                                   |
+| Reduce complexity / apply a fix    | `/code-refactor` (fixes what `/code-crit` names)                                               |
+| Find where to invest refactor time | `/code-decay` (churn × complexity hotspots)                                                    |
+| Anything touching security         | `/code-sec` · `/bounty-hunter` · `/harness-audit` · `/threat-model`                            |
+| Before claiming done/fixed/works   | `/trust-but-verify` (automatic reflex, not opt-in)                                             |
+| Handling PR review or CI feedback  | `/review-response`                                                                             |
+| 45-minute timer fires, side-issue  | `/handoff` (lean fork)                                                                         |
+| 45-minute timer fires, wrapping up | `/close` (lightweight close)                                                                   |
+| End of work session                | `/checkpoint` (durable — writes narrative + triage)                                            |
+| After tangent session done         | `/handoff-return` (merges findings to TODOS.md)                                                |
+| Returning after a break            | Open `.memory/SESSION-LOG.md` → copy re-entry prompt                                           |
+| What's highest priority now        | Read `~/dev/.memory/TRIAGE-BLOCK.md`                                                           |
+| Session produced changes           | `/changelog` (manual — do not auto-update inline)                                              |
+| Cutting a release                  | `/changelog` → `/release-notes` → post to GitHub                                               |
+| Bug or failure                     | `/diagnose`                                                                                    |
+| Need test coverage                 | `/tdd`                                                                                         |
+| Unsure about a design              | `/brainstorm`, `/grill-me`, or `/prototype`                                                    |
+| Pre-release fragility audit        | `/ante-mortem`                                                                                 |
+| Verify test suite is meaningful    | `/mutation-testing`                                                                            |
+| Unfamiliar code section            | `/zoom-out`                                                                                    |
+| Mid-session fact worth keeping     | `/remember` (write) / `/recall` (retrieve)                                                     |
+| Judging a module's interface/seams | `codebase-design` (vocabulary — usually invoked implicitly)                                    |
+| Draw a flowchart/UML/DFD           | `/diagram`                                                                                     |
+| New repo needs encryption          | `/encrypt`                                                                                     |
+| Task keeps failing/stalling        | `/fable-mode`                                                                                  |
+| Need a new skill                   | `/find-skills [query]` or `/write-a-skill`                                                     |
 
 ---
 
 ## Part 7 — What Goes Where
 
 ```
-~/.claude/                        (symlinked from dotfiles)
+~/.claude/                        (symlinked from dotfiles/claude/.claude/, entry by entry)
   CLAUDE.md                       ← global standing orders
-  KNOWLEDGE.md                    ← global curated facts (committed via dotfiles)
+  KNOWLEDGE.md                    ← global curated facts (git-crypt encrypted)
   settings.json                   ← hooks, statusLine, plugins
   hooks/
     session_timer.py              ← tracks session start time
-    combined-statusline.sh        ← statusLine: ccusage + caveman mode + elapsed timer
+    combined-statusline.sh        ← statusLine: ccusage + caveman badge + elapsed timer + rate-limit bars, one row
+    command_guard.py / secret_guard.py   ← PreToolUse(Bash): block dangerous/secret-leaking commands
+    standards_guard.py            ← PreToolUse(Edit/Write): forces reading CODE-STANDARD.md + language file first
+    code_formatter.py / code_standard_lint.py / gate3_skip_detector.py  ← PostToolUse(Edit/Write)
     refresh_triage.py             ← PostToolUse: auto-refreshes .memory/TRIAGE-BLOCK.md on TODOS.md edit
     caveman-*.js / .sh            ← caveman plugin hooks
   references/
@@ -611,10 +753,14 @@ New session opens. Paste the re-entry prompt. Claude reads `.memory/SESSION-LOG.
       CODE-PRINCIPLES.md          ← committed principles + smell vocabulary
       CODE-STANDARD.md            ← mechanical rules + per-language delegation
       ANTI-PATTERNS.md            ← full anti-pattern catalogue (Fowler, Brown, Meszaros)
+      TESTING-STANDARD.md         ← test-type decision layer; coverage stance
       LUA.md / PYTHON.md / ...    ← per-language rules
     MEMORY-STANDARD.md            ← KNOWLEDGE.md promotion bar, routing rules, entry format
     MEMORY-ARCHITECTURE.md        ← 5-store memory system reference
-  skills/
+    PROMPT-DEFENSE.md             ← shared prompt-injection defense baseline (code-sec, bounty-hunter, harness-audit, threat-model)
+    planning-format-detect.md     ← shared FLAT vs index+detail format-detection logic
+    git-crypt-lock-check.md       ← unlock-before-read pipe for encrypted files
+  skills/                         (authored under dotfiles/claude/.claude/skills/<name>/, symlinked here)
     session-handoff/              ← /handoff  (lean fork)
     session-handoff-return/       ← /handoff-return  (merge tangent)
     session-close/                ← /close  (lightweight close)
@@ -625,7 +771,17 @@ New session opens. Paste the re-entry prompt. Claude reads `.memory/SESSION-LOG.
     diagnose/                     ← /diagnose  (RCA → fix → post-mortem)
     tdd/                          ← /tdd  (red-green-refactor)
     prototype/                    ← /prototype  (throwaway spike)
+    brainstorm/                   ← /brainstorm  (explore approaches pre-plan)
     grill-me/                     ← /grill-me  (stress-test a plan)
+    requirements/                 ← /requirements  (FR/NFR spec)
+    architecture/                 ← /architecture  (living system design doc)
+    write-plan/                   ← /write-plan  (Goal/Micro-Goal/Task plan)
+    code-crit/                    ← /code-crit  (structured code review, report-only)
+    code-refactor/                ← /code-refactor  (fixes smells code-crit names)
+    code-decay/                   ← /code-decay  (churn × complexity hotspot ranking)
+    codebase-design/              ← deep-module vocabulary (module/interface/depth/seam)
+    trust-but-verify/             ← /trust-but-verify  (fresh verify-command evidence gate)
+    review-response/              ← /review-response  (incoming PR/CI feedback discipline)
     code-sec/                     ← /code-sec  (project security sweep)
     bounty-hunter/                ← /bounty-hunter  (remote reachability triage)
     harness-audit/                ← /harness-audit  (harness attack surface audit)
@@ -635,15 +791,21 @@ New session opens. Paste the re-entry prompt. Claude reads `.memory/SESSION-LOG.
     dev-setup/                    ← /dev-setup  (per-project wizard)
     sync-trello/                  ← /sync-trello  (push .work/PLAN.md → Trello)
     trello-agent/                 ← /trello-agent  (ad-hoc board management)
+    remember/                     ← /remember  (ad-hoc fact capture)
+    recall/                       ← /recall  (progressive memory retrieval)
+    consolidate/                  ← /consolidate  (episodic → semantic promotion)
+    encrypt/                      ← /encrypt  (git-crypt setup)
+    diagram/                      ← /diagram  (Mermaid/PlantUML/DFD generation)
+    fable-mode/                   ← /fable-mode  (five-gate working-discipline loader)
+    create-gdd/                   ← /create-gdd  (Game Design Document)
     write-a-skill/                ← /write-a-skill  (structured skill authoring)
     zoom-out/                     ← /zoom-out  (map unfamiliar codebase)
     kos*/                         ← KOS vault skills (installed separately via npx)
   plugins/
-    planning-with-files/          ← mid-session persistent memory
-    compound-engineering/         ← multi-agent code review
-    caveman/                      ← terse response mode
-    andrej-karpathy-skills/       ← engineering principles
-    pm-*/                         ← PM skills
+    caveman/                      ← terse response mode (active, heavy use)
+    compound-engineering/         ← multi-agent code review (active use)
+    planning-with-files/          ← mid-session persistent memory (active, low use)
+    pm-*/                         ← PM skills, 5 plugins (installed, disabled — unused)
 
 ~/dev/
   .triage-cache                   ← pointer index: project → TODOS.md path + mtime
@@ -651,7 +813,7 @@ New session opens. Paste the re-entry prompt. Claude reads `.memory/SESSION-LOG.
   .memory/
     TRIAGE-BLOCK.md               ← auto-generated priority view across all projects
 
-your-project/
+your-project/                    (default state below; changes if git-crypt is accepted — dev-setup Step 15 / /encrypt)
   .claude/
     CLAUDE.md                     ← project-specific context (committed)
     settings.json                 ← project-level permissions (committed)
@@ -659,17 +821,19 @@ your-project/
     trello-board                  ← board name for /sync-trello (gitignored)
   src/                            ← source (structure varies by project type)
   docs/
-    prd.md                        ← committed, project north star
+    REQUIREMENTS.md                ← via /requirements — always committed + git-crypt (unconditional, not tied to Step 15)
+    ARCHITECTURE.md                ← via /architecture — always committed + git-crypt (unconditional, not tied to Step 15)
+    brainstorm/<topic>-DATE.md     ← via /brainstorm, pre-plan design docs (committed, plaintext)
   README.md                       ← committed
-  TODOS.md                        ← canonical open work — single source of truth (gitignored)
+  TODOS.md                        ← canonical open work — single source of truth (gitignored by default; tracked + git-crypt encrypted if git-crypt accepted)
   .memory/
-    SESSION-LOG.md                ← checkpoint/handoff narrative (git-crypt encrypted)
+    SESSION-LOG.md                ← checkpoint/handoff narrative (gitignored by default; tracked + git-crypt encrypted if git-crypt accepted)
   .work/
-    PLAN.md                       ← live Goals/Micro-Goals/Tasks + Trello IDs (gitignored)
-    FINDINGS.md                   ← research and decisions (gitignored)
-    PROGRESS.md                   ← session progress log (gitignored)
+    PLAN.md                       ← live Goals/Micro-Goals/Tasks + Trello IDs (gitignored by default; tracked + git-crypt encrypted if git-crypt accepted — everything under .work/ is meant to be, no exceptions, once accepted)
+    FINDINGS.md                   ← research and decisions (same as PLAN.md above)
+    PROGRESS.md                   ← session progress log (same as PLAN.md above)
   CHANGELOG.md                    ← committed changelog (updated via /changelog)
-  KNOWLEDGE.md                    ← committed curated facts about this codebase
+  KNOWLEDGE.md                    ← committed curated facts about this codebase (plaintext by default; git-crypt encrypted if git-crypt accepted — never gitignored either way, see dev-setup Step 13)
   RELEASE-NOTES.md                ← scratch pad for /release-notes (gitignored)
   .gitignore                      ← covers all Claude artifacts, secrets, OS noise
 ```
@@ -689,12 +853,13 @@ npm install -g ~/dev/trello-cli/packages/trello-cli
 ```
 
 New commands available:
+
 - `trello card:add-checklist-item` — create item in checklist
 - `trello card:update-checklist-item` — rename or reposition item
 - `trello card:delete-checklist-item` — delete item
 - `trello card:delete-checklist` — delete entire checklist
 
-> **Note:** checklist CRUD PR (`feat/checklist-item-crud`) is open against upstream trello-cli. Until merged, the local fork install above is required.
+> **Note:** checklist CRUD PR (upstream [mheap/trello-cli#233](https://github.com/mheap/trello-cli/pull/233)) is still open. Until merged, the local fork install above is required.
 
 ### Usage
 
@@ -703,18 +868,12 @@ New commands available:
 ```
 
 Board resolution order:
+
 1. Arg passed inline: `/sync-trello "My Board"`
 2. `.claude/trello-board` file in project root (set by `/dev-setup`)
 3. Prompt with `trello board:list` output + offer to save
 
-### How it works
-
-Reads `.work/PLAN.md` and for each Goal without a `[trello:ID]` tag:
-1. Creates a Trello card at the bottom of "Back Log"
-2. Annotates the Goal line immediately with `[trello:CARD_ID]`
-3. Creates a checklist for each Micro-Goal
-4. Creates a checklist item for each Task
-
-Fully idempotent — re-running skips already-tagged Goals.
-
-See `~/.claude/skills/sync-trello/SKILL.md` for full implementation details.
+Goal→card / Micro-Goal→checklist / Task→item mapping, the `[trello:ID]` skip
+rule, and full sync algorithm live in `sync-trello/SKILL.md` (canonical, single
+home — not restated here to avoid the two-copy drift this guide's last audit
+pass fixed elsewhere).
