@@ -32,7 +32,13 @@ This skill expects the following hierarchy in `.work/PLAN.md`:
 - [ ] Task four
 ```
 
-**Mapping:** see **Trello Sync Rules** in `~/.claude/CLAUDE.md` (canonical) for the Goal→card / Micro-Goal→checklist / Task→item rule and the `[trello:ID]` skip rule. Skill-specific detail: both `- [ ]` and `- [x]` lines become checklist items (completed tasks still sync).
+**Mapping:**
+
+- Goal → Trello card (placed at the bottom of the "Back Log" list)
+- Micro-Goal → Trello checklist on that card
+- Task → Trello checklist item
+
+Create in order: card first, checklist second, items third. Before creating, check if a `[trello:ID]` tag exists on the Goal — if so, skip it. After creating a card, annotate the Goal in `.work/PLAN.md` with `[trello:CARD_ID]`. Skill-specific detail: both `- [ ]` and `- [x]` lines become checklist items (completed tasks still sync).
 
 ---
 
