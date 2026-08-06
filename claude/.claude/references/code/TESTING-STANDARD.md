@@ -113,7 +113,7 @@ Real guidance, not a stub — this environment now targets browser delivery.
 
 - **MUST**: semantic HTML over `div` soup, every `img`/icon-only control has an
   accessible name, every form control has a label — already stated in
-  `TYPESCRIPT.md`'s HTML appendix; this is the testing side of that same rule.
+  `HTML.md`'s Accessibility section; this is the testing side of that same rule.
 - **MUST**: every interactive element reachable and operable by keyboard alone (Tab
   order makes sense, focus is visible, no keyboard trap). Test this by literally
   unplugging the mouse for one pass, not by reading the markup and assuming it works.
