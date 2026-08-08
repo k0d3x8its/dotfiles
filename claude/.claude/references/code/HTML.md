@@ -53,6 +53,9 @@ onclick>` for either; keyboard/focus/role semantics come free with the
   overrides the browser's own accessibility tree.
 - Every interactive element needs a visible focus indicator — MUST NOT
   `outline: none` without providing an equivalent replacement.
+- See also `HTMX.md` (hx-* attributes have their own accessibility rules —
+  focus management on swap, `aria-live` regions) and `TESTING-STANDARD.md`
+  (the testing side of these same rules).
 
 ## Attributes & syntax
 
