@@ -35,11 +35,11 @@ files) covers the common case.
 
 ## Trigger table (pilot sectors)
 
-| Sector               | Owns                                                                          | Load when the code…                                             |
-| -------------------- | ----------------------------------------------------------------------------- | --------------------------------------------------------------- |
-| `CLIENT-TRUST.md`    | Prices, quantities, entitlements, subscription state, rate limiting           | accepts a value affecting money, access, or identity            |
-| `DATA-STORE.md`      | Parameterization and declarative authz (RLS, Firestore rules), object storage | reads/writes a store, or defines a schema, policy, or migration |
-| `RESOURCE-ACCESS.md` | Path traversal, SSRF, open redirect, file upload, deep links                  | uses a value to select **which** file, URL, or destination      |
+| Sector               | Owns                                                                                                                                                                                             | Load when the code…                                             |
+| -------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | --------------------------------------------------------------- |
+| `CLIENT-TRUST.md`    | Prices, quantities, entitlements, subscription state, rate limiting                                                                                                                              | accepts a value affecting money, access, or identity            |
+| `DATA-STORE.md`      | Declarative authz (RLS, Firestore rules) and object storage scoping — SQL parameterization mechanics belong to `INJECTION.md` (not yet built); this sector points to it rather than restating it | reads/writes a store, or defines a schema, policy, or migration |
+| `RESOURCE-ACCESS.md` | Path traversal, SSRF, open redirect, file upload, deep links                                                                                                                                     | uses a value to select **which** file, URL, or destination      |
 
 ## Budget: two sectors, not one
 
