@@ -99,4 +99,6 @@ before creating directories.
 
 - HTML: semantic elements over `div` soup; every `img` has `alt`; forms have labels.
 - CSS: class naming `kebab-case`; SHOULD use custom properties for repeated values
-  (DRY knowledge rule); AVOID `!important`.
+  (DRY knowledge rule); AVOID `!important`. Full rules: `CSS.md`.
+- `JSON.md` covers generic JSON (no host language, e.g. `settings.json`); this
+  file keeps `package.json`/`tsconfig.json` specifics.
