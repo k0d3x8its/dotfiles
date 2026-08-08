@@ -632,9 +632,11 @@ Installed via `npx skills install kos`. Not tracked in dotfiles — reinstall af
 | `/find-skills` | Discover and install agent skills via `npx skills find [query]` |
 | `/kos-ingest`  | Ingest new notes/transcripts into the KOS vault                 |
 | `/kos-query`   | Query the KOS vault                                             |
-| `/kos-capture` | Capture a new KOS note                                          |
 | `/kos-lint`    | Lint KOS vault entries                                          |
 | `/kos-archive` | Archive KOS vault entries                                       |
+
+Companion app (not a skill, standalone TUI, `~/dev/kos-capture`): transcribes
+YouTube/podcast audio into files that land in `raw/` for `/kos-ingest` to pick up.
 
 ---
 
