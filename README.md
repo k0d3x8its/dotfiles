@@ -53,12 +53,13 @@ Pass `--packages` to also install apt packages:
 
 ## Manual steps after install
 
-| Step            | Command                                                       |
-| --------------- | ------------------------------------------------------------- |
-| kos skills      | `npx skills install kos`                                      |
-| Particle CLI    | `npm install -g particle-cli && particle login`               |
-| Antigravity     | Has its own CLI installer — see https://antigravity.dev       |
-| Ghostty sidebar | `sudo nala install xdotool` (required for window positioning) |
+| Step            | Command                                                               |
+| --------------- | --------------------------------------------------------------------- |
+| kos skills      | `npx skills install kos`                                              |
+| Particle CLI    | `npm install -g particle-cli && particle login`                       |
+| ast-grep        | `npm install -g @ast-grep/cli` (required by `code-decay`, `code-sec`) |
+| Antigravity     | Has its own CLI installer — see https://antigravity.dev               |
+| Ghostty sidebar | `sudo nala install xdotool` (required for window positioning)         |
 
 ## What is NOT tracked
 
