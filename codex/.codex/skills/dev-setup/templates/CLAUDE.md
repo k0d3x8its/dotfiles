@@ -41,7 +41,8 @@
 | `/tdd` | Red-green-refactor vertical slices |
 | `/diagnose` | Bug RCA → fix → post-mortem |
 | `/trust-but-verify` | Verify claimed-done work before closing TODO |
-| `/ce-code-review` | Multi-agent compound code review |
+| `/code-crit` | Structured code review (report-only) |
+| `/code-refactor` | Fix a smell `/code-crit` named |
 | `/review-response` | Review Codex's own response for accuracy |
 
 ### Docs & Release
