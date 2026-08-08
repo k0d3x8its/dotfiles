@@ -136,6 +136,10 @@ main() {
     safeguard "$HOME/.codex/hooks"
     ln -sf "$DOTFILES/codex/.codex/hooks" "$HOME/.codex/hooks"
 
+    # references dir shared with claude (code standards, vocabulary, anti-patterns)
+    safeguard "$HOME/.codex/references"
+    ln -sf "$DOTFILES/claude/.claude/references" "$HOME/.codex/references"
+
     for skill_dir in "$DOTFILES"/codex/.codex/skills/*/; do
         skill_dir="${skill_dir%/}"
         skill="$(basename "$skill_dir")"

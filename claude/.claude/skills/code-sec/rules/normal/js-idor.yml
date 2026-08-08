@@ -1,0 +1,7 @@
+id: js-idor-subscript-response
+language: javascript
+severity: warning
+message: Possible IDOR/BOLA — object by id returned with no ownership check (CWE-639)
+metadata: {cwe: CWE-639, reachable: true}
+rule:
+  pattern: "res.json($OBJ[$KEY])"

@@ -17,7 +17,13 @@ this skill proposes and explores. It never interrogates; stress-testing is `/gri
 
 Understand before asking. Read what exists in the target project:
 
-- `.work/PLAN.md`, `.work/FINDINGS.md`, `.work/PROGRESS.md`, `KNOWLEDGE.md` if present
+- `.work/PLAN.md`, `.work/FINDINGS.md`, `.work/PROGRESS.md`, `KNOWLEDGE.md` if present.
+  **Format detection** (PLAN.md/FINDINGS.md only — PROGRESS.md is never split):
+  check `~/.claude/references/planning-format-detect.md` (`test -d .work/plan`).
+  FLAT-FORMAT (no `.work/plan/` — today's behavior, unchanged): read both files
+  directly. NEW-FORMAT (`.work/plan/` exists): both are lean indexes — read the
+  index first, open a Goal's or cluster's detail file only if its full content is
+  relevant to the topic being explored.
 - The code the idea touches — entry points, existing patterns, constraints
 - Prior design docs in `docs/brainstorm/` on related topics
 

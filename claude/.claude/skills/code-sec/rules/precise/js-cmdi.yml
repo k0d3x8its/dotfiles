@@ -1,0 +1,7 @@
+id: js-cmdi-exec-concat
+language: javascript
+severity: error
+message: OS command injection — concatenation into exec (CWE-78)
+metadata: {cwe: CWE-78, reachable: true}
+rule:
+  pattern: "exec($A + $B, $$$)"

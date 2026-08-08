@@ -42,6 +42,10 @@ See [REFERENCE.md](REFERENCE.md) for Proton Pass JSON template and verification 
 /docs/GDD-*.md           filter=git-crypt diff=git-crypt
 /docs/PRD-*.md           filter=git-crypt diff=git-crypt
 /docs/ARD-*.md           filter=git-crypt diff=git-crypt
+
+# Security artifacts — attacker roadmaps (SEC-CONTEXT covered by /.work/* above)
+/docs/threat-model.md        filter=git-crypt diff=git-crypt
+/docs/threat-model.dfd.mmd   filter=git-crypt diff=git-crypt
 ```
 
 `/.work/*` encrypts all current and future files in `.work/` without revisiting `.gitattributes`.
@@ -57,9 +61,12 @@ See [REFERENCE.md](REFERENCE.md) for Proton Pass JSON template and verification 
 !/.work/PLAN.md
 !/.work/FINDINGS.md
 !/.work/PROGRESS.md
+!/.work/SEC-CONTEXT.md
 ```
 
 Glob negations not supported in `.gitignore` — list `.work/` files individually.
+Any git-crypt file that `gitignore.core` also ignores as "local context" needs a
+matching negation here, or it stays ignored and never commits (never persists).
 
 ---
 

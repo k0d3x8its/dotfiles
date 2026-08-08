@@ -73,7 +73,7 @@ The I/O shell (`run_report`) needs at most one integration test.
 A seam is a place where behavior can be altered without editing at that place.
 Good interface design creates seams naturally.
 
-*(Full seam reference: `~/.claude/references/kos-code-reference.md`)*
+*(Full seam reference: `~/.claude/references/code/CODE-REFERENCE.md`)*
 
 If a function is hard to test, it usually lacks a seam. Introduce one:
 - Extract the dependency and accept it as a parameter

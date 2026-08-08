@@ -167,7 +167,7 @@ Make the recommendation **after** the fix is in — you have more information no
 If the answer to "what would have prevented this?" involves architectural change (no good
 test seam, tangled callers, hidden coupling), write a `[DECISION][INVESTIGATE]` TODO to
 `TODOS.md` with the specific question. For architectural vocabulary, read
-`~/.codex/references/kos-code-reference.md`.
+`~/.codex/references/code/CODE-REFERENCE.md`.
 
 State the hypothesis that turned out correct in the commit message so the next
 debugger learns.

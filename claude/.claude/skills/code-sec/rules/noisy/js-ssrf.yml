@@ -1,0 +1,16 @@
+id: js-ssrf-axios
+language: javascript
+severity: warning
+message: Possible SSRF — non-literal URL with no visible allowlist (CWE-918)
+metadata: {cwe: CWE-918, reachable: true}
+rule:
+  pattern: "axios.get($URL)"
+  not:
+    inside:
+      stopBy: end
+      has:
+        pattern: "new URL($$$)"
+        stopBy: end
+constraints:
+  URL:
+    regex: "^[a-z_]"

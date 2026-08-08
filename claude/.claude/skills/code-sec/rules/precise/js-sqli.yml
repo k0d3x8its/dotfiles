@@ -1,0 +1,10 @@
+id: js-sqli-concat
+language: javascript
+severity: error
+message: SQL injection — request value concatenated into a query string (CWE-89)
+metadata: {cwe: CWE-89, reachable: true}
+rule:
+  pattern: "$A + req.query.$P"
+constraints:
+  A:
+    regex: "(?i)select|insert|update|delete .*from|where"

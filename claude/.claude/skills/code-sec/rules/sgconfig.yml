@@ -1,0 +1,8 @@
+# ast-grep project config for the code-sec reachable-CWE rule pack.
+# Consumers scan with: ast-grep scan -c <this file> <target>
+# Tiers: precise = pure sink shape (near-conclusive) | normal = shape heuristic |
+# noisy = composite not-guard candidate (model confirms reachability/authz).
+ruleDirs:
+  - precise
+  - normal
+  - noisy

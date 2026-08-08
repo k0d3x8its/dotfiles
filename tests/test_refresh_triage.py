@@ -30,9 +30,9 @@ hook = load_hook("refresh_triage.py")
 def _run(payload: str) -> list:
     """Run hook.main() with payload on stdin; return subprocess.run call list."""
     calls = []
-    with patch("sys.stdin", io.StringIO(payload)), \
-         patch("subprocess.run", side_effect=lambda args, **kw: calls.append(args)) as _mock, \
-         patch.object(hook, "DEV", FAKE_DEV):
+    with patch("sys.stdin", io.StringIO(payload)), patch(
+        "subprocess.run", side_effect=lambda args, **kw: calls.append(args)
+    ) as _mock, patch.object(hook, "DEV", FAKE_DEV):
         hook.main()
     return calls
 
@@ -75,15 +75,13 @@ class TestPathGuard(unittest.TestCase):
         calls = _run(_json("/fake/devother/TODOS.md"))
         self.assertEqual(calls, [])
 
+    def test_dev_root_todos_ignored(self):
+        # ~/dev is not a project — only its subdirectories are
+        calls = _run(_json(f"{FAKE_DEV}/TODOS.md"))
+        self.assertEqual(calls, [])
+
 
 class TestProjectDetection(unittest.TestCase):
-    def test_root_todos_is_machine(self):
-        calls = _run(_json(f"{FAKE_DEV}/TODOS.md"))
-        self.assertEqual(len(calls), 2)
-        update_cache_args = calls[0]
-        self.assertEqual(update_cache_args[0], "update-cache")
-        self.assertEqual(update_cache_args[1], "machine")
-
     def test_subdir_todos_uses_folder_name(self):
         calls = _run(_json(f"{FAKE_DEV}/myproject/TODOS.md"))
         self.assertEqual(calls[0][1], "myproject")

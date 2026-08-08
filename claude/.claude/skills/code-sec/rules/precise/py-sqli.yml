@@ -1,0 +1,7 @@
+id: py-sqli-execute-fstring
+language: python
+severity: error
+message: SQL injection — f-string interpolated into execute() (CWE-89)
+metadata: {cwe: CWE-89, reachable: true}
+rule:
+  pattern: '$C.execute(f"$$$")'

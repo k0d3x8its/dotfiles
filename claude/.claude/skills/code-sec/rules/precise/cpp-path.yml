@@ -1,0 +1,7 @@
+id: cpp-path-spiffs-concat
+language: cpp
+severity: error
+message: Path traversal — request value concatenated into an embedded FS path (CWE-22)
+metadata: {cwe: CWE-22, reachable: true}
+rule:
+  pattern: "$FS.open($A + $B)"

@@ -1,6 +1,6 @@
 ---
 name: tdd
-description: Test-driven development with red-green-refactor loop. Use when user wants to build features or fix bugs using TDD, mentions "red-green-refactor", wants integration tests, or asks for test-first development. Maps to the [TEST] TODO tag.
+description: Test-driven development with red-green loop. Use when user wants to build features or fix bugs using TDD, mentions "red-green" or "test-first", wants integration tests, or asks for test-driven development. Maps to the [TEST] TODO tag.
 ---
 
 # Test-Driven Development
@@ -14,7 +14,7 @@ description: Test-driven development with red-green-refactor loop. Use when user
 details. Code can change entirely; tests should not.
 
 **Good tests** are integration-style: they exercise real code paths through public APIs.
-They describe *what* the system does, not *how*. A good test reads like a specification.
+They describe _what_ the system does, not _how_. A good test reads like a specification.
 See `~/.claude/skills/tdd/tests.md` for examples.
 
 **Bad tests** are coupled to implementation. They mock internal collaborators, test
@@ -27,7 +27,7 @@ See `~/.claude/skills/tdd/mocking.md` for mocking guidelines.
 
 **Do not write all tests first, then all implementation.**
 
-This produces tests that verify the *shape* of things rather than user-facing behavior.
+This produces tests that verify the _shape_ of things rather than user-facing behavior.
 Tests become insensitive to real changes — they pass when behavior breaks, fail when
 behavior is fine.
 
@@ -51,6 +51,9 @@ the previous cycle.
 
 Before writing any code:
 
+- Pick the test type first: `~/.claude/references/code/TESTING-STANDARD.md`'s
+  decision table routes unit/integration/system/playtesting/compatibility/etc. to
+  the right approach or skill before you write a single test.
 - Confirm with user what interface changes are needed
 - Confirm which behaviors to test (prioritise — you can't test everything)
 - Design interfaces for testability (see `~/.claude/skills/tdd/interface-design.md`)
@@ -91,22 +94,15 @@ GREEN: Minimal code to pass → passes
 ```
 
 Rules:
+
 - One test at a time
 - Only enough code to pass the current test
 - Don't anticipate future tests
 - Keep tests focused on observable behavior
 
-### 4. Refactor
+### 4. Review
 
-After all tests pass, look for candidates (see `~/.claude/skills/tdd/refactoring.md`):
-
-- Extract duplication
-- Deepen modules (move complexity behind simple interfaces)
-- Apply SOLID principles where natural
-- Consider what new code reveals about existing code
-- Run tests after each refactor step
-
-**Never refactor while RED.** Get to GREEN first.
+After all tests pass, run `/code-crit` to surface cleanup candidates. See `~/.claude/skills/tdd/refactoring.md` for refactoring patterns.
 
 ## Checklist Per Cycle
 

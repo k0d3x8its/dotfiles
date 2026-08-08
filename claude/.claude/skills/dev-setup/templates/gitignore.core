@@ -13,7 +13,11 @@
 .work/PLAN.md
 .work/FINDINGS.md
 .work/PROGRESS.md
+.work/SEC-CONTEXT.md
 RELEASE-NOTES.md
+
+# Security artifacts — derived DFD render (source .mmd is committed, git-crypted)
+docs/threat-model.dfd.svg
 
 # Memory system — runtime artifacts live in .memory/ subdir
 /.memory/EPISODIC-INDEX.md

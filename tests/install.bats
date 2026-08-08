@@ -16,18 +16,22 @@ make_fixture() {
 
     mkdir -p "$dir/claude/.claude/plugins"
     mkdir -p "$dir/claude/.claude/hooks"
-    mkdir -p "$dir/claude/.claude/references"
+    mkdir -p "$dir/claude/.claude/references/code"
     touch "$dir/claude/.claude/CLAUDE.md"
     touch "$dir/claude/.claude/settings.json"
     echo '{"seed":"installed"}' > "$dir/claude/.claude/plugins/installed_plugins.json"
     echo '{"seed":"marketplaces"}' > "$dir/claude/.claude/plugins/known_marketplaces.json"
     touch "$dir/claude/.claude/hooks/hook.sh"
-    touch "$dir/claude/.claude/references/anti-patterns.md"
+    touch "$dir/claude/.claude/references/code/ANTI-PATTERNS.md"
+    touch "$dir/claude/.claude/references/code/CODE-REFERENCE.md"
 
     for skill in changelog dev-brief dev-setup diagnose prototype release-notes session-checkpoint session-handoff session-handoff-return sync-trello tdd trello-agent; do
         mkdir -p "$dir/claude/.claude/skills/$skill"
         touch "$dir/claude/.claude/skills/$skill/SKILL.md"
     done
+
+    mkdir -p "$dir/claude/.claude/skills/shared-sample"
+    touch "$dir/claude/.claude/skills/shared-sample/SKILL.md"
 
     mkdir -p "$dir/codex/.codex/hooks"
     touch "$dir/codex/.codex/AGENTS.md"
@@ -37,6 +41,8 @@ make_fixture() {
         mkdir -p "$dir/codex/.codex/skills/$skill"
         touch "$dir/codex/.codex/skills/$skill/SKILL.md"
     done
+    ln -s ../../../claude/.claude/skills/shared-sample \
+        "$dir/codex/.codex/skills/shared-sample"
 
     mkdir -p "$dir/ghostty/.config/ghostty"
     mkdir -p "$dir/ghostty/.config/autostart"
@@ -336,7 +342,7 @@ EOF
     local expected=()
     while IFS= read -r -d '' entry; do
         expected+=("$(basename "$entry")")
-    done < <(find "$FAKE_DOTFILES/codex/.codex/skills" -maxdepth 1 -mindepth 1 -type d -print0 | sort -z)
+    done < <(find -L "$FAKE_DOTFILES/codex/.codex/skills" -maxdepth 1 -mindepth 1 -type d -print0 | sort -z)
 
     local actual=()
     while IFS= read -r -d '' entry; do
@@ -347,6 +353,15 @@ EOF
     for skill in "${expected[@]}"; do
         [[ -L "$FAKE_HOME/.codex/skills/$skill" ]]
     done
+}
+
+@test "codex: shared catalog symlink installs as a live skill" {
+    run_install
+
+    [[ -L "$FAKE_DOTFILES/codex/.codex/skills/shared-sample" ]]
+    [[ -L "$FAKE_HOME/.codex/skills/shared-sample" ]]
+    [[ "$(readlink -f "$FAKE_HOME/.codex/skills/shared-sample")" == \
+       "$FAKE_DOTFILES/claude/.claude/skills/shared-sample" ]]
 }
 
 @test "trueline: ~/dev/trueline.sh is a symlink into dotfiles/scripts" {

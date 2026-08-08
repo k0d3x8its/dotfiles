@@ -1,0 +1,7 @@
+id: py-cmdi-popen-concat
+language: python
+severity: error
+message: OS command injection — concatenation into os.popen (CWE-78)
+metadata: {cwe: CWE-78, reachable: true}
+rule:
+  pattern: "os.popen($A + $B)"

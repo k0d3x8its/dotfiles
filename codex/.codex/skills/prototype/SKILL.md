@@ -47,5 +47,5 @@ and the user isn't reachable, default to whichever better matches the surroundin
 ## When done
 
 The **answer** is the only thing worth keeping. Capture it somewhere durable — commit
-message, ADR (if it meets the three-condition gate in `~/.codex/references/kos-code-reference.md`),
+message, ADR (if it meets the three-condition gate in `~/.codex/references/code/CODE-REFERENCE.md`),
 or a `NOTES.md` next to the prototype — along with the question it was answering.

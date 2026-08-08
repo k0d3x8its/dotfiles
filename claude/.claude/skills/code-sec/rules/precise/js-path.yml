@@ -1,0 +1,7 @@
+id: js-path-readfile-concat
+language: javascript
+severity: error
+message: Path traversal — concatenated path into fs.readFile (CWE-22)
+metadata: {cwe: CWE-22, reachable: true}
+rule:
+  pattern: "fs.readFile($A + $B, $$$)"

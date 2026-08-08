@@ -10,6 +10,9 @@ K0d3x personal dotfiles — Ubuntu 24.04 (Noble).
 - **Hooks** — auto-refresh triage on edit, session timer warnings, Claude-only live cost/burn/context statusline → [docs/hooks.md](docs/hooks.md)
 - **Episodic memory** — per-session auto-capture, progressive `/recall`, gated `/consolidate` → [docs/episodic-memory.md](docs/episodic-memory.md)
 - **Memory architecture** — 5-store system (semantic, episodic, prospective, procedural, working) → [claude/.claude/references/MEMORY-ARCHITECTURE.md](claude/.claude/references/MEMORY-ARCHITECTURE.md)
+- **Security suite** — four-skill system (code-sec, bounty-hunter, harness-audit, threat-model) with shared deterministic core → [docs/security/README.md](docs/security/README.md)
+- **Code standards** — principles, mechanical rules, vocabulary reference, and full anti-pattern catalogue → [claude/.claude/references/code/](claude/.claude/references/code/)
+- **Code decay** — hotspot ranking (git churn × complexity) as a dated Markdown report → `code-decay` skill
 - **Dev workflow** — session tools, skills, per-project setup → [docs/dev-workflow-guide.md](docs/dev-workflow-guide.md)
 - **Git-crypt encryption** — sensitive files encrypted at rest → [docs/git-crypt-encryption.md](docs/git-crypt-encryption.md)
 
@@ -24,8 +27,8 @@ dotfiles/
   ghostty/            → ~/.config/ghostty/sidebar.conf, autostart .desktop, ~/.local/bin/ghostty-sidebar
   scripts/            → trueline.sh, update-triage, update-cache, update-episodic, rotate-log
   fonts/              → Sauce Code Pro Nerd Font + Menlo for Powerline
-  docs/               → dev-workflow-guide.md, triage-system.md, hooks.md, episodic-memory.md, git-crypt-encryption.md
-  tests/              → install.bats, statusline_bars.bats (bats suite), test_update_triage.py, test_rotate_log.py, test_refresh_triage.py (Python unit tests)
+  docs/               → dev-workflow-guide.md, triage-system.md, hooks.md, episodic-memory.md, git-crypt-encryption.md, ARCHITECTURE.md, REQUIREMENTS.md, security/
+  tests/              → install.bats, statusline_bars.bats (bats suite); Python unit tests for triage/rotate/refresh, command_guard, secret_guard, standards_guard, skill_architecture, code-crit, bounty rules, and code-decay (9 files)
   .github/workflows/  → ci.yml (shellcheck + bats + Python tests on push/PR)
   packages.txt        → manually installed apt packages
   install.sh          → full bootstrap script
@@ -50,22 +53,23 @@ Pass `--packages` to also install apt packages:
 
 ## Manual steps after install
 
-| Step | Command |
-|------|---------|
-| kos skills | `npx skills install kos` |
-| Particle CLI | `npm install -g particle-cli && particle login` |
-| Antigravity | Has its own CLI installer — see https://antigravity.dev |
-| Ghostty sidebar | `sudo nala install xdotool` (required for window positioning) |
+| Step            | Command                                                               |
+| --------------- | --------------------------------------------------------------------- |
+| kos skills      | `npx skills install kos`                                              |
+| Particle CLI    | `npm install -g particle-cli && particle login`                       |
+| ast-grep        | `npm install -g @ast-grep/cli` (required by `code-decay`, `code-sec`) |
+| Antigravity     | Has its own CLI installer — see https://antigravity.dev               |
+| Ghostty sidebar | `sudo nala install xdotool` (required for window positioning)         |
 
 ## What is NOT tracked
 
-| Path | Reason |
-|------|--------|
-| `~/.claude/.credentials.json` | Claude OAuth token |
-| `~/.claude/history.jsonl` | Chat history |
-| `~/.claude/sessions/`, `projects/` | Session transcripts |
+| Path                                        | Reason                |
+| ------------------------------------------- | --------------------- |
+| `~/.claude/.credentials.json`               | Claude OAuth token    |
+| `~/.claude/history.jsonl`                   | Chat history          |
+| `~/.claude/sessions/`, `projects/`          | Session transcripts   |
 | `~/.claude/plugins/cache/`, `marketplaces/` | Downloaded at runtime |
-| `~/.particle/particle.config.json` | Particle access token |
+| `~/.particle/particle.config.json`          | Particle access token |
 
 ## Updating packages list
 

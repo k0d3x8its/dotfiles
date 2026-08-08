@@ -86,6 +86,7 @@ instantly. Proceed with your ranking if they're AFK.
 Each probe maps to a specific prediction from Phase 3. **Change one variable at a time.**
 
 Tool preference:
+
 1. **Debugger / REPL inspection** if the env supports it. One breakpoint beats ten logs.
 2. **Targeted logs** at the boundaries that distinguish hypotheses.
 3. Never "log everything and grep".
@@ -109,6 +110,7 @@ If no correct seam exists, note it. The architecture is preventing the bug from 
 locked down. Flag for post-mortem.
 
 If a correct seam exists:
+
 1. Turn the minimised repro into a failing test at that seam.
 2. Watch it fail.
 3. Apply the fix.
@@ -147,18 +149,23 @@ encryption needed.
 **Component:** <file(s) and function(s) involved>
 
 ## What happened
+
 <3–5 sentences. What did the user observe? Be specific — name the symptom.>
 
 ## Root cause
+
 <The hypothesis that turned out correct. Reference the specific lines and functions.>
 
 ## Fix applied
+
 <What changed. Link the commit: [\[<short-hash>\]](<remote-url>/commit/<full-hash>) — get remote with `git remote get-url origin`.>
 
 ## What would have prevented this
+
 <Concrete answer. If architectural: name the coupling, the missing seam, the hidden assumption.>
 
 ## Follow-up
+
 <List TODOs written to TODOS.md from this incident, with their tags.>
 ```
 
@@ -167,7 +174,15 @@ Make the recommendation **after** the fix is in — you have more information no
 If the answer to "what would have prevented this?" involves architectural change (no good
 test seam, tangled callers, hidden coupling), write a `[DECISION][INVESTIGATE]` TODO to
 `TODOS.md` with the specific question. For architectural vocabulary, read
-`~/.claude/references/kos-code-reference.md`.
+`~/.claude/references/code/CODE-REFERENCE.md`.
+
+**Format detection:** check `~/.claude/references/planning-format-detect.md`
+(`test -d .work/plan`) before writing any TODO. FLAT-FORMAT (no `.work/plan/` —
+today's behavior, unchanged): append the `- [ ]` bullet directly to `TODOS.md`.
+NEW-FORMAT (`.work/plan/` exists): append an index line (`- [ ]` + tags + title) to
+`TODOS.md`; spill to `.work/todos/<slug>.md` with a pointer only if the item's body
+exceeds ~150 words (post-mortem TODOs commonly do — the specific question plus
+architectural context easily runs long).
 
 State the hypothesis that turned out correct in the commit message so the next
 debugger learns.
