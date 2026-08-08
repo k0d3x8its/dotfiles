@@ -44,8 +44,7 @@ files) covers the common case.
 ## Budget: two sectors, not one
 
 Security genuinely cross-cuts in a way language does not — one sector is too tight and
-will be silently violated. Load at most two per function/route under normal
-circumstances.
+will be silently violated. Load at most two per function/route.
 
 **Overflow-flag protocol (MUST):** if three or more sectors trigger for a single
 function, that is an SRP finding, not just a budget violation — see `CODE-PRINCIPLES.md`.
