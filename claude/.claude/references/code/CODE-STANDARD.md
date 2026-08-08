@@ -122,6 +122,8 @@ reviewing tests, also load `TESTING-STANDARD.md` — it routes test-type decisio
 ## Related
 
 - `CODE-PRINCIPLES.md` — judgment-level principles + review-stage smell vocabulary
+- `CODE-REFERENCE.md` — shared vocabulary/glossary terms (e.g. "seam") linked
+  from `CODE-PRINCIPLES.md`
 - `TESTING-STANDARD.md` — test-type decision layer; unit vs integration; coverage
   and compatibility/accessibility stances
 - `~/.claude/CLAUDE.md` — commit/branch/TODO-tag conventions (canonical)
