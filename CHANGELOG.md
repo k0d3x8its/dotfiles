@@ -4,42 +4,40 @@
 
 ### 2026-08-08
 
+PR: [#4 — chore: code quality references + skill/harness maturation](https://github.com/k0d3x8its/dotfiles/pull/4)
+
 #### Added
 
-- ➕ Code-standards reference suite (`claude/.claude/references/code/`) — router (`CODE-STANDARD.md`) + language-agnostic principles (`CODE-PRINCIPLES.md`) + anti-pattern catalogue + a dedicated testing standard, plus 12 per-language references (Lua, Python, TypeScript, Solidity, Bash, Arduino, Swift, HTML, HTMX, CSS, JSON, YAML), wired into the File Taxonomy and reading protocol [[ce2c999]](https://github.com/k0d3x8its/dotfiles/commit/ce2c9996993e876d441da7752e7df2cfdc868ac3)
-- ➕ `code-crit` skill — multi-persona code review (12 personas: correctness, maintainability, security, testing, performance, reliability, and more) with binary verified/unverified confidence and fast/thorough modes [[ce2c999]](https://github.com/k0d3x8its/dotfiles/commit/ce2c9996993e876d441da7752e7df2cfdc868ac3)
-- ➕ `code-refactor` skill — behavior-preserving micro-refactors under a test safety net; the execution arm for smells `code-crit` only reports [[ce2c999]](https://github.com/k0d3x8its/dotfiles/commit/ce2c9996993e876d441da7752e7df2cfdc868ac3)
-- ➕ `code-decay` skill — git churn × complexity hotspot ranking as a dated Markdown report; ast-grep-backed structural complexity scoring with a deterministic, zero-model-call pipeline [[ce2c999]](https://github.com/k0d3x8its/dotfiles/commit/ce2c9996993e876d441da7752e7df2cfdc868ac3)
-- ➕ `code-sec` hardening — entry-point enumerator (`enumerate-entrypoints.sh`), tiered rule packs (noisy/normal/precise) across C/C++/JS/Python, and a full vuln-app fixture suite for red-green rule verification [[ce2c999]](https://github.com/k0d3x8its/dotfiles/commit/ce2c9996993e876d441da7752e7df2cfdc868ac3)
-- ➕ `threat-model` skill — top-down STRIDE threat modeling over a DFD, risk grid, and mitigation map; design-level counterpart to `code-sec`'s bottom-up sweep [[ce2c999]](https://github.com/k0d3x8its/dotfiles/commit/ce2c9996993e876d441da7752e7df2cfdc868ac3)
-- ➕ `bounty-hunter` skill — remote-reachability triage that filters a security sweep down to externally exploitable findings [[ce2c999]](https://github.com/k0d3x8its/dotfiles/commit/ce2c9996993e876d441da7752e7df2cfdc868ac3)
-- ➕ `requirements` and `architecture` skills — formalize a grilled design into a numbered FR/NFR spec, then a living `ARCHITECTURE.md` with bidirectional traceability [[ce2c999]](https://github.com/k0d3x8its/dotfiles/commit/ce2c9996993e876d441da7752e7df2cfdc868ac3)
-- ➕ `codebase-design` skill — shared vocabulary for deep modules (module, interface, depth, seam, adapter, leverage, locality) [[ce2c999]](https://github.com/k0d3x8its/dotfiles/commit/ce2c9996993e876d441da7752e7df2cfdc868ac3)
-- ➕ New hooks — `code_formatter.py`, `code_standard_lint.py`, `standards_guard.py`, `gate3_skip_detector.py` [[ce2c999]](https://github.com/k0d3x8its/dotfiles/commit/ce2c9996993e876d441da7752e7df2cfdc868ac3)
-- ➕ `docs/security/README.md` — overview of the four-skill security suite (`code-sec`, `bounty-hunter`, `harness-audit`, `threat-model`) and its shared deterministic core [[ce2c999]](https://github.com/k0d3x8its/dotfiles/commit/ce2c9996993e876d441da7752e7df2cfdc868ac3)
-- ➕ `docs/adr/ADR-0001` — cross-runtime skill ownership decision (Claude vs. Codex) [[ce2c999]](https://github.com/k0d3x8its/dotfiles/commit/ce2c9996993e876d441da7752e7df2cfdc868ac3)
-- ➕ Planning file hierarchy — index+detail split for `TODOS.md`/`.work/PLAN.md`/`.work/FINDINGS.md` (lean index, per-item detail files), with format-detection so unmigrated repos keep the flat behavior [[ce2c999]](https://github.com/k0d3x8its/dotfiles/commit/ce2c9996993e876d441da7752e7df2cfdc868ac3)
+- ➕ Code-standards reference suite (`claude/.claude/references/code/`) — router (`CODE-STANDARD.md`) + language-agnostic principles (`CODE-PRINCIPLES.md`) + anti-pattern catalogue + a dedicated testing standard, plus 12 per-language references (Lua, Python, TypeScript, Solidity, Bash, Arduino, Swift, HTML, HTMX, CSS, JSON, YAML), wired into the File Taxonomy and reading protocol
+- ➕ `code-crit` skill — multi-persona code review (12 personas: correctness, maintainability, security, testing, performance, reliability, and more) with binary verified/unverified confidence and fast/thorough modes
+- ➕ `code-refactor` skill — behavior-preserving micro-refactors under a test safety net; the execution arm for smells `code-crit` only reports
+- ➕ `code-decay` skill — git churn × complexity hotspot ranking as a dated Markdown report; ast-grep-backed structural complexity scoring with a deterministic, zero-model-call pipeline
+- ➕ `code-sec` hardening — entry-point enumerator (`enumerate-entrypoints.sh`), tiered rule packs (noisy/normal/precise) across C/C++/JS/Python, and a full vuln-app fixture suite for red-green rule verification
+- ➕ `threat-model` skill — top-down STRIDE threat modeling over a DFD, risk grid, and mitigation map; design-level counterpart to `code-sec`'s bottom-up sweep
+- ➕ `bounty-hunter` skill — remote-reachability triage that filters a security sweep down to externally exploitable findings
+- ➕ `requirements` and `architecture` skills — formalize a grilled design into a numbered FR/NFR spec, then a living `ARCHITECTURE.md` with bidirectional traceability
+- ➕ `codebase-design` skill — shared vocabulary for deep modules (module, interface, depth, seam, adapter, leverage, locality)
+- ➕ New hooks — `code_formatter.py`, `code_standard_lint.py`, `standards_guard.py`, `gate3_skip_detector.py`
+- ➕ `docs/security/README.md` — overview of the four-skill security suite (`code-sec`, `bounty-hunter`, `harness-audit`, `threat-model`) and its shared deterministic core
+- ➕ `docs/adr/ADR-0001` — cross-runtime skill ownership decision (Claude vs. Codex)
+- ➕ Planning file hierarchy — index+detail split for `TODOS.md`/`.work/PLAN.md`/`.work/FINDINGS.md` (lean index, per-item detail files), with format-detection so unmigrated repos keep the flat behavior
+- ➕ Test suite grew to 333 tests — new coverage for `code_decay` (11 files), `code_crit` (fingerprint grouping + skill dispatch), `bounty` rules/enumerator, `skill_architecture`, and `standards_guard`
 
 #### Changed
 
-- ♻️ Codex skill sync — `bounty-hunter`, `grill-me`, `mutation-testing`, `write-a-skill`, `zoom-out` now symlink to their Claude-side `SKILL.md` instead of maintaining duplicate copies, removing a recurring drift source [[ce2c999]](https://github.com/k0d3x8its/dotfiles/commit/ce2c9996993e876d441da7752e7df2cfdc868ac3)
-- ♻️ `fable-mode` — expanded with a reference README, pattern library, and scripts (`fable-score.py`, `fetch-fable-traces.py`) for measuring gate-discipline lift [[ce2c999]](https://github.com/k0d3x8its/dotfiles/commit/ce2c9996993e876d441da7752e7df2cfdc868ac3)
-- ♻️ `docs/dev-workflow-guide.md` — large expansion documenting every skill built since the last pass [[ce2c999]](https://github.com/k0d3x8its/dotfiles/commit/ce2c9996993e876d441da7752e7df2cfdc868ac3)
+- ♻️ Codex skill sync — `bounty-hunter`, `grill-me`, `mutation-testing`, `write-a-skill`, `zoom-out` now symlink to their Claude-side `SKILL.md` instead of maintaining duplicate copies, removing a recurring drift source
+- ♻️ `fable-mode` — expanded with a reference README, pattern library, and scripts (`fable-score.py`, `fetch-fable-traces.py`) for measuring gate-discipline lift
+- ♻️ `docs/dev-workflow-guide.md` — large expansion documenting every skill built since the last pass, plus a fix correcting `kos-capture` from a listed installed skill to what it actually is: a standalone TUI app
+- ♻️ `CODE-REFERENCE.md` ↔ `CODE-PRINCIPLES.md`, `TYPESCRIPT.md` ↔ `CSS.md`/`JSON.md`, `HTML.md` ↔ `HTMX.md`/`TESTING-STANDARD.md` — added missing back-links, closing four one-way doc cross-references
+- ♻️ `CODE-STANDARD.md` — added `CODE-REFERENCE.md` to its Related section, closing a router gap where the reference existed and was in active use but wasn't listed
+- ♻️ codex `dev-setup` template — synced with the `code-crit`/`code-refactor` rename; the codex-side template had drifted from the already-correct claude-side sibling
+- ♻️ `bash/.bashrc` — added TinyTeX to `PATH`
+- ♻️ `README.md` — documented `ast-grep` as a required manual install step (`npm install -g @ast-grep/cli`), matching the new CI dependency [[4a26363]](https://github.com/k0d3x8its/dotfiles/commit/4a26363cd695ae855669eb3c864879cf3ef89b73)
 
 #### Fixed
 
+- 🛠️ `command_guard` (PreToolUse Bash guard) — no longer blocks commands where a rule pattern (e.g. a base64-decode-into-shell string) appears only inside a heredoc body, which is data the shell never executes, not live code. Added `_strip_heredoc_bodies()`, blanking heredoc content before rule matching unless the reading command is itself a shell interpreter; unterminated heredocs are left unstripped (fails closed). A sibling gap — the same false-positive inside single/double-quoted string literals — remains open, tracked separately (`TODOS.md`). See `docs/post-mortems/command-guard-heredoc-false-positive.md`
 - 🛠️ CI — installs `ast-grep` (`npm install -g @ast-grep/cli`) before running Python tests; `code-decay` and `code-sec` hard-depend on the binary, and its absence from the CI environment caused 4 test errors on GitHub Actions despite passing locally [[83bf1a8]](https://github.com/k0d3x8its/dotfiles/commit/83bf1a86ffa2f9c305872af5f4dbd386400cc0d8)
-
-#### Changed
-
-- ♻️ `README.md` — documented `ast-grep` as a required manual install step (`npm install -g @ast-grep/cli`), matching the new CI dependency [[4a26363]](https://github.com/k0d3x8its/dotfiles/commit/4a26363cd695ae855669eb3c864879cf3ef89b73)
-- ♻️ `docs/dev-workflow-guide.md` — corrected `kos-capture` from a listed installed skill to what it actually is: a standalone TUI app [[767e31d]](https://github.com/k0d3x8its/dotfiles/commit/767e31df99f6757f6de881e32a421984e615ca77)
-- ♻️ `CODE-REFERENCE.md` ↔ `CODE-PRINCIPLES.md` — added the missing back-link so the two reference docs cross-reference each other [[996c38a]](https://github.com/k0d3x8its/dotfiles/commit/996c38a2626c3e3ed8ae33d697a017fdbfafb5c0)
-- ♻️ `TYPESCRIPT.md` ↔ `CSS.md`/`JSON.md` — added missing back-links, closing one-way doc cross-references [[028f773]](https://github.com/k0d3x8its/dotfiles/commit/028f773ee9595eb923a6d49133bf56e8ff8d6eac)
-- ♻️ `HTML.md` ↔ `HTMX.md`/`TESTING-STANDARD.md` — added missing back-links, closing one-way doc cross-references [[1452262]](https://github.com/k0d3x8its/dotfiles/commit/14522627aabaa2f0f2f5dcef0482112c0f15776d)
-- ♻️ `CODE-STANDARD.md` — added `CODE-REFERENCE.md` to its Related section, closing a router gap where the reference existed and was in active use but wasn't listed [[778c122]](https://github.com/k0d3x8its/dotfiles/commit/778c12205e6e40c27149f11cb772144966d288f8)
-- ♻️ codex `dev-setup` template — synced with the `code-crit`/`code-refactor` rename; the codex-side template had drifted from the already-correct claude-side sibling [[0a2ab59]](https://github.com/k0d3x8its/dotfiles/commit/0a2ab5962a7a791ab995dd4d7c7707be858b50fa)
-- ♻️ `bash/.bashrc` — added TinyTeX to `PATH` [[a5e99fb]](https://github.com/k0d3x8its/dotfiles/commit/a5e99fb1ff7cfeac2e75009f719abfafcf44fc73)
 
 ### 2026-06-16
 
