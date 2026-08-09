@@ -5,12 +5,11 @@ by language. Prevention layer: catches a vulnerability while code is being writt
 before `code-sec`/`bounty-hunter`/`threat-model`/`code-crit`'s SECURITY persona ever run
 against it.
 
-**Pilot scope:** 3 sectors live today — `CLIENT-TRUST.md`, `DATA-STORE.md`,
-`RESOURCE-ACCESS.md`. Five more (`AUTHENTICATION`, `AUTHORIZATION`, `INJECTION`,
-`SECRETS`, `AI-INTEGRATION`) are designed (see
-`docs/brainstorm/security-standard-architecture-2026-08-01.md` §3) but not yet built. If
-code trips one of the five unbuilt sectors, no file exists to load — use judgment against
-the Universal MUSTs below and flag the gap; do not block on it.
+**All 8 sectors live.** `CLIENT-TRUST.md`, `DATA-STORE.md`, `RESOURCE-ACCESS.md` shipped
+as the initial 3-sector pilot; `AUTHENTICATION.md`, `AUTHORIZATION.md`, `INJECTION.md`,
+`SECRETS.md`, `AI-INTEGRATION.md` followed once the pilot validated
+(`.work/findings/security-standard-sectors-pilot.md`). See
+`docs/brainstorm/security-standard-architecture-2026-08-01.md` §3 for the full design.
 
 **Rule strength vocabulary:** same RFC 2119 terms as `CODE-STANDARD.md` — MUST/MUST NOT
 mandatory, SHOULD/SHOULD NOT recommended (deviate only with a stated reason), AVOID
@@ -33,13 +32,18 @@ files) covers the common case.
 - Fail closed on error paths — an exception in an authz/validation check MUST NOT
   default to allow.
 
-## Trigger table (pilot sectors)
+## Trigger table
 
-| Sector               | Owns                                                                                                                                                                                             | Load when the code…                                             |
-| -------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | --------------------------------------------------------------- |
-| `CLIENT-TRUST.md`    | Prices, quantities, entitlements, subscription state, rate limiting                                                                                                                              | accepts a value affecting money, access, or identity            |
-| `DATA-STORE.md`      | Declarative authz (RLS, Firestore rules) and object storage scoping — SQL parameterization mechanics belong to `INJECTION.md` (not yet built); this sector points to it rather than restating it | reads/writes a store, or defines a schema, policy, or migration |
-| `RESOURCE-ACCESS.md` | Path traversal, SSRF, open redirect, file upload, deep links                                                                                                                                     | uses a value to select **which** file, URL, or destination      |
+| Sector               | Owns                                                                                                                                                                             | Load when the code…                                             |
+| -------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------- |
+| `AUTHENTICATION.md`  | Identity, sessions, tokens, password storage, JWT, CSRF                                                                                                                          | verifies identity, or issues/validates a session or token       |
+| `AUTHORIZATION.md`   | Object-level access, IDOR/BOLA, privilege escalation, role fields                                                                                                                | decides whether a caller may access a **specific record**       |
+| `CLIENT-TRUST.md`    | Prices, quantities, entitlements, subscription state, rate limiting                                                                                                              | accepts a value affecting money, access, or identity            |
+| `DATA-STORE.md`      | Declarative authz (RLS, Firestore rules) and object storage scoping — SQL parameterization mechanics belong to `INJECTION.md`; this sector points to it rather than restating it | reads/writes a store, or defines a schema, policy, or migration |
+| `INJECTION.md`       | SQL, shell, HTML/XSS, template, XXE, deserialization                                                                                                                             | builds a query, command, markup, or document from a value       |
+| `RESOURCE-ACCESS.md` | Path traversal, SSRF, open redirect, file upload, deep links                                                                                                                     | uses a value to select **which** file, URL, or destination      |
+| `SECRETS.md`         | Credential lifecycle, client-bundle exposure, log/URL leakage                                                                                                                    | loads a credential, or ships code to a client                   |
+| `AI-INTEGRATION.md`  | Model keys, spend caps, role separation, output as untrusted input                                                                                                               | calls a model, or consumes model output                         |
 
 ## Budget: two sectors, not one
 
@@ -70,9 +74,11 @@ two under the budget). Do not load the whole `security/` directory. Same rule as
 - `~/.claude/references/code/CODE-PRINCIPLES.md` — SRP vocabulary the overflow-flag
   protocol cites
 - `code-sec` — bottom-up repo sweep; sectors are write-time prevention, `code-sec` is
-  after-the-fact detection. Overlap deferred, not yet reconciled (phase-5 rewrite is
-  out of scope for this pilot)
+  after-the-fact detection. Overlap now spans all 8 sectors' worth of phase-5 close-out
+  content, not reconciled yet — the phase-5 rewrite (sectors own normative content,
+  `code-sec` cites rather than restates, per source doc §8) is filed as its own
+  `[SECURITY][CHORE]` TODO (`TODOS.md`), deliberately not done in this build
 - `bounty-hunter` — remote-reachability triage; shares the same trust-boundary framing
   ("client-submitted state is a request, not a fact")
-- `docs/brainstorm/security-standard-architecture-2026-08-01.md` — full 8-sector design,
-  only 3 built here
+- `docs/brainstorm/security-standard-architecture-2026-08-01.md` — full 8-sector
+  design, all 8 built
