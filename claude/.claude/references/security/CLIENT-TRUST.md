@@ -70,12 +70,13 @@ against its own state before acting.
   location (a table with permissive RLS) is actually enforced or not; this file's
   "counter reachable through client API" bypass row and `DATA-STORE.md`'s `USING (true)`
   finding are the same failure class from two angles
-- `~/.claude/references/security/AUTHENTICATION.md` _(not yet built)_ — CSRF and session
-  concerns live there per an explicit pilot-scope decision, not here, even though both
-  sectors touch trust boundaries
+- `~/.claude/references/security/AUTHENTICATION.md` — CSRF and session concerns live
+  there, not here, even though both sectors touch trust boundaries (see that file's
+  ownership note under §9.4)
 - `code-sec` — its Finding discipline currently suppresses generic rate-limiting advice;
   this file's exploitability framing is the intended narrowing of that suppress clause,
-  not yet wired into `code-sec` itself (deferred, phase-5 rewrite out of scope)
+  not yet wired into `code-sec` itself (phase-5 rewrite tracked as its own TODO, see
+  `SECURITY-STANDARD.md`'s Related)
 
 ## Sources
 
