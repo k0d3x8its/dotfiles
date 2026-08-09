@@ -63,15 +63,14 @@ runs — never inferred from the shape of the input after the fact.
 
 - `~/.claude/references/security/SECURITY-STANDARD.md` — router; universal MUSTs and
   the overflow-flag protocol this file operates under
-- `~/.claude/references/security/DATA-STORE.md` _(sibling, this pilot)_ — storage
-  bucket path scoping there is about who may read/write a bucket, once this file's
-  canonicalization has already resolved which object is being addressed. This file
-  answers "which target," `DATA-STORE.md` answers "may this caller touch it"
-- `~/.claude/references/security/INJECTION.md` _(not yet built)_ — the split this file
-  observes: injection is attacker data reaching an interpreter (`f"SELECT … {id}"`);
+- `~/.claude/references/security/DATA-STORE.md` — storage bucket path scoping there
+  is about who may read/write a bucket, once this file's canonicalization has already
+  resolved which object is being addressed. This file answers "which target,"
+  `DATA-STORE.md` answers "may this caller touch it"
+- `~/.claude/references/security/INJECTION.md` — the split this file observes:
+  injection is attacker data reaching an interpreter (`f"SELECT … {id}"`);
   resource-access is attacker data selecting the target (`open("/data/" + name)`).
   Different failure mode, different fix — do not conflate "sanitize" across the two
-  once `INJECTION.md` exists
 - `code-sec` — path-traversal and SSRF rule tiers already exist and enforce a subset of
   this file's guidance at sweep time; open redirect and deep-link entry points do not
   yet have rule/enumerator coverage
