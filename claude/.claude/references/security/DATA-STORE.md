@@ -31,7 +31,7 @@ no way to know.
   document's rules. Each subcollection MUST carry its own explicit rule.
 - Application code MUST still parameterize every query — this sector's declarative-authz
   content is additive to standard SQL injection defense, not a replacement for it
-  (`INJECTION.md`, not yet built, owns the injection mechanics).
+  (`INJECTION.md` owns the injection mechanics).
 
 ## Guards that don't work
 
@@ -59,8 +59,8 @@ sector's guidance is read-and-apply at write time only, with no sweep-time backs
 
 Application-code parameterization (the one item in this sector's MUSTs that _is_
 application-code) already has a sink catalog — see
-`~/.claude/references/security/INJECTION.md` _(not yet built)_ and the existing SQLi
-rules in `code-sec/rules/`.
+`~/.claude/references/security/INJECTION.md` and the existing SQLi rules in
+`code-sec/rules/`.
 
 ## Related
 
@@ -69,13 +69,13 @@ rules in `code-sec/rules/`.
 - `~/.claude/references/security/CLIENT-TRUST.md` — a rate-limit counter stored in a
   client-writable table is this sector's `USING (true)` failure viewed from the
   trust-boundary side rather than the policy side; same underlying bug, two sectors
-- `~/.claude/references/security/RESOURCE-ACCESS.md` _(sibling, this pilot)_ — storage
-  bucket path scoping here is about who may read/write a bucket; path traversal in
-  `RESOURCE-ACCESS.md` is about which file a value selects. Related but distinct
-  failure modes — this file's storage-bucket MUST assumes `RESOURCE-ACCESS.md`'s path
-  canonicalization already happened
-- `~/.claude/references/security/INJECTION.md` _(not yet built)_ — owns SQL injection
-  mechanics; this file's parameterization MUST is a pointer, not a restatement
+- `~/.claude/references/security/RESOURCE-ACCESS.md` — storage bucket path scoping
+  here is about who may read/write a bucket; path traversal in `RESOURCE-ACCESS.md`
+  is about which file a value selects. Related but distinct failure modes — this
+  file's storage-bucket MUST assumes `RESOURCE-ACCESS.md`'s path canonicalization
+  already happened
+- `~/.claude/references/security/INJECTION.md` — owns SQL injection mechanics; this
+  file's parameterization MUST is a pointer, not a restatement
 - `code-sec` — its rule pack does not currently scan policy/migration files; this
   sector documents guidance with no sweep-time detection until the tracked TODO lands
 
