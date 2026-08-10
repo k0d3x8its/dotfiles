@@ -105,11 +105,19 @@ No priority tag = Medium (default). `[TEST]` and `[VERIFY]` override all other p
 > (2026-07-22); graduated to a standing rollout decided in dotfiles' own `TODOS.md`
 > ("Format-detection GRADUATED" item) — migrate a repo only when already working
 > there and its tree is clean, not as a big-bang conversion. Migrated so far:
-> `dotfiles`, `kodex-ide` (2026-07-23). Every touched skill format-detects per repo
-> and falls back to the flat behavior in this table for un-migrated repos.
+> `dotfiles`, `kodex-ide` (2026-07-23), `kos-health` (2026-08-10, opt-in at
+> creation — greenfield repo, not a retrofit). Every touched skill format-detects
+> per repo and falls back to the flat behavior in this table for un-migrated repos.
+> **`/dev-setup` still defaults new projects to flat format** — the kill criterion
+> below has never actually been measured (2026-07-23 graduation explicitly
+> sidestepped it), and `sync-trello` still reads every Goal's detail file per run
+> (indirection without reduction for that one consumer). User decision 2026-08-10:
+> hold off flipping the default until that's fixed and measured — see dotfiles
+> `TODOS.md` `[DECISION]` item.
 > **Removal condition:** delete this note once every active `~/dev` repo is
 > confirmed migrated (flat-format branches deleted from every touched skill) or the
 > rollout reverts (all migrated repos back to flat, new-format branches deleted) —
 > not permanent taxonomy debt.
 > **Kill criterion:** revert if index+detail doesn't measurably cut PLAN.md/FINDINGS.md
-> whole-file reads after a real usage period — not a vibes call.
+> whole-file reads after a real usage period — not a vibes call. Still unmeasured
+> as of 2026-08-10.
