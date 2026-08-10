@@ -17,6 +17,7 @@ External (not auto-surfaced): `/discover` `/write-prd`
 - Always read `.work/PLAN.md`, `.work/FINDINGS.md`, and `.work/PROGRESS.md` if they exist.
 - Always read KNOWLEDGE.md in the project root (if it exists) and `~/.claude/KNOWLEDGE.md` at session start.
 - Code quality: before writing or reviewing code, read `~/.claude/references/code/CODE-STANDARD.md` (mechanical rules + router) plus the ONE language file matching the code — `LUA` `PYTHON` `TYPESCRIPT` `SOLIDITY` `BASH` `ARDUINO` `SWIFT` `HTML` `HTMX` `CSS` `JSON` `YAML`. Load only those two, never the whole dir. Judgment-level principles + the Fowler smell vocabulary live in `CODE-PRINCIPLES.md` — consult at review (`/code-crit`), not per-line.
+- Security: before writing or reviewing code that touches untrusted input, a trust boundary, auth, data storage, or resource selection, read `~/.claude/references/security/SECURITY-STANDARD.md` (Universal MUSTs + router) — unconditionally, the same way the code-quality router above loads unconditionally. Additionally load the ONE or TWO sector files whose trigger-table row fires — `AUTHENTICATION` `AUTHORIZATION` `CLIENT-TRUST` `DATA-STORE` `INJECTION` `RESOURCE-ACCESS` `SECRETS` `AI-INTEGRATION` (all 8 built). Never load the whole `security/` dir. If 3+ sectors trigger, load them all but say so explicitly in the response (overflow-flag protocol, see router) — don't silently absorb the budget violation.
 - At session start, if `.memory/SESSION-LOG.md` exists in the project root, read ONLY its newest `## Session` block (not the whole file) — surfaces last session's decisions/why when I cold-start without pasting a re-entry prompt. Newest = last block in file order if checkpoint ordering holds, else the block with the latest date header. Skip if I paste a re-entry prompt (it already points me there). ~1K tok ceiling; never read older blocks or `.memory/ARCHIVE-LOG.md` automatically.
 - KNOWLEDGE.md writes: if I ask to add/append a fact to KNOWLEDGE.md directly (without /remember), recommend `/remember <fact>` and route through it instead of appending raw — the promotion bar and dedup must run. Raw write only if I explicitly insist (treat as `/remember --force`). Whenever the knowledge system presents options (destination, bar-failure rerouting, overlap handling), lead with a recommendation + one-line why — never a neutral list. Details: `~/.claude/references/MEMORY-STANDARD.md` § Direct-Write Requests / § Recommendations.
 - When I paste a re-entry prompt: treat decisions, background context, and architectural choices as authoritative. Reconcile task state (completed/open/in-progress) against current files (`.work/PLAN.md`, `.work/PROGRESS.md`, `git log --oneline -5`) before acting — file state wins on conflicts.
@@ -84,6 +85,7 @@ No priority tag = Medium (default). `[TEST]` and `[VERIFY]` override all other p
 | System architecture (components, interfaces, data flow — living doc, edited in place) | `docs/ARCHITECTURE.md` (via `/architecture`; git-crypt). Distinct from `docs/adr/` — ADRs are one frozen decision + rejected alternatives, point-in-time; ARCHITECTURE.md is the current whole-system design, updated as the system evolves. |
 | Normative rules, standing instructions | `CLAUDE.md` |
 | Code style / naming / structure rules (per-language mechanics + judgment principles) | `~/.claude/references/code/` — `CODE-STANDARD.md` (router) + one language file; principles in `CODE-PRINCIPLES.md` |
+| Write-time security guidance, routed by domain (all 8 sectors built: `AUTHENTICATION`, `AUTHORIZATION`, `CLIENT-TRUST`, `DATA-STORE`, `INJECTION`, `RESOURCE-ACCESS`, `SECRETS`, `AI-INTEGRATION`) | `~/.claude/references/security/` — `SECURITY-STANDARD.md` (router) + at most two triggered sector files |
 | Empirical facts, env truths, codebase gotchas | `KNOWLEDGE.md` (local or global) |
 | Architectural decisions (cost meaningful + future reader wonders why + alternatives considered) | `docs/adr/ADR-NNNN-*.md` (CLI/SDK projects) |
 | Bug post-mortems (root cause + fix + what-would-prevent, via `/diagnose`) | `docs/post-mortems/<slug>.md` — one file per bug (no date prefix; date is in the `**Date:**` field inside); git-crypt the dir on public repos |
@@ -103,11 +105,19 @@ No priority tag = Medium (default). `[TEST]` and `[VERIFY]` override all other p
 > (2026-07-22); graduated to a standing rollout decided in dotfiles' own `TODOS.md`
 > ("Format-detection GRADUATED" item) — migrate a repo only when already working
 > there and its tree is clean, not as a big-bang conversion. Migrated so far:
-> `dotfiles`, `kodex-ide` (2026-07-23). Every touched skill format-detects per repo
-> and falls back to the flat behavior in this table for un-migrated repos.
+> `dotfiles`, `kodex-ide` (2026-07-23), `kos-health` (2026-08-10, opt-in at
+> creation — greenfield repo, not a retrofit). Every touched skill format-detects
+> per repo and falls back to the flat behavior in this table for un-migrated repos.
+> **`/dev-setup` still defaults new projects to flat format** — the kill criterion
+> below has never actually been measured (2026-07-23 graduation explicitly
+> sidestepped it), and `sync-trello` still reads every Goal's detail file per run
+> (indirection without reduction for that one consumer). User decision 2026-08-10:
+> hold off flipping the default until that's fixed and measured — see dotfiles
+> `TODOS.md` `[DECISION]` item.
 > **Removal condition:** delete this note once every active `~/dev` repo is
 > confirmed migrated (flat-format branches deleted from every touched skill) or the
 > rollout reverts (all migrated repos back to flat, new-format branches deleted) —
 > not permanent taxonomy debt.
 > **Kill criterion:** revert if index+detail doesn't measurably cut PLAN.md/FINDINGS.md
-> whole-file reads after a real usage period — not a vibes call.
+> whole-file reads after a real usage period — not a vibes call. Still unmeasured
+> as of 2026-08-10.

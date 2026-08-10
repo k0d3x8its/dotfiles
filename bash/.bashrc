@@ -145,3 +145,7 @@ export PATH=$HOME/.opencode/bin:$PATH
 export PATH="$PATH:/home/k0d3x/.foundry/bin"
 export PATH="$PATH:/home/k0d3x/.luarocks/bin"
 export PATH="$HOME/.TinyTeX/bin/x86_64-linux:$PATH"
+
+# bun
+export BUN_INSTALL="$HOME/.bun"
+export PATH="$BUN_INSTALL/bin:$PATH"

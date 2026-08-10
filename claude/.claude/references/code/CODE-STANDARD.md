@@ -126,5 +126,8 @@ reviewing tests, also load `TESTING-STANDARD.md` — it routes test-type decisio
   from `CODE-PRINCIPLES.md`
 - `TESTING-STANDARD.md` — test-type decision layer; unit vs integration; coverage
   and compatibility/accessibility stances
+- `~/.claude/references/security/SECURITY-STANDARD.md` — sibling router, routes by
+  security domain instead of language; same RFC 2119 vocabulary and
+  Universal-MUSTs-in-the-router pattern (pilot: 3 of 8 sectors built)
 - `~/.claude/CLAUDE.md` — commit/branch/TODO-tag conventions (canonical)
 - `/trust-but-verify` — how "checkable" gets checked before claiming done
