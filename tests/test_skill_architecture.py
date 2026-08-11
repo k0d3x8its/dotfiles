@@ -30,7 +30,6 @@ RUNTIME_SPECIFIC = {
     "diagnose",
     "diagram",
     "encrypt",
-    "fable-mode",
     "harness-audit",
     "prototype",
     "recall",
