@@ -232,7 +232,7 @@ Two top-level sections, always in this order:
 ## References
 
 - `references/ADVERSARIAL-TECHNIQUES.md` — shared attack-technique spec, used
-  by `personas/ADVERSARIAL.md` AND by fable-mode's Gate 3 (separate
+  by `personas/ADVERSARIAL.md` AND by code-mode's Gate 3 (separate
   call site, see that skill). Read it before writing/using the adversarial
   persona.
 - `personas/` — one file per persona (territory, what it flags,
