@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""PostToolUse detective hook for the fable-mode Gate-3-skip pattern.
+"""PostToolUse detective hook for the code-mode Gate-3-skip pattern.
 
 Root cause (diagnosed .work/GATES.md TASK 8, this repo, 2026-07-19):
 self-grading is STRUCTURAL, not a wording gap. A model that reads its own
@@ -120,7 +120,7 @@ def main():
     sys.stderr.write(
         "GATE-3-SKIP DETECTOR: GATES.md just recorded a Gate 3+ conclusion "
         "(a 'G3'/'G4'/... log line), but no Agent or advisor tool_use call "
-        "was found anywhere earlier in this session's transcript. Fable-mode "
+        "was found anywhere earlier in this session's transcript. Code-mode "
         "Gate 3 requires a DELEGATED adversarial attack (advisor() or a "
         "spawned Agent) — self-reviewing your own Gate-2 evidence does not "
         "satisfy it, even if the write-up reads as thorough. Before treating "
