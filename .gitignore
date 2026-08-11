@@ -46,9 +46,9 @@ RELEASE-NOTES.md
 !/.work/PLAN.md
 !/.memory/SESSION-LOG.md
 
-# Fable-mode runtime marker + method scratch — local per-project state, never committed
-# (committing .fable-active would turn fable-mode ON for anyone who clones).
-/.work/.fable-active
+# Code-mode runtime marker + method scratch — local per-project state, never committed
+# (committing .code-active would turn code-mode ON for anyone who clones).
+/.work/.code-active
 /.work/GATES.md
 
 # code-crit Sonnet-mega-spawn scratch output — no wildcard git-crypt backstop in this repo,
