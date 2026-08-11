@@ -61,7 +61,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bash \"$HOME/.claude/hooks/fable-mode-inject.sh\" 2>/dev/null || true"
+            "command": "bash \"$HOME/.claude/hooks/code-mode-inject.sh\" 2>/dev/null || true"
           }
         ]
       }
