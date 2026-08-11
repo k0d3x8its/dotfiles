@@ -52,6 +52,7 @@ CLAUDE_ONLY = {
     "architecture",
     "code-crit",
     "code-decay",
+    "code-mode",
     "code-refactor",
     "codebase-design",
     "requirements",
