@@ -201,6 +201,8 @@ missed requirement; a correct fix hides the mess it was written in.
   above is what a test asserting on failure behavior should actually check
 - `CODE-REFERENCE.md` — vocabulary definitions (Ousterhout, Feathers), ADR format + gate, Quick-Check Questions
 - `ANTI-PATTERNS.md` — full Fowler/Brown/Meszaros anti-pattern catalogue
+- `DATA-STRUCTURES.md`/`ALGORITHMS.md` — scenario-first selection; the YAGNI/
+  rule-of-three tone above governs their "escalate when" columns
 - `/code-refactor` skill — acts on the smells this file names; code-crit reports,
   code-refactor fixes (deliberate split, no overlap)
 - `codebase-design` skill — module/interface/depth/seam vocabulary; a module that
