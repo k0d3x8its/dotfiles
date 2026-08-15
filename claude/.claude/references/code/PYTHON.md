@@ -5,13 +5,13 @@ Strength vocabulary per `CODE-STANDARD.md`.
 
 ## Naming & casing
 
-| Kind | Casing | Example |
-|---|---|---|
-| variables / functions | `snake_case` | `transcribe_batch` |
-| constants | `UPPER_SNAKE` | `DEFAULT_MODEL_NAME` |
-| classes | `PascalCase` | `CaptureScreen` |
-| modules / packages | `snake_case` | `session_log.py` |
-| "private" module members | `_leading_underscore` | `_parse_header` |
+| Kind                     | Casing                | Example              |
+| ------------------------ | --------------------- | -------------------- |
+| variables / functions    | `snake_case`          | `transcribe_batch`   |
+| constants                | `UPPER_SNAKE`         | `DEFAULT_MODEL_NAME` |
+| classes                  | `PascalCase`          | `CaptureScreen`      |
+| modules / packages       | `snake_case`          | `session_log.py`     |
+| "private" module members | `_leading_underscore` | `_parse_header`      |
 
 ## Rules
 
@@ -68,6 +68,20 @@ before creating directories.
   `asyncio.sleep`, executors, or Textual workers.
 - Fire-and-forget tasks MUST be held in a reference and cancelled on teardown —
   orphaned tasks die silently with the loop.
+
+## Data structures & algorithms
+
+Scenario names match `DATA-STRUCTURES.md`/`ALGORITHMS.md` — this is the concrete API only.
+
+- Membership test / set ops: `set`.
+- Key → value: `dict` (insertion-ordered since 3.7 — no separate ordered-map type needed).
+- FIFO/LIFO: `collections.deque` (O(1) both ends; a plain `list` is O(n) on `pop(0)`).
+- LRU / bounded cache: `functools.lru_cache` (function-level) or `functools.cache`;
+  hand-roll only if the cache needs eviction callbacks the decorator can't express.
+- Priority / smallest-next: `heapq` (min-heap on tuples; negate for max-heap).
+- Ordered + unique / binary search: `bisect` over a sorted `list`.
+- Sort + sort-key: `sorted(iterable, key=...)` / `list.sort(key=...)`.
+- Dedup preserving order: `dict.fromkeys(iterable)`.
 
 ## Testing
 
