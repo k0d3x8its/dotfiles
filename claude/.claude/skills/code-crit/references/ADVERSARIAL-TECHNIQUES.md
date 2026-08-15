@@ -1,7 +1,7 @@
 # Adversarial techniques
 
 Artifact-agnostic attack substance, shared by two call sites: `code-crit`'s
-`personas/ADVERSARIAL.md` (attacks a diff) and fable-mode's Gate 3 (attacks a
+`personas/ADVERSARIAL.md` (attacks a diff) and code-mode's Gate 3 (attacks a
 design/plan/claim artifact). Identical reasoning either way — only the target
 differs.
 
@@ -39,7 +39,7 @@ just because it was tried:
 binary, not 4-level. Collapse: **100 → `verified`; 75/50/≤25 → `unverified`.**
 Only a mechanically-constructible finding counts as verified — anything that
 leans on an unverified condition, however plausible, is `unverified`. This is
-the ADVERSARIAL persona's confidence self-test; fable-mode Gate 3 has no
+the ADVERSARIAL persona's confidence self-test; code-mode Gate 3 has no
 `verified`/`unverified` field and doesn't use this line.
 
 ## What you don't flag
@@ -57,7 +57,7 @@ The rubric above is descriptive, not prescriptive — each call site decides
 what to DO with a ≤25/speculative finding, and the two call sites disagree on
 purpose:
 
-- **fable-mode Gate 3** (design/plan/claim artifacts): **drop.** A
+- **code-mode Gate 3** (design/plan/claim artifacts): **drop.** A
   speculative attack on a plan that doesn't exist yet as code is usually
   noise; the gate's job is to catch real gaps before building, not catalog
   every hypothetical.

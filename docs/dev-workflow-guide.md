@@ -583,11 +583,11 @@ When to use: asked to draw a flowchart, decision tree, UML activity diagram, or 
 
 ---
 
-#### `/fable-mode` — Working-discipline loader
+#### `/code-mode` — Code-lifecycle five-gate loader
 
-Loads a five-gate task loop + standing habits for any session, especially useful on tasks with many dependent steps or unknowns that could change approach mid-flight. Not a skill you "finish" — it's a mode; say "fable mode off" to deactivate.
+Loads the code-lifecycle discipline (five-gate task loop, red-green inner loop, code-specific gate-skip smells) and routes into the code-quality and security substrate (`CODE-STANDARD.md`, `SECURITY-STANDARD.md`, `/tdd`, `/diagnose`, `/code-refactor`, `/code-decay`, `/requirements`, `/architecture`, `/brainstorm`, `/grill-me`, `/write-plan`, `/threat-model`, `/prototype`, `/code-crit`, `/mutation-testing`, `/ante-mortem`, `/review-response`, `/trust-but-verify`, `/run`, `/changelog`). Not a skill you "finish" — it's a mode; say "code mode off" to deactivate.
 
-When to use: a task keeps failing/stalling, or you want deliberate gated verification before a multi-step change lands.
+When to use: starting real code work — new function/feature, bug fix, refactor, new system, diff review/cleanup, adding tests, debugging.
 
 ---
 
@@ -932,7 +932,7 @@ New session opens. Paste the re-entry prompt. Claude reads `.memory/SESSION-LOG.
 | Judging a module's interface/seams | `codebase-design` (vocabulary — usually invoked implicitly)                                    |
 | Draw a flowchart/UML/DFD           | `/diagram`                                                                                     |
 | New repo needs encryption          | `/encrypt`                                                                                     |
-| Task keeps failing/stalling        | `/fable-mode`                                                                                  |
+| Starting real code work            | `/code-mode`                                                                                   |
 | Need a new skill                   | `/find-skills [query]` or `/write-a-skill`                                                     |
 
 ---
@@ -1001,7 +1001,7 @@ New session opens. Paste the re-entry prompt. Claude reads `.memory/SESSION-LOG.
     consolidate/                  ← /consolidate  (episodic → semantic promotion)
     encrypt/                      ← /encrypt  (git-crypt setup)
     diagram/                      ← /diagram  (Mermaid/PlantUML/DFD generation)
-    fable-mode/                   ← /fable-mode  (five-gate working-discipline loader)
+    code-mode/                    ← /code-mode  (code-lifecycle five-gate loader)
     create-gdd/                   ← /create-gdd  (Game Design Document)
     write-a-skill/                ← /write-a-skill  (structured skill authoring)
     zoom-out/                     ← /zoom-out  (map unfamiliar codebase)

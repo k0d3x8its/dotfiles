@@ -355,6 +355,51 @@ EOF
     done
 }
 
+@test "claude: dangling skill symlink from a renamed/removed skill is pruned" {
+    mkdir -p "$FAKE_HOME/.claude/skills"
+    ln -s "$FAKE_DOTFILES/claude/.claude/skills/does-not-exist-anymore" \
+        "$FAKE_HOME/.claude/skills/does-not-exist-anymore"
+
+    run_install
+
+    [[ ! -L "$FAKE_HOME/.claude/skills/does-not-exist-anymore" ]]
+}
+
+@test "codex: dangling skill symlink from a renamed/removed skill is pruned" {
+    mkdir -p "$FAKE_HOME/.codex/skills"
+    ln -s "$FAKE_DOTFILES/codex/.codex/skills/does-not-exist-anymore" \
+        "$FAKE_HOME/.codex/skills/does-not-exist-anymore"
+
+    run_install
+
+    [[ ! -L "$FAKE_HOME/.codex/skills/does-not-exist-anymore" ]]
+}
+
+@test "claude: non-dangling skill symlink pointing outside dotfiles survives install (e.g. kos*)" {
+    mkdir -p "$FAKE_HOME/.claude/skills"
+    local external_target
+    external_target="$(mktemp -d)"
+    touch "$external_target/SKILL.md"
+    ln -s "$external_target" "$FAKE_HOME/.claude/skills/externally-managed"
+
+    run_install
+
+    [[ -L "$FAKE_HOME/.claude/skills/externally-managed" ]]
+    [[ "$(readlink "$FAKE_HOME/.claude/skills/externally-managed")" == "$external_target" ]]
+
+    rm -rf "$external_target"
+}
+
+@test "claude: a symlink cycle in skills dir aborts install loudly, not a silent skip" {
+    mkdir -p "$FAKE_HOME/.claude/skills"
+    ln -s cycle-b "$FAKE_HOME/.claude/skills/cycle-a"
+    ln -s cycle-a "$FAKE_HOME/.claude/skills/cycle-b"
+
+    run run_install
+
+    [[ "$status" -ne 0 ]]
+}
+
 @test "codex: shared catalog symlink installs as a live skill" {
     run_install
 

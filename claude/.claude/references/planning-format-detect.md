@@ -11,7 +11,7 @@ Goal 29 / `.work/archive/legacy-plan.md` Goal 29 for the design.
 ## Detect
 
 ```bash
-# single-repo skill (CWD = repo root) — write-plan, grill-me, sync-trello, fable-mode,
+# single-repo skill (CWD = repo root) — write-plan, grill-me, sync-trello, code-mode,
 
 # brainstorm, closing skills, TODOS.md-appenders
 test -d .work/plan && echo NEW-FORMAT || echo FLAT-FORMAT
@@ -53,7 +53,7 @@ Behave exactly as before this pilot: read/write `TODOS.md`, `.work/PLAN.md`,
 ## Why a shared helper, not per-skill logic
 
 Every skill that touches these three files (write-plan, grill-me, sync-trello, the
-four closing skills, dev-brief, fable-mode, brainstorm, and TODOS.md-appenders like
+four closing skills, dev-brief, code-mode, brainstorm, and TODOS.md-appenders like
 diagnose/consolidate/remember/code-sec/etc.) needs the identical branch. Duplicating
 the test-and-branch in each SKILL.md risks drift — one skill's detection logic
 diverging from another's. This file is the single source; skills reference it by
