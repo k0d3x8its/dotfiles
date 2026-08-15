@@ -118,6 +118,9 @@ Reading protocol for agents: load _only_ this file + the one language file match
 code being written. Do not load the whole directory. When the task involves writing or
 reviewing tests, also load `TESTING-STANDARD.md` — it routes test-type decisions
 (unit/integration/system/playtesting/compatibility/etc.) that this file doesn't cover.
+When the task involves choosing a data structure or algorithm, also load
+`DATA-STRUCTURES.md`/`ALGORITHMS.md` — scenario-first selection tables; the language
+file's own "Data structures & algorithms" subsection has the concrete API.
 
 ## Related
 
