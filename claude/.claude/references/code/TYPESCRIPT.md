@@ -77,6 +77,24 @@ before creating directories.
 - Minimum viable: `package.json` + `tsconfig.json` + `src/index.ts`.
 - Entry files stay thin — wiring only, logic in modules (same rule every language).
 
+## Data structures & algorithms
+
+Scenario names match `DATA-STRUCTURES.md`/`ALGORITHMS.md` — this is the concrete API only.
+
+- Membership test / set ops: `Set`.
+- Key → value: `Map` (over a plain object when keys aren't known string literals —
+  `Map` preserves insertion order and doesn't collide with prototype keys).
+- FIFO/LIFO: array `push`/`pop`/`shift`/`unshift` for small n; `shift`/`unshift` are
+  O(n) — a real queue library is warranted once that's measured, not assumed.
+- Priority / smallest-next, real heap: no stdlib heap — reach for a real library
+  (e.g. a small heap package) rather than hand-rolling one.
+- Sort + sort-key: `Array.prototype.sort(compareFn)` — note it mutates in place;
+  `.toSorted()` (ES2023) for a non-mutating copy where the target runtime/tsconfig
+  `lib` supports it — check before relying on it, same caveat as `Object.groupBy` below.
+- Dedup: `[...new Set(array)]`.
+- Group-by: `Object.groupBy`/`Map.groupBy` (ES2024) where the runtime supports it,
+  else a `reduce` into a `Map`.
+
 ## Testing
 
 - jest (workspace configs exist). Tests colocated per package convention;
