@@ -6,13 +6,13 @@ follows from that. Strength vocabulary per `CODE-STANDARD.md`.
 
 ## Naming & casing
 
-| Kind | Casing | Example |
-|---|---|---|
-| variables / functions | `camelCase` (Arduino ecosystem norm) | `readBatteryVoltage` |
-| constants | `UPPER_SNAKE`, `constexpr` | `constexpr uint8_t LED_PIN = 13;` |
-| classes / structs / enums | `PascalCase` | `PumpkinEyeDriver` |
-| pin assignments | named constants at top — a bare pin number in logic is banned | `SERVO_PIN` |
-| files | `snake_case.cpp/.h` | `eye_driver.cpp` |
+| Kind                      | Casing                                                        | Example                           |
+| ------------------------- | ------------------------------------------------------------- | --------------------------------- |
+| variables / functions     | `camelCase` (Arduino ecosystem norm)                          | `readBatteryVoltage`              |
+| constants                 | `UPPER_SNAKE`, `constexpr`                                    | `constexpr uint8_t LED_PIN = 13;` |
+| classes / structs / enums | `PascalCase`                                                  | `PumpkinEyeDriver`                |
+| pin assignments           | named constants at top — a bare pin number in logic is banned | `SERVO_PIN`                       |
+| files                     | `snake_case.cpp/.h`                                           | `eye_driver.cpp`                  |
 
 ## Memory MUSTs (the rules that brick boards)
 
@@ -48,6 +48,7 @@ follows from that. Strength vocabulary per `CODE-STANDARD.md`.
 ## File layout (SHOULD — top to bottom)
 
 `main.cpp` / `.ino`:
+
 1. Includes
 2. Pin + config constants (`constexpr`)
 3. Types (enums for states, structs)
@@ -74,6 +75,26 @@ Ecosystem-standard shape. An existing repo's layout always wins.
 - Minimum viable: `platformio.ini` + `src/main.cpp`.
 - Pure logic (state machines, protocol parsing) in `lib/` modules with no
   `Arduino.h` dependency where possible → testable on host without a board.
+
+## Data structures & algorithms
+
+Scenario names match `DATA-STRUCTURES.md`/`ALGORITHMS.md` — this is the concrete API only.
+**Memory/RAM is the escalate axis here, not raw big-O** — the Memory MUSTs above
+(no `String`, no `new`/`malloc` after `setup()`) constrain every choice below.
+
+- Ordered / sequence, fixed size: fixed `array`/`std::array` sized at compile time —
+  never a dynamically-growing container.
+- Key → value at small n (a handful of pins/states): a fixed-size array of
+  struct{key,value} pairs + linear scan — cheaper in RAM than any hash-map
+  machinery at the sizes this scope ever hits, and avoids `std::` allocation.
+- FIFO (sensor sample ring, event queue): fixed-size circular buffer over an
+  `array` (write/read indices with modulo wraparound) — never a `std::queue`.
+- Sort: only over a small fixed buffer if genuinely needed (e.g. a rolling
+  median filter) — insertion sort on a tiny fixed array is fine; anything
+  needing a general-purpose sort at scale is a sign this doesn't belong on-device.
+- **AVOID entirely**: `std::vector`, `std::map`, `std::string`, anything from
+  `<algorithm>` that allocates — same rule as the Rules section above, restated
+  here because it's the data-structure decision, not just a style rule.
 
 ## Tooling
 
