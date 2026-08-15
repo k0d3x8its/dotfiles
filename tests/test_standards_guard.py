@@ -161,6 +161,18 @@ class TestLanguageMapping(GuardTestCase):
         self.assertEqual(code, 2)
         self.assertIn("SOLIDITY.md", err)
 
+    def test_bats_test_requires_bash_md_and_testing_standard(self):
+        code, err = self._pre("/repo/tests/install.bats")
+        self.assertEqual(code, 2)
+        self.assertIn("BASH.md", err)
+        self.assertIn("TESTING-STANDARD.md", err)
+
+    def test_bats_outside_tests_dir_requires_only_bash_md(self):
+        code, err = self._pre("/repo/scripts/helper.bats")
+        self.assertEqual(code, 2)
+        self.assertIn("BASH.md", err)
+        self.assertNotIn("TESTING-STANDARD.md", err)
+
 
 class TestTrivialEditThreshold(GuardTestCase):
     def test_tiny_new_string_allowed_without_read(self):
