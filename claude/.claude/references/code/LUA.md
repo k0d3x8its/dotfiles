@@ -5,19 +5,19 @@ Evidence base: `~/dev/kodex-ide`. Strength vocabulary per `CODE-STANDARD.md`.
 
 ## Naming & casing
 
-| Kind | Casing | Example |
-|---|---|---|
-| variables / functions | `snake_case` | `resolve_diff_card`, `session_cost` |
-| constants (true immutables) | `UPPER_SNAKE` | `MAX_FRAME_COUNT` |
-| your own modules (`utils/`,`core/`) | `snake_case.lua` | `claude_burn.lua` |
-| plugin specs (`lua/plugins/`) | `kebab-case.lua`, named after the upstream plugin | `nvim-tree.lua`, `which-key.lua` |
-| user commands / augroups | `PascalCase` | `KodexReload` |
-| highlight groups | `PascalCase` | `ClaudeBarBorder` |
+| Kind                                | Casing                                            | Example                             |
+| ----------------------------------- | ------------------------------------------------- | ----------------------------------- |
+| variables / functions               | `snake_case`                                      | `resolve_diff_card`, `session_cost` |
+| constants (true immutables)         | `UPPER_SNAKE`                                     | `MAX_FRAME_COUNT`                   |
+| your own modules (`utils/`,`core/`) | `snake_case.lua`                                  | `claude_burn.lua`                   |
+| plugin specs (`lua/plugins/`)       | `kebab-case.lua`, named after the upstream plugin | `nvim-tree.lua`, `which-key.lua`    |
+| user commands / augroups            | `PascalCase`                                      | `KodexReload`                       |
+| highlight groups                    | `PascalCase`                                      | `ClaudeBarBorder`                   |
 
 - MUST follow the universal naming rules (no single-letter identifiers) with **one
   carved exception**: `local M = {}` … `return M` as the module-table idiom — it is
   Neovim-ecosystem standard and pervasive in this codebase. The exception is `M`
-  only, only as the returned module table. Any *other* table (helpers, config,
+  only, only as the returned module table. Any _other_ table (helpers, config,
   a second returned table) takes a descriptive name (`state`, not `S`).
 
 ## Modules & structure
@@ -90,6 +90,24 @@ repo's layout always wins over this — check before creating directories.
   see kodex-ide KNOWLEDGE.md). Nearing it = the file is screaming to be split
   into a package (SRP anyway). Related: 60-upvalue limit per function.
 
+## Data structures & algorithms
+
+Scenario names match `DATA-STRUCTURES.md`/`ALGORITHMS.md` — this is the concrete API only.
+Lua has one universal structure: the table. Selection is really "which table idiom."
+
+- Key → value / membership test: table used as a map (`t[key] = true` for a set;
+  `t[key] = value` for a map) — `pairs()` to iterate, no guaranteed order.
+- Ordered / sequence: table used as an array (`1..n`, no holes) — `ipairs()` to
+  iterate, `table.insert`/`table.remove` for FIFO/LIFO/stack behavior at either end.
+- Sort + sort-key: `table.sort(t, comparator)` — mutates in place, no stable-sort
+  guarantee in stock Lua; write the comparator, don't hand-roll the sort.
+- Priority / smallest-next: no stdlib heap — a small binary-heap-over-array module
+  if genuinely needed (rare in this codebase's scale); state the reason before adding one.
+- Dedup: build a seen-table (map idiom above) while iterating an array once.
+- **Never mix the two idioms in one table** — a table with both array indices and
+  string keys breaks `#length`/`ipairs` in ways that are hard to spot (see Language
+  gotchas above).
+
 ## Testing
 
 - Headless specs: `tests/*_spec.lua`, run via `make test` (`nvim --headless`).
@@ -100,5 +118,5 @@ repo's layout always wins over this — check before creating directories.
 ## Tooling
 
 - No stylua/luacheck config exists in kodex-ide yet — `[CHORE]` candidate. Until
-  then: 4-space… *(verify: repo uses tabs in some files — match the file you're in;
-  do not reformat neighbors)*.
+  then: 4-space… _(verify: repo uses tabs in some files — match the file you're in;
+  do not reformat neighbors)_.
