@@ -6,14 +6,14 @@ writing. Strength vocabulary per `CODE-STANDARD.md`.
 
 ## Naming & casing
 
-| Kind | Casing | Example |
-|---|---|---|
-| variables (script-local) | `snake_case` | `retry_count` |
-| environment / exported | `UPPER_SNAKE` | `KODEX_IDE` |
-| constants | `UPPER_SNAKE`, `readonly` | `readonly MAX_ATTEMPTS=3` |
-| functions | `snake_case` | `parse_session_log` |
-| sourced-library functions | `_prefix` with lib name | `_trueline_font_style` |
-| files | `kebab-case.sh` or extensionless executables | `batch-transcribe.sh` |
+| Kind                      | Casing                                       | Example                   |
+| ------------------------- | -------------------------------------------- | ------------------------- |
+| variables (script-local)  | `snake_case`                                 | `retry_count`             |
+| environment / exported    | `UPPER_SNAKE`                                | `KODEX_IDE`               |
+| constants                 | `UPPER_SNAKE`, `readonly`                    | `readonly MAX_ATTEMPTS=3` |
+| functions                 | `snake_case`                                 | `parse_session_log`       |
+| sourced-library functions | `_prefix` with lib name                      | `_trueline_font_style`    |
+| files                     | `kebab-case.sh` or extensionless executables | `batch-transcribe.sh`     |
 
 ## Executable scripts — MUSTs
 
@@ -47,9 +47,10 @@ writing. Strength vocabulary per `CODE-STANDARD.md`.
 1. Shebang + `set -euo pipefail` (executables only)
 2. Header comment: what + usage line
 3. Constants / defaults (`readonly`, `UPPER_SNAKE`)
-4. Functions — newspaper order: high-level first, helpers below… *(bash has no
-   hoisting inside a call, but functions defined before `main` runs is what matters)*
+4. Functions — newspaper order: high-level first, helpers below… _(bash has no
+   hoisting inside a call, but functions defined before `main` runs is what matters)_
 5. `main "$@"` invocation (or the argument-parsing + dispatch block) — at the bottom
+
 - A script long enough to need sections is a script that SHOULD have a `main()`.
 
 ## Directory structure (canonical minimum)
@@ -65,6 +66,21 @@ Shell projects rarely need structure; when one does:
 
 - One-off automation stays a single file in the repo's `scripts/`.
 - A bash file past ~300 lines or needing data structures SHOULD become Python.
+
+## Data structures & algorithms
+
+Scenario names match `DATA-STRUCTURES.md`/`ALGORITHMS.md` — this is the concrete API only.
+
+- Ordered / sequence: indexed array (`arr=(); arr+=("$x")`).
+- Key → value / membership test: associative array (`declare -A map`; bash 4+ only —
+  check target platform, macOS ships an old bash 3.2 unless the user installed a newer one).
+- Sort: `sort` (external command) piped in, or `IFS=$'\n' sorted=($(sort <<< "${arr[*]}"))` —
+  never a hand-rolled sort loop.
+- Dedup: `sort -u`, or `printf '%s\n' "${arr[@]}" | awk '!seen[$0]++'` for order-preserving.
+- **The point where the answer is "reach for a real language":** anything needing
+  nested structures, a real heap/priority-queue, graph traversal, or more than a flat
+  array/map — see `BASH.md`'s own "past ~300 lines or needing data structures SHOULD
+  become Python" line above. This section stops at what a flat associative array covers.
 
 ## Tooling
 
