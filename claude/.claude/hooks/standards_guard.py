@@ -41,6 +41,7 @@ EXT_TO_LANG_FILE = {
     ".sol": "SOLIDITY.md",
     ".sh": "BASH.md",
     ".bash": "BASH.md",
+    ".bats": "BASH.md",
     ".ino": "ARDUINO.md",
     ".cpp": "ARDUINO.md",
     ".c": "ARDUINO.md",
