@@ -96,6 +96,9 @@ _(Fowler — Refactoring; Mantyla; Brown et al — AntiPatterns; Meszaros — xU
 
 Full taxonomy (70+ patterns across code, OO design, architecture, testing) lives in:
 **`references/code/ANTI-PATTERNS.md`** — Read that file for the complete reference.
+Scenario-first data structure/algorithm selection (a different axis — _which_
+structure to reach for, not _what's wrong_ with a choice already made) lives in
+**`references/code/DATA-STRUCTURES.md`**/**`ALGORITHMS.md`**.
 
 Most-encountered patterns for quick recall:
 
