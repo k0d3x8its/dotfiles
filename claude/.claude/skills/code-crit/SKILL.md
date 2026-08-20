@@ -48,10 +48,47 @@ State which mode ran at the top of the Report (below).
 1. Resolve mode (above).
 2. Resolve the diff: explicit PR#/branch arg, else `git diff` against the
    diff-base (default: the branch's merge-base with `main`).
-3. Spawn all 5 always-on personas + any conditional personas whose trigger
+3. If the diff is large enough to need batching, split it first — see
+   Batching large diffs, below.
+4. Spawn all 5 always-on personas + any conditional personas whose trigger
    matches (Dispatch, below) — dispatch shape depends on mode.
-4. Run the Stage-2 Opus advisor pass (Synthesis, below).
-5. Emit the report (Report, below).
+5. Run the Stage-2 Opus advisor pass (Synthesis, below).
+6. Emit the report (Report, below).
+
+## Batching large diffs
+
+A diff too big for one pass (a large feature branch, a big PR) needs
+splitting into batches reviewed separately. **Batch by diff line-count, not
+file count.** File count is not a reliable proxy for review cost — a batch
+of 14 small files can be cheaper than a batch of 2 large ones, and a
+file-count cap forces pointless splits on the cheap batch while doing
+nothing to right-size the expensive one. What actually drives cost is how
+much diff text lands in each persona spawn's context, which scales with
+lines, not files.
+
+- **Target ceiling: ~1500-1600 diff lines per batch** (counting full `git
+diff` output — headers/context included, not just insertions). This is an
+  empirically-derived number (Goal 12, kodex-ide, 2026-08-15): a 1538-line
+  batch ran cleanly thorough-mode in one session including a session-limit
+  pacing constraint; a 2189-line batch was the one that needed splitting.
+  Treat it as a starting point to recalibrate from your own sessions, not a
+  hard constant — thorough mode's per-persona isolation cost means the
+  effective ceiling is somewhat lower there than in fast mode for the same
+  line count.
+- When splitting, group by subsystem/directory where the diff naturally
+  clusters (keeps each batch's findings coherent and its Stage-2 synthesis
+  meaningful), then balance line count across the resulting batches rather
+  than assigning by a fixed file quota.
+- Track batches the same way this repo's own Goal 12 process does: one
+  tracker file listing batch → files → line count → status, one findings
+  file with a `## Batch N` section per batch, both updated as each batch
+  completes. Re-verify the diff-base merge-base hasn't drifted before
+  resuming a batch from a prior session.
+- This is orthogonal to fast/thorough mode (above) — batching controls how
+  much diff text feeds a spawn; fast/thorough controls how many isolated
+  spawns a given batch costs. Right-sizing batches keeps thorough mode
+  affordable on a large codebase; it doesn't replace choosing thorough over
+  fast, and vice versa.
 
 ## Dispatch
 
