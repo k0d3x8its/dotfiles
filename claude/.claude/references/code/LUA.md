@@ -117,6 +117,9 @@ Lua has one universal structure: the table. Selection is really "which table idi
 
 ## Tooling
 
-- No stylua/luacheck config exists in kodex-ide yet — `[CHORE]` candidate. Until
-  then: 4-space… _(verify: repo uses tabs in some files — match the file you're in;
-  do not reformat neighbors)_.
+- kodex-ide has `stylua.toml` (added 2026-08-24, tabs — settled after a line-count
+  survey showed the `utils/claude/` engine, the bulk of the codebase, was already
+  100% tabs; a handful of newer plugin-spec files were 2-space and got reformatted
+  in the same pass). No luacheck config yet — `[CHORE]` candidate.
+- Other Neovim-config/plugin projects without a `stylua.toml` yet: match the file
+  you're in; do not reformat neighbors until one exists.
