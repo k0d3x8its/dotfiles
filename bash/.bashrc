@@ -121,6 +121,8 @@ if ! shopt -oq posix; then
 fi
 
 
+export TRUELINE_SHOW_VIMODE=true
+declare -A TRUELINE_SYMBOLS=([vimode_cmd]='CMD')
 source ~/dev/trueline.sh
 
 export PATH="$HOME/.local/bin:$PATH"
