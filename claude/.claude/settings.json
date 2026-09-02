@@ -365,5 +365,6 @@
   },
   "advisorModel": "opus",
   "theme": "auto",
-  "agentPushNotifEnabled": true
+  "agentPushNotifEnabled": true,
+  "model": "opus"
 }
