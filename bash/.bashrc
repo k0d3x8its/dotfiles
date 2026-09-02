@@ -91,7 +91,10 @@ fi
 alias ll='ls -alF'
 alias la='ls -A'
 alias l='ls -CF'
-# alias vim='nvim'
+alias vim='nvim'
+# Trailing space makes bash alias-expand the word after sudo too, so
+# `sudo vim` becomes `sudo nvim` instead of running real vim.
+alias sudo='sudo '
 
 # Add an "alert" alias for long running commands.  Use like so:
 #   sleep 10; alert
