@@ -12,8 +12,12 @@ sleep 4
 # requests, not synthetic input, so xdotool still works fine for those.
 export YDOTOOL_SOCKET="/run/user/$(id -u)/.ydotool_socket"
 
-# Force XWayland so xdotool can manage this window
-GDK_BACKEND=x11 ghostty --config-file="$HOME/.config/ghostty/sidebar.conf" &
+# Force XWayland so xdotool can manage this window. GTK_IM_MODULE=none
+# disables IBus for this process -- IBus is known to silently eat the first
+# real keystroke after a window/pane gains focus, which is what made the
+# bottom split's shell look like it wasn't accepting input. Not needed for
+# a plain terminal (no IME input required).
+GDK_BACKEND=x11 GTK_IM_MODULE=none ghostty --config-file="$HOME/.config/ghostty/sidebar.conf" &
 GHOSTTY_PID=$!
 
 # Wait up to 10s for the window to appear (poll by PID)
@@ -45,6 +49,10 @@ WIN_H=$WORK_H
 WIN_X=$((WORK_X + WORK_W - WIN_W))
 WIN_Y=$WORK_Y
 
+# Ghostty re-applies its own config size (window-height=51) asynchronously
+# after the window ID already exists, racing our resize below and winning
+# if we resize too early. Let it finish settling first.
+sleep 0.5
 xdotool windowmove "$WID" "$WIN_X" "$WIN_Y"
 xdotool windowsize "$WID" "$WIN_W" "$WIN_H"
 
@@ -58,3 +66,16 @@ ydotool key 28:1 28:0   # Return
 sleep 1.5
 xdotool windowfocus --sync "$WID"
 ydotool key 29:1 42:1 18:1 18:0 42:0 29:0   # ctrl+shift+e
+
+# new_split:down should auto-focus the new pane, but don't rely on a synthetic
+# keybind's side effect alone -- explicitly goto_split:down (ctrl+alt+Down)
+# so the bottom shell definitely has keyboard focus, not the btop pane above it.
+sleep 0.3
+ydotool key 29:1 56:1 108:1 108:0 56:0 29:0   # ctrl+alt+down
+
+# Re-stomp size/position: ghostty's own resize-on-realize and the new split
+# can both perturb geometry after our first resize; reassert once more so
+# top-of-screen-to-top-of-dock actually holds after everything settles.
+sleep 0.5
+xdotool windowmove "$WID" "$WIN_X" "$WIN_Y"
+xdotool windowsize "$WID" "$WIN_W" "$WIN_H"
