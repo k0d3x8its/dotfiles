@@ -5,6 +5,13 @@ pgrep -f "ghostty --config-file=$HOME/.config/ghostty/sidebar.conf" > /dev/null 
 # Wait for desktop session to be fully ready
 sleep 4
 
+# Ubuntu 26.04's Mutter gates XTestFakeInput (xdotool key/type) behind the
+# RemoteDesktop portal consent dialog, which nothing here answers, so synthetic
+# keystrokes silently drop. ydotool injects via /dev/uinput (kernel level),
+# bypassing that gate entirely. windowmove/resize/focus are plain WM protocol
+# requests, not synthetic input, so xdotool still works fine for those.
+export YDOTOOL_SOCKET="/run/user/$(id -u)/.ydotool_socket"
+
 # Force XWayland so xdotool can manage this window
 GDK_BACKEND=x11 ghostty --config-file="$HOME/.config/ghostty/sidebar.conf" &
 GHOSTTY_PID=$!
@@ -22,29 +29,32 @@ if [ -z "$WID" ]; then
     exit 1
 fi
 
-# Detect screen dimensions dynamically
-SCREEN_W=$(xrandr --current 2>/dev/null | awk '/\*/{print $1}' | head -1 | cut -dx -f1)
-SCREEN_H=$(xrandr --current 2>/dev/null | awk '/\*/{print $1}' | head -1 | cut -dx -f2)
-SCREEN_W=${SCREEN_W:-1920}
-SCREEN_H=${SCREEN_H:-1200}
+# Use the desktop's usable workarea (excludes top bar + dock), not raw screen
+# size, so the window actually spans top-of-screen to top-of-dock instead of
+# a fixed height from the ghostty config.
+read -r WORK_X WORK_Y WORK_W WORK_H <<< "$(xprop -root _NET_WORKAREA 2>/dev/null | sed 's/.*= //' | cut -d, -f1-4 | tr ',' ' ')"
+WORK_X=${WORK_X:-0}
+WORK_Y=${WORK_Y:-0}
+WORK_W=${WORK_W:-1920}
+WORK_H=${WORK_H:-1200}
 
-# Get actual rendered window dimensions, position at right edge above bottom panel
+# Keep the configured window width, but stretch height to fill the workarea
 WIN_W=$(xdotool getwindowgeometry "$WID" 2>/dev/null | awk '/Geometry/{split($2,a,"x"); print a[1]}')
-WIN_H=$(xdotool getwindowgeometry "$WID" 2>/dev/null | awk '/Geometry/{split($2,a,"x"); print a[2]}')
 WIN_W=${WIN_W:-380}
-WIN_H=${WIN_H:-960}
-WIN_X=$((SCREEN_W - WIN_W))
+WIN_H=$WORK_H
+WIN_X=$((WORK_X + WORK_W - WIN_W))
+WIN_Y=$WORK_Y
 
-xdotool windowmove "$WID" "$WIN_X" 0
+xdotool windowmove "$WID" "$WIN_X" "$WIN_Y"
 xdotool windowsize "$WID" "$WIN_W" "$WIN_H"
 
-# Focus, type btop, run it
+# Focus, type btop, run it (ydotool, not xdotool -- see note above)
 xdotool windowfocus --sync "$WID"
 sleep 0.3
-xdotool type --clearmodifiers "btop"
-xdotool key Return
+ydotool type "btop"
+ydotool key 28:1 28:0   # Return
 
 # Wait for btop to initialize, then split (Ctrl+Shift+E = new split down)
 sleep 1.5
 xdotool windowfocus --sync "$WID"
-xdotool key ctrl+shift+e
+ydotool key 29:1 42:1 18:1 18:0 42:0 29:0   # ctrl+shift+e
