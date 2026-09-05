@@ -54,7 +54,9 @@ CLAUDE_ONLY = {
     "code-mode",
     "code-refactor",
     "codebase-design",
+    "lesson",
     "requirements",
+    "syllabus-setup",
     "threat-model",
 }
 
