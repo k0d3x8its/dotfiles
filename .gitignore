@@ -14,7 +14,9 @@ claude/.claude/session-env/
 claude/.claude/file-history/
 claude/.claude/mcp-needs-auth-cache.json
 claude/.claude/stats-cache.json
-claude/.claude/settings.json.bak
+# Third-party tools (Clawd on Desk) drop timestamped backups next to the real
+# settings.json, so match any suffix rather than the one bare .bak name.
+claude/.claude/settings.json*.bak
 claude/.claude/config/
 claude/.claude/plugins/cache/
 claude/.claude/plugins/marketplaces/
